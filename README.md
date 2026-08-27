@@ -38,6 +38,12 @@
 - **Local-First Architecture:** Offline mutation using Room SQLite database with optimistic UI updates.
 - **Multi-Engine Sync:** Dual sync via P2P (Local Network) and Google Cloud Firestore.
 
+### 7. 🔄 Self-OTA Update Engine
+- **In-App Checking:** Tap a button in the pairing screen to check if a newer version exists in the target GitHub repository (`ardyniech/FamilyLedger`).
+- **Secure Chunked Download:** Multi-threaded download engine with automatic retries and live speed meter.
+- **SHA-256 Verification:** Automatic cryptographic verification of downloaded APK files prior to installation.
+- **Dynamic Installer Action:** Launches standard Android application installation prompt using secure FileProviders.
+
 ---
 
 ## 🛠️ Tech Stack & Architecture
@@ -65,6 +71,7 @@ app/src/main/java/com/example/
 │   ├── models/                    # Shared immutable domain data models
 │   └── theme/                     # App central Theme & Design System
 ├── modules/
+│   ├── updater/                   # Self-OTA Update Engine (Models, Services, Downloader, UI)
 │   └── dashboard/
 │       ├── dialogs/               # Transaction, Member, Category & Notification Dialogs
 │       ├── logic/                 # Pure domain filter & pacing calculation utilities

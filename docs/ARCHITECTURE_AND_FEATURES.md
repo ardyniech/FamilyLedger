@@ -29,6 +29,14 @@ This document provides a detailed specification of all modules, components, data
 - **`P2PSyncManager.kt`**: Handles direct local Wi-Fi peer-to-peer data sync between paired phones without requiring internet access.
 - **`TransferNotificationManager.kt`**: Manages the lifecycle of cross-member transfer notifications, banner state, and emoji reaction confirmations.
 
+### 2.3 Self-OTA Update Engine (`modules/updater/`)
+- **`UpdateModels.kt`**: Structures the immutable data representing GitHub release information and the reactive update engine state (Checking, Downloading, Verifying, Ready to Install, and Failed).
+- **`SemVerComparator.kt`**: An advanced Semantic Versioning parser that accurately compares the running app version against tag names on GitHub (e.g., `v1.2.4` vs `1.0`).
+- **`GithubUpdateService.kt`**: Light network client that calls the official GitHub REST API to fetch metadata of the latest rilis.
+- **`UpdateDownloader.kt`**: Downloads update payload securely on a worker thread with exponential backoff retry and real-time MB/s speed calculations.
+- **`ApkHashVerifier.kt`**: Checks download integrity by calculating the SHA-256 hash of the downloaded APK against remote signatures.
+- **`PackageInstallerManager.kt`**: Initiates secure PackageInstaller calls via FileProvider wrapping and checks dangerous installation permissions.
+
 ---
 
 ## 3. UI Modules & Dialog Specifications (`com.example.modules.dashboard`)
