@@ -17,7 +17,8 @@ import java.util.UUID
 
 class DashboardViewModel(
     private val repository: HouseholdRepository,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val context: Context
 ) : ViewModel() {
     private val goalsManager = GoalsAndBudgetManager()
     private val billsManager = RecurringBillsManager()
@@ -30,7 +31,19 @@ class DashboardViewModel(
 
     private val _activeMemberId = MutableStateFlow("m1")
     val activeMemberId: StateFlow<String> = _activeMemberId.asStateFlow()
-    private val _householdPairCode = MutableStateFlow("FAM-8821")
+
+    private fun getOrCreateHouseholdCode(context: Context): String {
+        val prefs = context.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE)
+        var code = prefs.getString("household_pair_code", null)
+        if (code == null) {
+            val randomNum = (1000..9999).random()
+            code = "FAM-$randomNum"
+            prefs.edit().putString("household_pair_code", code).apply()
+        }
+        return code
+    }
+
+    private val _householdPairCode = MutableStateFlow(getOrCreateHouseholdCode(context))
     val householdPairCode: StateFlow<String> = _householdPairCode.asStateFlow()
 
     private val _selectedPeriod = MutableStateFlow(DashboardPeriod.MONTHLY)
@@ -99,8 +112,11 @@ class DashboardViewModel(
     fun setSelectedPeriod(period: DashboardPeriod) { _selectedPeriod.value = period }
     fun setActiveMember(memberId: String) { _activeMemberId.value = memberId }
     fun joinHousehold(pairCode: String) {
-        _householdPairCode.value = pairCode.uppercase()
-        repository.syncEngine.updateHouseholdPairCode(viewModelScope, pairCode)
+        val upperCode = pairCode.trim().uppercase()
+        _householdPairCode.value = upperCode
+        val prefs = context.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("household_pair_code", upperCode).apply()
+        repository.syncEngine.updateHouseholdPairCode(viewModelScope, upperCode)
     }
 
     fun signInWithGoogle(context: Context) {
@@ -209,7 +225,31 @@ class DashboardViewModel(
     fun initializeMockDataIfNeeded() = viewModelScope.launch {
         val memberList = repository.members.firstOrNull()
         if (memberList.isNullOrEmpty() || memberList.none { it.name == "Ardy" }) {
-            SampleDataInitializer.populateDefaultFamilyData(repository)
+            SampleDataInitializer.populateDefaultFamilyData(repository, _householdPairCode.value)
+        }
+    }
+
+    fun exportSyncPayload(onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val member = members.value.find { it.id == _activeMemberId.value }
+            val pkg = p2pSyncManager.createSyncPackage(
+                pairCode = _householdPairCode.value,
+                senderName = member?.name ?: "Unknown",
+                senderRole = member?.role ?: "Member"
+            )
+            onResult(pkg.toCompressedBase64())
+        }
+    }
+
+    fun importSyncPayload(payload: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val pkg = com.example.core.sync.p2p.P2PSyncPackage.fromCompressedBase64(payload)
+                val result = p2pSyncManager.importSyncPackage(pkg)
+                onResult(result.success, result.message)
+            } catch (e: Exception) {
+                onResult(false, "Format data tidak valid: ${e.message}")
+            }
         }
     }
 }

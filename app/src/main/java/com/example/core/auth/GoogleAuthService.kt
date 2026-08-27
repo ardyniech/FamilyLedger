@@ -22,7 +22,11 @@ class GoogleAuthService {
         return try {
             val credentialManager = CredentialManager.create(context)
             val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-            val serverClientId = if (resId != 0) context.getString(resId) else "family-ledger.apps.googleusercontent.com"
+            val serverClientId = if (resId != 0) {
+                context.getString(resId)
+            } else {
+                com.example.BuildConfig.GOOGLE_WEB_CLIENT_ID.ifBlank { "family-ledger.apps.googleusercontent.com" }
+            }
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)

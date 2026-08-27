@@ -12,7 +12,8 @@ class AppViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return DashboardViewModel(
                 repository = appContainer.householdRepository,
-                authManager = appContainer.authManager
+                authManager = appContainer.authManager,
+                context = appContainer.context
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

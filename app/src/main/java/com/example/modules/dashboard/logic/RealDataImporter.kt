@@ -6,12 +6,12 @@ import com.example.shared.models.Member
 import com.example.shared.models.WalletAccount
 
 object RealDataImporter {
-    suspend fun seedRealData(repository: HouseholdRepository) {
+    suspend fun seedRealData(repository: HouseholdRepository, pairCode: String = "FAM-8821") {
         // 1. Clear old mock data completely
         repository.clearAllData()
 
         // 2. Prepare Base Entities
-        val members: List<Member> = UserDataEntities.getMembers()
+        val members: List<Member> = UserDataEntities.getMembers(pairCode)
         val categories: List<Category> = UserDataEntities.getCategories()
         val initialWallets: List<WalletAccount> = UserDataEntities.getWallets()
         val transactions = CsvTransactionBuilder.buildTransactions()

@@ -21,10 +21,11 @@ object GithubUpdateService {
         return try {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.e(TAG, "Failed to fetch release: ${response.code}")
                     if (response.code == 404) {
-                        throw Exception("Repositori '$owner/$repo' belum memiliki Rilis Publik di GitHub. Silakan buat rilis pertama Anda di GitHub dan unggah file APK.")
+                        Log.i(TAG, "No public release found (HTTP 404) for repository '$owner/$repo'. Assuming up-to-date.")
+                        return null
                     } else {
+                        Log.e(TAG, "Failed to fetch release: HTTP ${response.code}")
                         throw Exception("Gagal memeriksa pembaruan (HTTP ${response.code}).")
                     }
                 }
