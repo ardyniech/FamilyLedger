@@ -74,8 +74,8 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
 
     val updaterManager = remember {
         com.example.modules.updater.logic.UpdaterManager(
-            owner = "ardy-syafii",
-            repo = "family-ledgers",
+            owner = "ardyniech",
+            repo = "FamilyLedger",
             currentVersionName = "1.0"
         )
     }

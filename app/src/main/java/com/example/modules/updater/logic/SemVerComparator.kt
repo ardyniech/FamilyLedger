@@ -9,7 +9,7 @@ object SemVerComparator {
         val cleanRemote = cleanVersion(remoteTag)
         val cleanLocal = cleanVersion(localVersion)
         
-        Log.d(TAG, "Comparing Remote: $cleanRemote with Local: $cleanLocal")
+        println("Comparing Remote: $cleanRemote with Local: $cleanLocal")
         
         val remoteParts = cleanRemote.split(".").map { it.toIntOrNull() ?: 0 }
         val localParts = cleanLocal.split(".").map { it.toIntOrNull() ?: 0 }
