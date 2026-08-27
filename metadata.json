@@ -1,0 +1,6 @@
+{
+  "name": "FamilyLedger",
+  "description": "FamilyLedger is a high-performance offline-first household expense & financial ledger app built with Jetpack Compose & Clean Architecture. Designed for financial transparency between couples (husband & wife), featuring multi-wallet management, cross-member transfer notifications with emoji reactions, monthly analytics, goal tracking, CSV export/import, and real-time P2P & Firestore sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
