@@ -69,6 +69,7 @@ data class P2PSyncPackage(
             obj.put("id", c.id)
             obj.put("name", c.name)
             obj.put("type", c.type)
+            obj.put("budgetLimit", c.budgetLimit)
             c.parentId?.let { obj.put("parentId", it) }
             catArray.put(obj)
         }
@@ -148,7 +149,8 @@ data class P2PSyncPackage(
                         id = o.getString("id"),
                         name = o.getString("name"),
                         type = o.getString("type"),
-                        parentId = if (o.has("parentId")) o.getString("parentId") else null
+                        parentId = if (o.has("parentId")) o.getString("parentId") else null,
+                        budgetLimit = if (o.has("budgetLimit")) o.getDouble("budgetLimit") else 0.0
                     )
                 )
             }

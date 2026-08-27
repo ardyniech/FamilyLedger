@@ -46,6 +46,29 @@ class DashboardViewModel(
     val categories: StateFlow<List<Category>> = repository.categories.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val totalBalance: StateFlow<Double> = wallets.combine(members) { w, _ -> w.sumOf { it.balance } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
 
+    val budgetExceedances: StateFlow<List<CategoryExceedance>> = combine(transactions, categories) { txs, cats ->
+        val calendar = java.util.Calendar.getInstance()
+        val currentYear = calendar.get(java.util.Calendar.YEAR)
+        val currentMonth = calendar.get(java.util.Calendar.MONTH)
+
+        val currentMonthTxs = txs.filter { t ->
+            val txCal = java.util.Calendar.getInstance().apply { timeInMillis = t.timestamp }
+            txCal.get(java.util.Calendar.YEAR) == currentYear &&
+                    txCal.get(java.util.Calendar.MONTH) == currentMonth &&
+                    t.amount < 0 &&
+                    !t.isDeleted
+        }
+
+        cats.filter { it.type == "Expense" && !it.isDeleted && it.budgetLimit > 0.0 }.mapNotNull { cat ->
+            val spent = currentMonthTxs.filter { it.categoryId == cat.id }.sumOf { -it.amount }
+            if (spent > cat.budgetLimit) {
+                CategoryExceedance(cat, cat.budgetLimit, spent)
+            } else {
+                null
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         repository.syncEngine.startBackgroundSync(viewModelScope, _householdPairCode.value)
         
@@ -111,7 +134,8 @@ class DashboardViewModel(
     ) = billsManager.addRecurringBill(name, amount, due, catId, autoPay, targetWalletId, frequency)
 
     fun deleteRecurringBill(billId: String) = billsManager.deleteRecurringBill(billId)
-    fun saveCategory(id: String?, name: String, type: String, parentId: String? = null) = viewModelScope.launch { repository.addCategory(Category(id ?: UUID.randomUUID().toString(), name, type, parentId = parentId)) }
+    fun deleteCategory(category: Category) = viewModelScope.launch { repository.addCategory(category.copy(isDeleted = true, syncStatus = 0, updatedAt = System.currentTimeMillis())) }
+    fun saveCategory(id: String?, name: String, type: String, parentId: String? = null, budgetLimit: Double = 0.0) = viewModelScope.launch { repository.addCategory(Category(id ?: UUID.randomUUID().toString(), name, type, parentId = parentId, syncStatus = 0, updatedAt = System.currentTimeMillis(), budgetLimit = budgetLimit)) }
     fun saveWalletAccount(id: String?, memberId: String, type: String, name: String, balance: Double) = viewModelScope.launch { repository.addWallet(WalletAccount(id ?: UUID.randomUUID().toString(), memberId, type, name, balance)) }
 
     fun addTransaction(amount: Double, note: String, walletId: String, categoryId: String, isIncome: Boolean = false, timestamp: Long = System.currentTimeMillis()) {
@@ -189,3 +213,9 @@ class DashboardViewModel(
         }
     }
 }
+
+data class CategoryExceedance(
+    val category: Category,
+    val budgetLimit: Double,
+    val currentSpent: Double
+)

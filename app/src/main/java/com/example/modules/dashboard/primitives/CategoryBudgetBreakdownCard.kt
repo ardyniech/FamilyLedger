@@ -45,23 +45,43 @@ fun CategoryBudgetBreakdownCard(
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Distribusi Pengeluaran vs Anggaran", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DesignTokens.TextPrimary)
 
-            categoryExpenses.take(4).forEach { (cat, spent) ->
-                val ratio = if (monthlyBudget > 0) (spent / monthlyBudget).toFloat().coerceIn(0f, 1f) else 0f
+            categoryExpenses.take(5).forEach { (cat, spent) ->
+                val hasSpecificLimit = cat.budgetLimit > 0.0
+                val limit = if (hasSpecificLimit) cat.budgetLimit else monthlyBudget
+                val ratio = if (limit > 0) (spent / limit).toFloat().coerceIn(0f, 1f) else 0f
+                val isExceeded = hasSpecificLimit && spent > cat.budgetLimit
+                val progressColor = if (isExceeded) DesignTokens.RoseAccent else if (hasSpecificLimit) DesignTokens.EmeraldGlow else DesignTokens.AmberAccent
+                
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(if (onCategoryClick != null) Modifier.clickable { onCategoryClick(cat) } else Modifier),
                     verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(cat.name, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
-                        Text("${formatter.format(spent)} (${(ratio * 100).toInt()}%)", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Text(cat.name, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
+                            if (hasSpecificLimit) {
+                                Text(
+                                    text = if (isExceeded) "Melebihi Anggaran Kategori!" else "Anggaran Kategori: ${formatter.format(limit)}",
+                                    fontSize = 10.sp,
+                                    color = if (isExceeded) DesignTokens.RoseAccent else DesignTokens.TextSecondary
+                                )
+                            } else {
+                                Text(
+                                    text = "Menggunakan Anggaran Global",
+                                    fontSize = 10.sp,
+                                    color = DesignTokens.TextSecondary
+                                )
+                            }
+                        }
+                        Text("${formatter.format(spent)} (${(spent / limit * 100).toInt()}%)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isExceeded) DesignTokens.RoseAccent else DesignTokens.TextPrimary)
                     }
                     LinearProgressIndicator(
                         progress = { ratio },
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                        color = DesignTokens.AmberAccent,
-                        trackColor = DesignTokens.BorderLight
+                        color = progressColor,
+                        trackColor = if (isExceeded) DesignTokens.RoseAccent.copy(alpha = 0.2f) else DesignTokens.BorderLight
                     )
                 }
             }

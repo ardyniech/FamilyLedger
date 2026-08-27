@@ -22,14 +22,18 @@ object GithubUpdateService {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
                     Log.e(TAG, "Failed to fetch release: ${response.code}")
-                    return null
+                    if (response.code == 404) {
+                        throw Exception("Repositori '$owner/$repo' belum memiliki Rilis Publik di GitHub. Silakan buat rilis pertama Anda di GitHub dan unggah file APK.")
+                    } else {
+                        throw Exception("Gagal memeriksa pembaruan (HTTP ${response.code}).")
+                    }
                 }
-                val bodyStr = response.body?.string() ?: return null
+                val bodyStr = response.body?.string() ?: throw Exception("Gagal membaca data respon dari server GitHub.")
                 parseReleaseJson(bodyStr)
             }
         } catch (e: Exception) {
             Log.e(TAG, "[Module:Updater] Error in fetchLatestRelease: ${e.message}", e)
-            null
+            throw e
         }
     }
 
@@ -61,11 +65,13 @@ object GithubUpdateService {
                 }
             }
             
-            if (apkUrl.isEmpty()) return null
+            if (apkUrl.isEmpty()) {
+                throw Exception("Rilis '$tagName' ditemukan di GitHub, tetapi tidak ada aset file .apk yang diunggah. Silakan unggah berkas APK ke rilis tersebut.")
+            }
 
             // Determine if the release body indicates a mandatory update (e.g., contains [MANDATORY])
             val isMandatory = body.contains("[MANDATORY]", ignoreCase = true) || 
-                              body.contains("security patch", ignoreCase = true)
+                               body.contains("security patch", ignoreCase = true)
 
             ReleaseInfo(
                 id = id,
@@ -79,7 +85,7 @@ object GithubUpdateService {
             )
         } catch (e: Exception) {
             Log.e(TAG, "[Module:Updater] Error in parseReleaseJson: ${e.message}", e)
-            null
+            throw e
         }
     }
 }

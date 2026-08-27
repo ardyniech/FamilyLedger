@@ -26,12 +26,16 @@ class UpdaterManager(
     fun checkForUpdates(scope: CoroutineScope) {
         _status.value = UpdateStatus.Checking
         scope.launch(Dispatchers.IO) {
-            val latest = GithubUpdateService.fetchLatestRelease(owner, repo)
-            if (latest != null && SemVerComparator.isNewer(latest.tagName, currentVersionName)) {
-                currentReleaseInfo = latest
-                _status.value = UpdateStatus.UpdateAvailable(latest)
-            } else {
-                _status.value = UpdateStatus.UpToDate
+            try {
+                val latest = GithubUpdateService.fetchLatestRelease(owner, repo)
+                if (latest != null && SemVerComparator.isNewer(latest.tagName, currentVersionName)) {
+                    currentReleaseInfo = latest
+                    _status.value = UpdateStatus.UpdateAvailable(latest)
+                } else {
+                    _status.value = UpdateStatus.UpToDate
+                }
+            } catch (e: Exception) {
+                _status.value = UpdateStatus.Failed(e.message ?: "Gagal memeriksa pembaruan.")
             }
         }
     }

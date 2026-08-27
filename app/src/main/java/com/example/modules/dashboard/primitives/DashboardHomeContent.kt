@@ -27,6 +27,7 @@ fun DashboardHomeContent(
     selectedPeriod: DashboardPeriod,
     periodSummary: PeriodSummary,
     transferNotification: TransferNotification? = null,
+    budgetExceedances: List<com.example.modules.dashboard.CategoryExceedance> = emptyList(),
     onPeriodSelected: (DashboardPeriod) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onSyncBadgeClick: () -> Unit,
@@ -58,6 +59,9 @@ fun DashboardHomeContent(
                 onClickBanner = onClickTransferNotification,
                 onDismiss = {}
             )
+        }
+        item {
+            BudgetExceedancesBanner(exceedances = budgetExceedances)
         }
         item { HeroCard(totalBalance = totalBalance, wallets = wallets, members = members, onClick = onNetWorthClick) }
         item {

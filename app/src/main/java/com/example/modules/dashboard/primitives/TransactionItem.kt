@@ -21,7 +21,6 @@ import com.example.shared.models.Transaction
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
-
 import androidx.compose.foundation.clickable
 
 @Composable
@@ -41,41 +40,82 @@ fun TransactionItem(
         shape = RoundedCornerShape(DesignTokens.PaddingMedium),
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(DesignTokens.PaddingMedium),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(tint.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
+            // Main Top Row: Avatar, Info & Amount
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text(category?.name?.take(1) ?: member?.name?.take(1) ?: "?", color = tint, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                }
-                Spacer(modifier = Modifier.width(DesignTokens.PaddingMedium))
-                Column {
-                    Text(tx.note, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(member?.name ?: "Unknown", style = MaterialTheme.typography.bodySmall, color = tint)
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(19.dp))
+                            .background(tint.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = category?.name?.take(1) ?: member?.name?.take(1) ?: "?",
+                            color = tint,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = member?.name ?: "Unknown",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = tint
+                        )
                         if (category != null) {
-                            Text(" • ${category.name}", style = MaterialTheme.typography.bodySmall, color = DesignTokens.TextSecondary)
+                            Text(
+                                text = category.name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = DesignTokens.TextSecondary,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
+                Text(
+                    text = formatter.format(tx.amount),
+                    color = if (tx.amount < 0) Color.Red else DesignTokens.EmeraldGlow,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
             }
-            Text(
-                text = formatter.format(tx.amount),
-                color = if (tx.amount < 0) Color.Red else DesignTokens.EmeraldGlow,
-                fontWeight = FontWeight.Bold
-            )
+
+            // Dedicated, Wrapped Row for Transaction Note
+            if (tx.note.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(DesignTokens.SurfaceGlass)
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = tx.note,
+                        fontSize = 12.sp,
+                        color = DesignTokens.TextPrimary,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
         }
     }
 }

@@ -45,7 +45,8 @@ data class Category(
     val parentId: String? = null,
     val syncStatus: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val budgetLimit: Double = 0.0
 )
 
 @Entity(tableName = "transactions")

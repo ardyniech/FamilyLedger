@@ -60,7 +60,8 @@ class FirestoreOutboundSync(
                     "iconName" to c.iconName,
                     "parentId" to (c.parentId ?: ""),
                     "updatedAt" to c.updatedAt,
-                    "isDeleted" to c.isDeleted
+                    "isDeleted" to c.isDeleted,
+                    "budgetLimit" to c.budgetLimit
                 )
                 batch.set(householdRef.collection("categories").document(c.id), data, SetOptions.merge())
             }

@@ -14,7 +14,7 @@ import com.example.shared.models.*
         Category::class,
         Transaction::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

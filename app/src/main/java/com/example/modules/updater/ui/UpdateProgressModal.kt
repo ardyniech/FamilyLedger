@@ -102,9 +102,25 @@ fun UpdateProgressModal(
                             Text("Pasang Pembaruan")
                         }
                     }
+                    is UpdateStatus.UpToDate -> {
+                        Text("Aplikasi Sudah Terbaru", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow)
+                        Text(
+                            "Anda sudah menggunakan versi terbaru (v1.0) dari FamilyLedger.\nTidak ada pembaruan lebih baru yang ditemukan di GitHub saat ini.",
+                            fontSize = 12.sp,
+                            color = DesignTokens.TextSecondary,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(
+                            onClick = { updaterManager.resetToIdle(); onDismiss() },
+                            colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
+                        ) {
+                            Text("Selesai")
+                        }
+                    }
                     is UpdateStatus.Failed -> {
-                        Text("Terjadi Kesalahan", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DesignTokens.RoseAccent)
-                        Text(currentStatus.errorMsg, fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                        Text("Gagal Memeriksa", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.RoseAccent)
+                        Text(currentStatus.errorMsg, fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         Button(
                             onClick = { updaterManager.resetToIdle(); onDismiss() },
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.RoseAccent)

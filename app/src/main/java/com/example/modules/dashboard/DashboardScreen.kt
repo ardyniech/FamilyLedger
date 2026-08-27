@@ -58,6 +58,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     val householdPairCode by viewModel.householdPairCode.collectAsState()
     val selectedPeriod by viewModel.selectedPeriod.collectAsState()
     val activeTransferNotification by viewModel.transferActiveBanner.collectAsState()
+    val budgetExceedances by viewModel.budgetExceedances.collectAsState()
     
     val activeMember = remember(members, activeMemberId) { members.find { it.id == activeMemberId } ?: members.firstOrNull() }
     val periodTransactions = remember(transactions, selectedPeriod) { PeriodFilterHelper.filterTransactions(transactions, selectedPeriod) }
@@ -87,7 +88,8 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             updaterStatus is com.example.modules.updater.models.UpdateStatus.Downloading ||
             updaterStatus is com.example.modules.updater.models.UpdateStatus.Verifying ||
             updaterStatus is com.example.modules.updater.models.UpdateStatus.ReadyToInstall ||
-            updaterStatus is com.example.modules.updater.models.UpdateStatus.Failed
+            updaterStatus is com.example.modules.updater.models.UpdateStatus.Failed ||
+            updaterStatus is com.example.modules.updater.models.UpdateStatus.UpToDate
         ) {
             showUpdateModal = true
         }
@@ -117,7 +119,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                     activeMember = activeMember, syncState = syncState, totalBalance = totalBalance, wallets = wallets, members = members,
                     financialGoals = financialGoals, recurringBills = recurringBills, transactions = transactions,
                     groupedTransactions = groupedTransactions, categories = categories, selectedPeriod = selectedPeriod,
-                    periodSummary = periodSummary, transferNotification = activeTransferNotification,
+                    periodSummary = periodSummary, transferNotification = activeTransferNotification, budgetExceedances = budgetExceedances,
                     onPeriodSelected = { viewModel.setSelectedPeriod(it) },
                     onTransactionClick = { selectedTxForDetail = it }, onSyncBadgeClick = { currentDestination = DashboardDestination.Pairing },
                     onProfileClick = { val other = members.find { it.id != activeMemberId }; if (other != null) viewModel.setActiveMember(other.id) else currentDestination = DashboardDestination.Pairing },
@@ -156,7 +158,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                     onBack = { currentDestination = DashboardDestination.Dashboard }
                 )
                 is DashboardDestination.ExpenseList -> ExpenseListScreen(transactions = transactions, wallets = wallets, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onAddExpense = { a, n, w, c, t -> viewModel.addTransaction(a, n, w, c, false, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.CategoryManagement -> CategoryManagementScreen(categories = categories, onSaveCategory = { id, n, t -> viewModel.saveCategory(id, n, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
+                is DashboardDestination.CategoryManagement -> CategoryManagementScreen(categories = categories, onSaveCategory = { id, n, t, b -> viewModel.saveCategory(id, n, t, budgetLimit = b) }, onDeleteCategory = { viewModel.deleteCategory(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.WalletManagement -> WalletManagementScreen(wallets = wallets, members = members, onSaveWallet = { id, m, t, n, b -> viewModel.saveWalletAccount(id, m, t, n, b) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.Transfer -> TransferScreen(wallets = wallets, members = members, onTransfer = { a, n, f, t -> viewModel.transferFunds(a, n, f, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.Pairing -> PairingScreen(members = members, activeMemberId = activeMemberId, pairCode = householdPairCode, syncState = syncState, authState = authState, p2pManager = viewModel.p2pSyncManager, updaterManager = updaterManager, onSelectActiveMember = { viewModel.setActiveMember(it) }, onJoinHousehold = { viewModel.joinHousehold(it) }, onSignInWithGoogle = { viewModel.signInWithGoogle(it) }, onSignOut = { viewModel.signOut(it) }, onClearAuthError = { viewModel.clearAuthError() }, onBack = { currentDestination = DashboardDestination.Dashboard })

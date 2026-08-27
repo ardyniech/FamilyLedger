@@ -83,7 +83,8 @@ class FirestoreInboundSync(
                                 parentId = doc.getString("parentId")?.ifBlank { null },
                                 syncStatus = 1,
                                 updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
-                                isDeleted = doc.getBoolean("isDeleted") ?: false
+                                isDeleted = doc.getBoolean("isDeleted") ?: false,
+                                budgetLimit = doc.getDouble("budgetLimit") ?: 0.0
                             )
                         } catch (e: Exception) { null }
                     }
