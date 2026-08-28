@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.theme.DesignTokens
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun GoalsBannerCard(
     goalCount: Int,
@@ -24,7 +26,7 @@ fun GoalsBannerCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .springClickable { onClick() },
         shape = RoundedCornerShape(DesignTokens.CornerRadius),
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
         border = BorderStroke(1.dp, DesignTokens.BorderGlass)

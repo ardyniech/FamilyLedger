@@ -20,6 +20,8 @@ import com.example.core.sync.SyncState
 import com.example.shared.models.Member
 import com.example.shared.theme.DesignTokens
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun DashboardHeaderRow(
     activeMember: Member?,
@@ -56,7 +58,7 @@ fun DashboardHeaderRow(
                 shape = RoundedCornerShape(20.dp),
                 color = DesignTokens.SurfaceGlass,
                 border = BorderStroke(1.dp, DesignTokens.BorderGlass),
-                modifier = Modifier.clickable { onSyncBadgeClick() }
+                modifier = Modifier.springClickable { onSyncBadgeClick() }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -95,7 +97,7 @@ fun DashboardHeaderRow(
                     1.dp, 
                     if (activeMember?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
                 ),
-                modifier = Modifier.clickable { onProfileClick() }
+                modifier = Modifier.springClickable { onProfileClick() }
             ) {
                 Text(
                     text = "${if (activeMember?.role == "Husband") "👨" else "👩"} ${activeMember?.name ?: "User"}",

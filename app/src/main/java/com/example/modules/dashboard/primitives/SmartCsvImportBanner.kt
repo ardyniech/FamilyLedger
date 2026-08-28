@@ -17,12 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.theme.DesignTokens
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun SmartCsvImportBanner(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().springClickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceElevated),
         border = BorderStroke(1.dp, DesignTokens.BorderGlass)

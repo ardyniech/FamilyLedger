@@ -26,6 +26,8 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun TransferNotificationBanner(
     notification: TransferNotification?,
@@ -59,7 +61,7 @@ fun TransferNotificationBanner(
                 shape = RoundedCornerShape(DesignTokens.CornerRadius),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onClickBanner(notification) }
+                    .springClickable { onClickBanner(notification) }
             ) {
                 Row(
                     modifier = Modifier

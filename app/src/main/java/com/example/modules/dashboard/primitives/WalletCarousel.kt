@@ -22,6 +22,8 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun WalletCarousel(wallets: List<WalletAccount>, members: List<Member>, onWalletClick: (String) -> Unit) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -37,7 +39,7 @@ fun WalletCarousel(wallets: List<WalletAccount>, members: List<Member>, onWallet
                 modifier = Modifier
                     .width(160.dp)
                     .height(100.dp)
-                    .clickable { onWalletClick(wallet.id) },
+                    .springClickable { onWalletClick(wallet.id) },
                 shape = RoundedCornerShape(DesignTokens.PaddingMedium),
                 colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
                 border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass),

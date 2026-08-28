@@ -100,14 +100,14 @@ class P2POfflineSyncManager(private val dao: HouseholdDao) {
         try {
             serverSocket = ServerSocket(port)
             isServerRunning.set(true)
-            Log.d("P2PSync", "Wi-Fi Direct P2P Host active on port $port")
+            Log.d("P2PSync", "[Module:P2POfflineSync] Info in startLocalWifiHost: Wi-Fi Direct P2P Host active on port $port")
 
             while (isServerRunning.get()) {
                 val clientSocket = serverSocket?.accept() ?: break
                 launchClientHandler(clientSocket, pairCode, senderName, senderRole, onClientSynced)
             }
         } catch (e: Exception) {
-            Log.e("P2PSync", "Local Host Socket error: ${e.message}")
+            Log.e("P2PSync", "[Module:P2POfflineSync] Error in startLocalWifiHost: ${e.message}")
         } finally {
             stopLocalWifiHost()
         }
@@ -138,7 +138,7 @@ class P2POfflineSyncManager(private val dao: HouseholdDao) {
                     onClientSynced(importRes)
                 }
             } catch (e: Exception) {
-                Log.e("P2PSync", "Handler client error: ${e.message}")
+                Log.e("P2PSync", "[Module:P2POfflineSync] Error in launchClientHandler: ${e.message}")
             } finally {
                 try { socket.close() } catch (_: Exception) {}
             }

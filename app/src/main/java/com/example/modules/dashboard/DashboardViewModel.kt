@@ -119,8 +119,22 @@ class DashboardViewModel(
         repository.syncEngine.updateHouseholdPairCode(viewModelScope, upperCode)
     }
 
-    fun signInWithGoogle(context: Context) {
-        authManager.signInWithGoogle(context, viewModelScope) {
+    fun signInLocal(userId: String, pass: String, context: Context) {
+        authManager.signInLocal(userId, pass, context) {
+            val user = (authManager.authState.value as? AuthUiState.Authenticated)?.user
+            if (user != null) {
+                viewModelScope.launch {
+                    val currentMember = members.value.find { it.id == _activeMemberId.value }
+                    if (currentMember != null) {
+                        repository.addMember(currentMember.copy(name = user.displayName, avatarUrl = user.photoUrl ?: ""))
+                    }
+                }
+            }
+        }
+    }
+
+    fun createLocalAccount(userId: String, pass: String, context: Context) {
+        authManager.createLocalAccount(userId, pass, context) {
             val user = (authManager.authState.value as? AuthUiState.Authenticated)?.user
             if (user != null) {
                 viewModelScope.launch {

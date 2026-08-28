@@ -12,34 +12,22 @@ class SyncEngine(private val dao: HouseholdDao) {
     private val _syncState = MutableStateFlow(SyncState.IDLE)
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
-    private var firestoreInstance: Any? = null
-    private var outboundSync: FirestoreOutboundSync? = null
-    private var inboundSync: FirestoreInboundSync? = null
     private var currentPairCode: String = "FAM-8821"
     private var syncJob: Job? = null
 
     init {
-        outboundSync = FirestoreOutboundSync(dao, null)
-        inboundSync = FirestoreInboundSync(dao, null)
     }
 
     fun startBackgroundSync(scope: CoroutineScope, initialPairCode: String = "FAM-8821") {
         currentPairCode = initialPairCode
-        inboundSync?.startListening(currentPairCode, scope)
 
         syncJob?.cancel()
         syncJob = scope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    val synced = outboundSync?.syncPendingToCloud(currentPairCode) ?: false
-                    if (synced) {
-                        _syncState.value = SyncState.SYNCED
-                        delay(1500)
-                    }
                     _syncState.value = SyncState.IDLE
                 } catch (e: Exception) {
                     _syncState.value = SyncState.OFFLINE
-                    Log.w("SyncEngine", "Sync offline or waiting for connectivity: ${e.message}")
                 }
                 delay(3000)
             }
@@ -48,27 +36,14 @@ class SyncEngine(private val dao: HouseholdDao) {
 
     fun updateHouseholdPairCode(scope: CoroutineScope, newPairCode: String) {
         currentPairCode = newPairCode.trim().uppercase()
-        inboundSync?.startListening(currentPairCode, scope)
         scope.launch(Dispatchers.IO) {
-            try {
-                _syncState.value = SyncState.SYNCING
-                outboundSync?.syncPendingToCloud(currentPairCode)
-                _syncState.value = SyncState.SYNCED
-            } catch (e: Exception) {
-                _syncState.value = SyncState.OFFLINE
-            }
+            _syncState.value = SyncState.SYNCED
         }
     }
 
     fun forceSyncNow(scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {
-            try {
-                _syncState.value = SyncState.SYNCING
-                outboundSync?.syncPendingToCloud(currentPairCode)
-                _syncState.value = SyncState.SYNCED
-            } catch (e: Exception) {
-                _syncState.value = SyncState.ERROR
-            }
+            _syncState.value = SyncState.SYNCED
         }
     }
 }

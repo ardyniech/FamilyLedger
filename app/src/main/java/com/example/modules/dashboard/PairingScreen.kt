@@ -42,7 +42,8 @@ fun PairingScreen(
     updaterManager: UpdaterManager,
     onSelectActiveMember: (String) -> Unit,
     onJoinHousehold: (String) -> Unit,
-    onSignInWithGoogle: (Context) -> Unit,
+    onSignInLocal: (String, String, Context) -> Unit,
+    onCreateLocalAccount: (String, String, Context) -> Unit,
     onSignOut: (Context) -> Unit,
     onClearAuthError: () -> Unit,
     onBack: () -> Unit
@@ -90,9 +91,10 @@ fun PairingScreen(
                 activeRole = activeRole
             )
 
-            GoogleAuthCard(
+            LocalAuthCard(
                 authState = authState,
-                onSignIn = onSignInWithGoogle,
+                onSignIn = onSignInLocal,
+                onCreateAccount = onCreateLocalAccount,
                 onSignOut = onSignOut,
                 onClearError = onClearAuthError
             )

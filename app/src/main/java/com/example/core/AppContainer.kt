@@ -2,7 +2,7 @@ package com.example.core
 
 import android.content.Context
 import com.example.core.auth.AuthManager
-import com.example.core.auth.GoogleAuthService
+import com.example.core.auth.LocalAuthManager
 import com.example.core.storage.AppDatabase
 import com.example.core.storage.HouseholdRepository
 
@@ -13,10 +13,10 @@ interface AppContainer {
 }
 
 class DefaultAppContainer(override val context: Context) : AppContainer {
-    private val googleAuthService by lazy { GoogleAuthService() }
+    private val localAuthManager by lazy { LocalAuthManager(context) }
 
     override val authManager: AuthManager by lazy {
-        AuthManager(googleAuthService)
+        AuthManager(localAuthManager)
     }
 
     override val householdRepository: HouseholdRepository by lazy {

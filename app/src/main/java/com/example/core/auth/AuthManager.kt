@@ -2,60 +2,42 @@ package com.example.core.auth
 
 import android.content.Context
 import com.example.shared.models.AuthUiState
-import com.google.firebase.auth.FirebaseAuth
+import com.example.shared.models.AuthUser
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthManager(private val googleAuthService: GoogleAuthService) {
+class AuthManager(private val localAuthManager: LocalAuthManager) {
     private val _authState = MutableStateFlow<AuthUiState>(AuthUiState.Unauthenticated)
     val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
 
-    init {
-        try {
-            val initialUser = googleAuthService.getCurrentAuthUser()
-            if (initialUser != null) {
-                _authState.value = AuthUiState.Authenticated(initialUser)
-            }
-            FirebaseAuth.getInstance().addAuthStateListener { firebaseAuth ->
-                val user = firebaseAuth.currentUser
-                if (user != null) {
-                    _authState.value = AuthUiState.Authenticated(
-                        googleAuthService.getCurrentAuthUser() ?: return@addAuthStateListener
-                    )
-                } else if (_authState.value !is AuthUiState.Authenticating) {
-                    _authState.value = AuthUiState.Unauthenticated
-                }
-            }
-        } catch (e: Exception) {
-            _authState.value = AuthUiState.Unauthenticated
+    fun signInLocal(userId: String, pass: String, context: Context, onSuccess: (() -> Unit)? = null) {
+        _authState.value = AuthUiState.Authenticating
+        if (localAuthManager.authenticate(userId, pass)) {
+            val user = AuthUser(uid = userId, email = userId, displayName = userId)
+            _authState.value = AuthUiState.Authenticated(user)
+            onSuccess?.invoke()
+        } else {
+            _authState.value = AuthUiState.Error("Password salah atau akun tidak ditemukan")
         }
     }
 
-    fun signInWithGoogle(context: Context, scope: CoroutineScope, onSuccess: (() -> Unit)? = null) {
+    fun createLocalAccount(userId: String, pass: String, context: Context, onSuccess: (() -> Unit)? = null) {
         _authState.value = AuthUiState.Authenticating
-        scope.launch(Dispatchers.IO) {
-            val result = googleAuthService.signInWithGoogle(context)
-            result.fold(
-                onSuccess = { user ->
-                    _authState.value = AuthUiState.Authenticated(user)
-                    onSuccess?.invoke()
-                },
-                onFailure = { error ->
-                    _authState.value = AuthUiState.Error(error.message ?: "Gagal masuk dengan Google")
-                }
-            )
+        if (localAuthManager.createAccount(userId, pass)) {
+            val user = AuthUser(uid = userId, email = userId, displayName = userId)
+            _authState.value = AuthUiState.Authenticated(user)
+            onSuccess?.invoke()
+        } else {
+            _authState.value = AuthUiState.Error("Gagal membuat akun")
         }
     }
 
     fun signOut(context: Context, scope: CoroutineScope) {
-        scope.launch(Dispatchers.IO) {
-            googleAuthService.signOut(context)
-            _authState.value = AuthUiState.Unauthenticated
-        }
+        localAuthManager.logout()
+        _authState.value = AuthUiState.Unauthenticated
     }
 
     fun clearError() {

@@ -99,11 +99,9 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     if (currentDestination != DashboardDestination.Dashboard) { BackHandler { currentDestination = DashboardDestination.Dashboard } }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DesignTokens.BackgroundTop, DesignTokens.BackgroundBottom))).statusBarsPadding().navigationBarsPadding()
+        modifier = Modifier.fillMaxSize().background(DesignTokens.BackgroundBottom).statusBarsPadding().navigationBarsPadding()
     ) {
-        Box(modifier = Modifier.offset((-50).dp, (-50).dp).size(250.dp).background(DesignTokens.CobaltAccent.copy(alpha = 0.4f), CircleShape).blur(80.dp, BlurredEdgeTreatment.Unbounded))
-        Box(modifier = Modifier.align(Alignment.BottomEnd).offset(50.dp, 100.dp).size(300.dp).background(DesignTokens.AmberAccent.copy(alpha = 0.35f), CircleShape).blur(100.dp, BlurredEdgeTreatment.Unbounded))
-        Box(modifier = Modifier.align(Alignment.CenterStart).offset((-100).dp, 50.dp).size(200.dp).background(DesignTokens.EmeraldGlow.copy(alpha = 0.3f), CircleShape).blur(60.dp, BlurredEdgeTreatment.Unbounded))
+        com.example.shared.atoms.AnimatedMeshBackground(modifier = Modifier.fillMaxSize())
 
         AnimatedContent(
             targetState = currentDestination,
@@ -161,7 +159,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 is DashboardDestination.CategoryManagement -> CategoryManagementScreen(categories = categories, onSaveCategory = { id, n, t, b -> viewModel.saveCategory(id, n, t, budgetLimit = b) }, onDeleteCategory = { viewModel.deleteCategory(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.WalletManagement -> WalletManagementScreen(wallets = wallets, members = members, onSaveWallet = { id, m, t, n, b -> viewModel.saveWalletAccount(id, m, t, n, b) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.Transfer -> TransferScreen(wallets = wallets, members = members, onTransfer = { a, n, f, t -> viewModel.transferFunds(a, n, f, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.Pairing -> PairingScreen(members = members, activeMemberId = activeMemberId, pairCode = householdPairCode, syncState = syncState, authState = authState, p2pManager = viewModel.p2pSyncManager, updaterManager = updaterManager, onSelectActiveMember = { viewModel.setActiveMember(it) }, onJoinHousehold = { viewModel.joinHousehold(it) }, onSignInWithGoogle = { viewModel.signInWithGoogle(it) }, onSignOut = { viewModel.signOut(it) }, onClearAuthError = { viewModel.clearAuthError() }, onBack = { currentDestination = DashboardDestination.Dashboard })
+                is DashboardDestination.Pairing -> PairingScreen(members = members, activeMemberId = activeMemberId, pairCode = householdPairCode, syncState = syncState, authState = authState, p2pManager = viewModel.p2pSyncManager, updaterManager = updaterManager, onSelectActiveMember = { viewModel.setActiveMember(it) }, onJoinHousehold = { viewModel.joinHousehold(it) }, onSignInLocal = { id, pass, ctx -> viewModel.signInLocal(id, pass, ctx) }, onCreateLocalAccount = { id, pass, ctx -> viewModel.createLocalAccount(id, pass, ctx) }, onSignOut = { viewModel.signOut(it) }, onClearAuthError = { viewModel.clearAuthError() }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.GoalsAndBudget -> GoalsAndBudgetScreen(monthlyBudget = monthlyBudget, financialGoals = financialGoals, transactions = transactions, categories = categories, members = members, wallets = wallets, onUpdateBudget = { viewModel.updateMonthlyBudget(it) }, onAddGoal = { t, tgt, init, c, i -> viewModel.addFinancialGoal(t, tgt, init, c, i) }, onDepositToGoal = { g, a -> viewModel.depositToGoal(g, a) }, onBack = { currentDestination = DashboardDestination.Dashboard })
             }
         }

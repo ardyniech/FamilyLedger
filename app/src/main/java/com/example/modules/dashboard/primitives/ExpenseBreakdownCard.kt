@@ -22,6 +22,8 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun ExpenseBreakdownCard(
     transactions: List<Transaction>,
@@ -41,7 +43,7 @@ fun ExpenseBreakdownCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .springClickable { onClick() },
         shape = RoundedCornerShape(DesignTokens.CornerRadius),
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass),

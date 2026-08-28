@@ -21,6 +21,8 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun HeroCard(totalBalance: Double, wallets: List<WalletAccount>, members: List<Member>, onClick: () -> Unit) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -31,7 +33,7 @@ fun HeroCard(totalBalance: Double, wallets: List<WalletAccount>, members: List<M
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .clickable { onClick() },
+            .springClickable { onClick() },
         shape = RoundedCornerShape(DesignTokens.CornerRadius),
         elevation = CardDefaults.cardElevation(defaultElevation = DesignTokens.ElevationSoft)
     ) {

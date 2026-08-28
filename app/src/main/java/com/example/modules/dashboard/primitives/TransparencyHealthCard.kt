@@ -20,6 +20,8 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.example.shared.atoms.springClickable
+
 @Composable
 fun TransparencyHealthCard(
     totalIncome: Double,
@@ -46,9 +48,7 @@ fun TransparencyHealthCard(
     }
 
     Card(
-        onClick = { onClick?.invoke() },
-        enabled = onClick != null,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().then(if (onClick != null) Modifier.springClickable { onClick() } else Modifier),
         shape = RoundedCornerShape(DesignTokens.CornerRadius),
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
         border = BorderStroke(1.dp, DesignTokens.BorderGlass),
