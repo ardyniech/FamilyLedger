@@ -13,7 +13,7 @@ class DashboardLogicTest {
         // Mocking an empty wallet list
         val wallets = emptyList<com.example.shared.models.WalletAccount>()
         val total = wallets.sumOf { it.balance }
-        assertEquals("Total balance should be 0 when empty", 0.0, total, 0.0)
+        assertEquals("Total balance should be 0 when empty", 0L, total)
     }
 
     @Test

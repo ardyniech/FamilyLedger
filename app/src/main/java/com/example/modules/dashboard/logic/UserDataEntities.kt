@@ -26,13 +26,13 @@ object UserDataEntities {
 
     fun getWallets(): List<WalletAccount> {
         return listOf(
-            WalletAccount("w_cash", "m1", "Cash", "Cash (Tunai)", 0.0, monthlyTransferCap = 2000000.0),
-            WalletAccount("w_gopay", "m1", "E-Wallet", "GoPay", 0.0, monthlyTransferCap = 1500000.0),
-            WalletAccount("w_bca", "m1", "Bank", "BCA", 0.0, monthlyTransferCap = 5000000.0),
-            WalletAccount("w_dana", "m1", "E-Wallet", "Dana", 0.0),
-            WalletAccount("w_ovo", "m1", "E-Wallet", "OVO", 0.0),
-            WalletAccount("w_kasbon", "m1", "Vault", "Kasbon", 0.0),
-            WalletAccount("w_deina", "m2", "Bank", "Deina", 0.0, monthlyTransferCap = 3000000.0)
+            WalletAccount("w_cash", "m1", "Cash", "Cash (Tunai)", 0L, monthlyTransferCap = 2000000L),
+            WalletAccount("w_gopay", "m1", "E-Wallet", "GoPay", 0L, monthlyTransferCap = 1500000L),
+            WalletAccount("w_bca", "m1", "Bank", "BCA", 0L, monthlyTransferCap = 5000000L),
+            WalletAccount("w_dana", "m1", "E-Wallet", "Dana", 0L),
+            WalletAccount("w_ovo", "m1", "E-Wallet", "OVO", 0L),
+            WalletAccount("w_kasbon", "m1", "Vault", "Kasbon", 0L),
+            WalletAccount("w_deina", "m2", "Bank", "Deina", 0L, monthlyTransferCap = 3000000L)
         )
     }
 

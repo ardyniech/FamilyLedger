@@ -50,14 +50,14 @@ fun ExpenseBreakdownCard(
                 Text("Details →", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent, fontSize = 14.sp)
             }
 
-            if (totalExpenses == 0.0) {
+            if (totalExpenses == 0L) {
                 Box(modifier = Modifier.fillMaxWidth().height(80.dp), contentAlignment = Alignment.Center) {
                     Text("No expenses recorded yet", color = DesignTokens.TextSecondary)
                 }
             } else {
                 Row(modifier = Modifier.fillMaxWidth().height(18.dp).clip(RoundedCornerShape(9.dp)).background(DesignTokens.BorderLight)) {
                     categoryTotals.entries.sortedByDescending { it.value }.forEachIndexed { index, entry ->
-                        val ratio = (entry.value / totalExpenses).toFloat()
+                        val ratio = (entry.value.toFloat() / totalExpenses.toFloat())
                         if (ratio > 0.01f) {
                             Box(modifier = Modifier.fillMaxHeight().weight(ratio.coerceAtLeast(0.01f)).background(palette[index % palette.size]))
                         }
@@ -67,7 +67,7 @@ fun ExpenseBreakdownCard(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     categoryTotals.entries.sortedByDescending { it.value }.take(4).forEachIndexed { index, entry ->
                         val category = categories.find { it.id == entry.key }
-                        val ratio = (entry.value / totalExpenses).toFloat()
+                        val ratio = (entry.value.toFloat() / totalExpenses.toFloat())
                         val color = palette[index % palette.size]
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

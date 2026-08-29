@@ -55,18 +55,18 @@ fun WalletDebtLedgerCard(
                 color = DesignTokens.TextSecondary
             )
 
-            debtItems.filter { it.totalTransferIn > 0 || it.totalExpensePaid > 0 || it.netDebtBalance != 0.0 }.forEach { item ->
+            debtItems.filter { it.totalTransferIn > 0L || it.totalExpensePaid > 0L || it.netDebtBalance != 0L }.forEach { item ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column {
                         Text("${item.wallet.name} (${item.owner?.name ?: "Partner"})", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
-                        Text(item.statusText, fontSize = 11.sp, color = if (item.netDebtBalance > 0) DesignTokens.CobaltAccent else if (item.netDebtBalance < 0) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent)
+                        Text(item.statusText, fontSize = 11.sp, color = if (item.netDebtBalance > 0L) DesignTokens.CobaltAccent else if (item.netDebtBalance < 0L) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent)
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = (if (item.netDebtBalance > 0) "+" else "") + "Rp ${String.format("%,.0f", item.netDebtBalance)}",
+                            text = (if (item.netDebtBalance > 0L) "+" else "") + "Rp ${String.format("%,d", item.netDebtBalance)}",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = if (item.netDebtBalance > 0) DesignTokens.CobaltAccent else if (item.netDebtBalance < 0) DesignTokens.CrimsonAccent else DesignTokens.TextPrimary
+                            color = if (item.netDebtBalance > 0L) DesignTokens.CobaltAccent else if (item.netDebtBalance < 0L) DesignTokens.CrimsonAccent else DesignTokens.TextPrimary
                         )
                     }
                 }
@@ -77,7 +77,7 @@ fun WalletDebtLedgerCard(
                     HorizontalDivider(color = DesignTokens.SurfaceGlass)
                     debtItems.forEach { item ->
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Tf In: Rp ${String.format("%,.0f", item.totalTransferIn)} | Exp: Rp ${String.format("%,.0f", item.totalExpensePaid)}", fontSize = 10.sp, color = DesignTokens.TextSecondary)
+                            Text("Tf In: Rp ${String.format("%,d", item.totalTransferIn)} | Exp: Rp ${String.format("%,d", item.totalExpensePaid)}", fontSize = 10.sp, color = DesignTokens.TextSecondary)
                         }
                     }
                 }

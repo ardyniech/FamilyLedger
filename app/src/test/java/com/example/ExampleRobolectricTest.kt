@@ -33,8 +33,8 @@ class ExampleRobolectricTest {
     val goal = com.example.shared.models.FinancialGoal(
       id = "g1",
       title = "Dana Darurat",
-      targetAmount = 50000000.0,
-      currentAmount = 50000000.0,
+      targetAmount = 50000000L,
+      currentAmount = 50000000L,
       category = "Tabungan",
       iconEmoji = "🛡️"
     )
@@ -48,14 +48,14 @@ class ExampleRobolectricTest {
       walletId = "w1",
       memberId = "m1",
       categoryId = "c1",
-      amount = -150000.0,
+      amount = -150000L,
       note = "Belanja Mingguan",
       syncStatus = 0
     )
     assertEquals(0, tx.syncStatus)
     val syncedTx = tx.copy(syncStatus = 1)
     assertEquals(1, syncedTx.syncStatus)
-    assertEquals(-150000.0, syncedTx.amount, 0.001)
+    assertEquals(-150000L, syncedTx.amount)
   }
 
   @Test
@@ -76,18 +76,18 @@ class ExampleRobolectricTest {
 
   @Test
   fun `monthly budget tracking compares expenses against limit and goal safety`() {
-    val budgetLimit = 10000000.0
+    val budgetLimit = 10000000L
     val expenses = listOf(
-      com.example.shared.models.Transaction("t1", "w1", "m1", "c1", -1500000.0, "Dapur"),
-      com.example.shared.models.Transaction("t2", "w2", "m2", "c2", -500000.0, "Bensin"),
-      com.example.shared.models.Transaction("t3", "w1", "m1", "c3", -1200000.0, "Listrik & Air")
+      com.example.shared.models.Transaction("t1", "w1", "m1", "c1", -1500000L, "Dapur"),
+      com.example.shared.models.Transaction("t2", "w2", "m2", "c2", -500000L, "Bensin"),
+      com.example.shared.models.Transaction("t3", "w1", "m1", "c3", -1200000L, "Listrik & Air")
     )
     val totalExpenses = expenses.filter { it.amount < 0 }.sumOf { -it.amount }
-    val remainingBudget = (budgetLimit - totalExpenses).coerceAtLeast(0.0)
-    val progress = (totalExpenses / budgetLimit).toFloat()
+    val remainingBudget = (budgetLimit - totalExpenses).coerceAtLeast(0L)
+    val progress = (totalExpenses.toFloat() / budgetLimit.toFloat())
 
-    assertEquals(3200000.0, totalExpenses, 0.001)
-    assertEquals(6800000.0, remainingBudget, 0.001)
+    assertEquals(3200000L, totalExpenses)
+    assertEquals(6800000L, remainingBudget)
     assertEquals(0.32f, progress, 0.01f)
     assertEquals(true, totalExpenses < budgetLimit)
   }

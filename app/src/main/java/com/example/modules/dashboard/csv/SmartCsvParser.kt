@@ -11,10 +11,10 @@ object SmartCsvParser {
         existingCategories: List<Category>,
         existingTransactions: List<Transaction>
     ): CsvParseResult {
-        if (csvContent.isBlank()) return CsvParseResult(',', false, emptyList(), 0.0, 0.0, 0, 0, "Data Kosong")
+        if (csvContent.isBlank()) return CsvParseResult(',', false, emptyList(), 0L, 0L, 0, 0, "Data Kosong")
 
         val lines = csvContent.lines().map { it.trim() }.filter { it.isNotBlank() }
-        if (lines.isEmpty()) return CsvParseResult(',', false, emptyList(), 0.0, 0.0, 0, 0, "Data Kosong")
+        if (lines.isEmpty()) return CsvParseResult(',', false, emptyList(), 0L, 0L, 0, 0, "Data Kosong")
 
         val delimiter = CsvLineTokenizer.detectDelimiter(lines.first())
         val rawRows = lines.map { CsvLineTokenizer.tokenize(it, delimiter) }
@@ -27,8 +27,8 @@ object SmartCsvParser {
         val existingSignatures = existingTransactions.map { generateSignature(it.timestamp, it.amount, it.walletId, it.note) }.toSet()
 
         val parsedList = mutableListOf<ParsedTransaction>()
-        var incomeSum = 0.0
-        var expenseSum = 0.0
+        var incomeSum = 0L
+        var expenseSum = 0L
         var duplicateCount = 0
 
         for ((index, row) in dataRows.withIndex()) {
@@ -94,7 +94,7 @@ object SmartCsvParser {
         )
     }
 
-    private fun generateSignature(ts: Long, amount: Double, wId: String, note: String): String {
-        return "${ts / 60000}_${amount.toLong()}_${wId}_${note.trim().lowercase()}"
+    private fun generateSignature(ts: Long, amount: Long, wId: String, note: String): String {
+        return "${ts / 60000}_${amount}_${wId}_${note.trim().lowercase()}"
     }
 }

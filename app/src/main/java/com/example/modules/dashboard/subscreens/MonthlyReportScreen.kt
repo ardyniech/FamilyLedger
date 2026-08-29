@@ -36,8 +36,8 @@ fun MonthlyReportScreen(
     categories: List<Category>,
     members: List<Member>,
     wallets: List<WalletAccount> = emptyList(),
-    budget: Double = 5000000.0,
-    onUpdateBudget: (Double) -> Unit,
+    budget: Long = 5000000L,
+    onUpdateBudget: (Long) -> Unit,
     onTransactionClick: (Transaction) -> Unit = {},
     onWalletClick: (String) -> Unit = {},
     onBack: () -> Unit
@@ -49,8 +49,8 @@ fun MonthlyReportScreen(
     val monthData = remember(transactions, monthOffset) { MonthFilterHelper.filterForMonth(transactions, monthOffset) }
     val totalExpenses = monthData.totalExpense
     val totalIncome = monthData.totalIncome
-    val remainingBudget = (budget - totalExpenses).coerceAtLeast(0.0)
-    val progress = if (budget > 0) (totalExpenses / budget).toFloat().coerceIn(0f, 1f) else 0f
+    val remainingBudget = (budget - totalExpenses).coerceAtLeast(0L)
+    val progress = if (budget > 0L) (totalExpenses.toFloat() / budget.toFloat()).coerceIn(0f, 1f) else 0f
     var showEditBudgetDialog by remember { mutableStateOf(false) }
     var selectedCategoryForDetail by remember { mutableStateOf<Category?>(null) }
     var selectedMemberForDetail by remember { mutableStateOf<Member?>(null) }

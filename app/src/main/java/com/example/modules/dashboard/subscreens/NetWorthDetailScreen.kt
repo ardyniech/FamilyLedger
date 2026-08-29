@@ -23,7 +23,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NetWorthDetailScreen(
-    totalBalance: Double,
+    totalBalance: Long,
     wallets: List<WalletAccount>,
     members: List<Member>,
     onBack: () -> Unit
@@ -31,9 +31,9 @@ fun NetWorthDetailScreen(
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
     val husbandTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Husband" }.sumOf { it.balance }
     val wifeTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Wife" }.sumOf { it.balance }
-    val totalSum = (husbandTotal + wifeTotal).coerceAtLeast(1.0)
-    val husbandRatio = (husbandTotal / totalSum).toFloat()
-    val wifeRatio = (wifeTotal / totalSum).toFloat()
+    val totalSum = (husbandTotal + wifeTotal).coerceAtLeast(1L)
+    val husbandRatio = (husbandTotal.toFloat() / totalSum.toFloat())
+    val wifeRatio = (wifeTotal.toFloat() / totalSum.toFloat())
 
     Scaffold(
         topBar = {

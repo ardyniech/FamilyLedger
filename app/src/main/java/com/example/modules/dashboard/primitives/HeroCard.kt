@@ -24,7 +24,7 @@ import java.util.Locale
 import com.example.shared.atoms.springClickable
 
 @Composable
-fun HeroCard(totalBalance: Double, wallets: List<WalletAccount>, members: List<Member>, onClick: () -> Unit) {
+fun HeroCard(totalBalance: Long, wallets: List<WalletAccount>, members: List<Member>, onClick: () -> Unit) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
     val husbandTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Husband" }.sumOf { it.balance }
     val wifeTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Wife" }.sumOf { it.balance }

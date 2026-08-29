@@ -1,7 +1,7 @@
 package com.example.modules.dashboard.csv
 
 object CsvPatternMatcher {
-    fun parseAmount(amountStr: String): Double {
+    fun parseAmount(amountStr: String): Long {
         val clean = amountStr.trim().removeSurrounding("\"")
             .replace("Rp", "", ignoreCase = true)
             .replace("IDR", "", ignoreCase = true)
@@ -30,14 +30,14 @@ object CsvPatternMatcher {
             } else {
                 digitsOnly
             }
-            val num = normalized.toDoubleOrNull() ?: 0.0
+            val num = (normalized.toDoubleOrNull() ?: 0.0).toLong()
             if (isNegative) -kotlin.math.abs(num) else kotlin.math.abs(num)
         } catch (_: Exception) {
-            0.0
+            0L
         }
     }
 
-    fun detectType(typeStr: String, amount: Double, note: String): String {
+    fun detectType(typeStr: String, amount: Long, note: String): String {
         val lower = "$typeStr $note".lowercase()
         return when {
             lower.contains("transfer") || lower.contains("tf") || lower.contains("->") -> "Transfer"

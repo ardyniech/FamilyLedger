@@ -56,7 +56,7 @@ fun CashflowHealthWidget(
                 Column {
                     Text("Net Cashflow", fontSize = 11.sp, color = DesignTokens.TextSecondary)
                     Text(
-                        text = (if (summary.netCashflow > 0) "+" else "") + "Rp ${String.format("%,.0f", summary.netCashflow)}",
+                        text = (if (summary.netCashflow > 0L) "+" else "") + "Rp ${String.format("%,d", summary.netCashflow)}",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,
                         color = if (summary.isSurplus) DesignTokens.EmeraldAccent else DesignTokens.CrimsonAccent

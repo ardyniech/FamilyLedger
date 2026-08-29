@@ -9,8 +9,8 @@ import java.util.Locale
 data class DailyTransactionGroup(
     val dateKey: String,
     val displayHeader: String,
-    val dayTotalInflow: Double,
-    val dayTotalOutflow: Double,
+    val dayTotalInflow: Long,
+    val dayTotalOutflow: Long,
     val transactions: List<Transaction>
 )
 

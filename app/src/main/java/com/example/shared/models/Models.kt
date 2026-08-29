@@ -16,7 +16,7 @@ data class Household(
 data class Member(
     @PrimaryKey val id: String,
     val householdId: String,
-    val role: String, // "Husband" or "Wife"
+    val role: String, // e.g. "Suami", "Istri", or custom
     val name: String,
     val avatarUrl: String = "",
     val syncStatus: Int = 0,
@@ -30,8 +30,8 @@ data class WalletAccount(
     val memberId: String,
     val type: String, // Cash, EWallet, Bank, Vault
     val name: String,
-    val balance: Double,
-    val monthlyTransferCap: Double = 0.0,
+    val balance: Long, // IDR minor unit (Integer rupiah)
+    val monthlyTransferCap: Long = 0L,
     val syncStatus: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
     val isDeleted: Boolean = false
@@ -61,7 +61,7 @@ data class Category(
     val syncStatus: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
     val isDeleted: Boolean = false,
-    val budgetLimit: Double = 0.0
+    val budgetLimit: Long = 0L
 )
 
 @Entity(tableName = "transactions")
@@ -70,7 +70,7 @@ data class Transaction(
     val walletId: String,
     val memberId: String, // Who created it
     val categoryId: String,
-    val amount: Double,
+    val amount: Long, // IDR rupiah, negative for expense, positive for income
     val note: String,
     val timestamp: Long = System.currentTimeMillis(),
     val syncStatus: Int = 0,
@@ -81,7 +81,7 @@ data class Transaction(
 data class RecurringBill(
     val id: String,
     val name: String,
-    val amount: Double,
+    val amount: Long,
     val dueDate: String, // e.g. "Aug 28, 2026"
     val categoryId: String,
     val isPaid: Boolean = false,
@@ -94,8 +94,8 @@ data class RecurringBill(
 data class FinancialGoal(
     val id: String,
     val title: String,
-    val targetAmount: Double,
-    val currentAmount: Double,
+    val targetAmount: Long,
+    val currentAmount: Long,
     val category: String, // "Rumah", "Pendidikan", "Darurat", "Liburan", "Investasi"
     val iconEmoji: String = "🎯"
 ) {

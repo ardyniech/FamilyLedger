@@ -57,11 +57,11 @@ fun SavingsIntegrityCard(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text("Alokasi Tersimpan", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    Text("Rp ${String.format("%,.0f", report.totalSavingsAllocated)}", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 13.sp)
+                    Text("Rp ${String.format("%,d", report.totalSavingsAllocated)}", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 13.sp)
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Dana Terpakai / Bocor", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    Text("Rp ${String.format("%,.0f", report.totalSavingsUsed)}", fontWeight = FontWeight.Bold, color = if (report.totalSavingsUsed > 0) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent, fontSize = 13.sp)
+                    Text("Rp ${String.format("%,d", report.totalSavingsUsed)}", fontWeight = FontWeight.Bold, color = if (report.totalSavingsUsed > 0L) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent, fontSize = 13.sp)
                 }
             }
 
@@ -79,7 +79,7 @@ fun SavingsIntegrityCard(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Text(detail.category.name, fontSize = 12.sp, color = DesignTokens.TextPrimary)
                             Text(
-                                if (detail.isCompromised) "Terpakai: Rp ${String.format("%,.0f", detail.totalSpentDiverted)}" else "Utuh (Rp ${String.format("%,.0f", detail.totalSaved)})",
+                                if (detail.isCompromised) "Terpakai: Rp ${String.format("%,d", detail.totalSpentDiverted)}" else "Utuh (Rp ${String.format("%,d", detail.totalSaved)})",
                                 fontSize = 11.sp,
                                 color = if (detail.isCompromised) DesignTokens.CrimsonAccent else DesignTokens.TextSecondary,
                                 fontWeight = if (detail.isCompromised) FontWeight.Bold else FontWeight.Normal

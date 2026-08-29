@@ -16,7 +16,7 @@ import com.example.shared.theme.DesignTokens
 fun DashboardHomeContent(
     activeMember: Member?,
     syncState: SyncState,
-    totalBalance: Double,
+    totalBalance: Long,
     wallets: List<WalletAccount>,
     members: List<Member>,
     financialGoals: List<FinancialGoal>,

@@ -3,7 +3,6 @@ package com.example.modules.dashboard.logic
 import com.example.shared.models.Transaction
 import com.example.shared.models.WalletAccount
 import java.util.Calendar
-import kotlin.math.abs
 
 enum class TransferCapStatus {
     SAFE,
@@ -12,9 +11,9 @@ enum class TransferCapStatus {
 }
 
 data class TransferCapEvaluation(
-    val monthlyCap: Double,
-    val currentMonthTransfers: Double,
-    val remainingCap: Double,
+    val monthlyCap: Long,
+    val currentMonthTransfers: Long,
+    val remainingCap: Long,
     val percentageUsed: Double,
     val status: TransferCapStatus,
     val warningMessage: String?
@@ -23,28 +22,27 @@ data class TransferCapEvaluation(
 object TransferBudgetCapCalculator {
     fun evaluate(
         targetWallet: WalletAccount?,
-        newTransferAmount: Double,
+        newTransferAmount: Long,
         transactions: List<Transaction>
     ): TransferCapEvaluation? {
-        if (targetWallet == null || targetWallet.monthlyTransferCap <= 0.0) return null
+        if (targetWallet == null || targetWallet.monthlyTransferCap <= 0L) return null
 
         val cap = targetWallet.monthlyTransferCap
         val cal = Calendar.getInstance()
         val currentMonth = cal.get(Calendar.MONTH)
         val currentYear = cal.get(Calendar.YEAR)
 
-        // Sum transfer in to this wallet in current month
         val currentMonthTransfers = transactions.filter { tx ->
             if (tx.walletId != targetWallet.id) return@filter false
-            if (tx.amount <= 0) return@filter false
+            if (tx.amount <= 0L) return@filter false
             if (!tx.note.contains("transfer", ignoreCase = true) && !tx.categoryId.contains("tf", ignoreCase = true)) return@filter false
             val txCal = Calendar.getInstance().apply { timeInMillis = tx.timestamp }
             txCal.get(Calendar.MONTH) == currentMonth && txCal.get(Calendar.YEAR) == currentYear
         }.sumOf { it.amount }
 
         val projectedTotal = currentMonthTransfers + newTransferAmount
-        val pct = (projectedTotal / cap) * 100.0
-        val remaining = (cap - currentMonthTransfers).coerceAtLeast(0.0)
+        val pct = (projectedTotal.toDouble() / cap.toDouble()) * 100.0
+        val remaining = (cap - currentMonthTransfers).coerceAtLeast(0L)
 
         val status = when {
             projectedTotal > cap -> TransferCapStatus.EXCEEDED
@@ -68,3 +66,4 @@ object TransferBudgetCapCalculator {
         )
     }
 }
+

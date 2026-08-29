@@ -11,11 +11,11 @@ import com.example.shared.theme.DesignTokens
 
 @Composable
 fun EditBudgetDialog(
-    monthlyBudget: Double,
-    onConfirm: (Double) -> Unit,
+    monthlyBudget: Long,
+    onConfirm: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var inputBudget by remember { mutableStateOf(monthlyBudget.toLong().toString()) }
+    var inputBudget by remember { mutableStateOf(monthlyBudget.toString()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -35,7 +35,7 @@ fun EditBudgetDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val parsed = inputBudget.toDoubleOrNull() ?: monthlyBudget
+                    val parsed = inputBudget.toLongOrNull() ?: inputBudget.toDoubleOrNull()?.toLong() ?: monthlyBudget
                     onConfirm(parsed)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)

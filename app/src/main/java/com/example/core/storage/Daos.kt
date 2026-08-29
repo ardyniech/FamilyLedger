@@ -4,8 +4,11 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
-import com.example.shared.models.*
+import androidx.room.Transaction as DbTransaction
+import com.example.shared.models.Member
+import com.example.shared.models.WalletAccount
+import com.example.shared.models.Category
+import com.example.shared.models.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -38,47 +41,73 @@ interface HouseholdDao {
     suspend fun insertCategories(categories: List<Category>)
 
     @Query("SELECT * FROM transactions WHERE isDeleted = 0 ORDER BY timestamp DESC")
-    fun getAllTransactions(): Flow<List<com.example.shared.models.Transaction>>
+    fun getAllTransactions(): Flow<List<Transaction>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTransaction(transaction: com.example.shared.models.Transaction)
+    suspend fun insertTransaction(transaction: Transaction)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTransactions(transactions: List<com.example.shared.models.Transaction>)
+    suspend fun insertTransactions(transactions: List<Transaction>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLedgerEvent(event: LedgerEventEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTransferEvent(transfer: TransferEventEntity)
 
     @Query("UPDATE wallet_accounts SET balance = balance + :amount, syncStatus = 0, updatedAt = :updatedAt WHERE id = :walletId")
-    suspend fun updateWalletBalance(walletId: String, amount: Double, updatedAt: Long = System.currentTimeMillis())
+    suspend fun updateWalletBalance(walletId: String, amount: Long, updatedAt: Long = System.currentTimeMillis())
 
-    @Query("DELETE FROM transactions WHERE id = :id")
-    suspend fun deleteTransaction(id: String)
+    @Query("UPDATE transactions SET isDeleted = 1, syncStatus = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun softDeleteTransaction(id: String, updatedAt: Long = System.currentTimeMillis())
 
-    @Transaction
-    suspend fun addTransactionAndUpdateWallet(transaction: com.example.shared.models.Transaction) {
+    @DbTransaction
+    suspend fun addTransactionWithAudit(transaction: Transaction, ledgerEvent: LedgerEventEntity) {
         insertTransaction(transaction)
         updateWalletBalance(transaction.walletId, transaction.amount)
+        insertLedgerEvent(ledgerEvent)
     }
 
-    @Transaction
-    suspend fun deleteTransactionAndUpdateWallet(transaction: com.example.shared.models.Transaction) {
-        deleteTransaction(transaction.id)
+    @DbTransaction
+    suspend fun deleteTransactionWithAudit(transaction: Transaction, ledgerEvent: LedgerEventEntity) {
+        softDeleteTransaction(transaction.id)
         updateWalletBalance(transaction.walletId, -transaction.amount)
+        insertLedgerEvent(ledgerEvent)
     }
 
-    @Transaction
-    suspend fun updateTransactionAndUpdateWallet(oldTx: com.example.shared.models.Transaction, newTx: com.example.shared.models.Transaction) {
+    @DbTransaction
+    suspend fun updateTransactionWithAudit(oldTx: Transaction, newTx: Transaction, ledgerEvent: LedgerEventEntity) {
         updateWalletBalance(oldTx.walletId, -oldTx.amount)
         updateWalletBalance(newTx.walletId, newTx.amount)
         insertTransaction(newTx)
+        insertLedgerEvent(ledgerEvent)
+    }
+
+    @DbTransaction
+    suspend fun executeAtomicTransferWithAudit(
+        debitTx: Transaction,
+        creditTx: Transaction,
+        transferEvent: TransferEventEntity,
+        debitLedgerEvent: LedgerEventEntity,
+        creditLedgerEvent: LedgerEventEntity
+    ) {
+        insertTransaction(debitTx)
+        insertTransaction(creditTx)
+        updateWalletBalance(debitTx.walletId, debitTx.amount)
+        updateWalletBalance(creditTx.walletId, creditTx.amount)
+        insertTransferEvent(transferEvent)
+        insertLedgerEvent(debitLedgerEvent)
+        insertLedgerEvent(creditLedgerEvent)
     }
 
     @Query("SELECT * FROM transactions WHERE id = :id LIMIT 1")
-    suspend fun getTransactionById(id: String): com.example.shared.models.Transaction?
+    suspend fun getTransactionById(id: String): Transaction?
 
     @Query("SELECT * FROM wallet_accounts WHERE id = :id LIMIT 1")
     suspend fun getWalletById(id: String): WalletAccount?
 
     @Query("SELECT * FROM transactions WHERE syncStatus = 0")
-    suspend fun getPendingTransactions(): List<com.example.shared.models.Transaction>
+    suspend fun getPendingTransactions(): List<Transaction>
 
     @Query("UPDATE transactions SET syncStatus = 1 WHERE id IN (:ids)")
     suspend fun markTransactionsSynced(ids: List<String>)
@@ -113,7 +142,7 @@ interface HouseholdDao {
     @Query("DELETE FROM members")
     suspend fun clearMembers()
 
-    @Transaction
+    @DbTransaction
     suspend fun clearAllData() {
         clearTransactions()
         clearWallets()
@@ -121,3 +150,5 @@ interface HouseholdDao {
         clearMembers()
     }
 }
+
+

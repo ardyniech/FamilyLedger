@@ -23,15 +23,15 @@ import java.util.Locale
 @Composable
 fun MemberExpenseCard(
     member: Member,
-    expense: Double,
-    totalExpense: Double,
+    expense: Long,
+    totalExpense: Long,
     accentColor: Color,
     animProgress: Float,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val percentage = if (totalExpense > 0) (expense / totalExpense).toFloat() else 0f
+    val percentage = if (totalExpense > 0L) (expense.toFloat() / totalExpense.toFloat()) else 0f
 
     Card(
         modifier = modifier.then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),

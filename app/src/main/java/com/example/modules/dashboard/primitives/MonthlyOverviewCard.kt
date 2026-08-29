@@ -22,12 +22,12 @@ import java.util.Locale
 
 @Composable
 fun MonthlyOverviewCard(
-    totalExpenses: Double,
-    budget: Double = 5000000.0,
+    totalExpenses: Long,
+    budget: Long = 5000000L,
     onClick: () -> Unit
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val progress = (totalExpenses / budget).toFloat().coerceIn(0f, 1f)
+    val progress = if (budget > 0L) (totalExpenses.toFloat() / budget.toFloat()).coerceIn(0f, 1f) else 0f
     val percentage = (progress * 100).toInt()
     
     Card(

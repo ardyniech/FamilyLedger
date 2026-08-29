@@ -14,10 +14,10 @@ enum class DashboardPeriod(val displayName: String, val shortName: String) {
 
 data class PeriodSummary(
     val period: DashboardPeriod,
-    val totalInflow: Double,
-    val totalOutflow: Double,
-    val netBalance: Double,
-    val adjustedBudget: Double,
+    val totalInflow: Long,
+    val totalOutflow: Long,
+    val netBalance: Long,
+    val adjustedBudget: Long,
     val transactionCount: Int
 )
 
@@ -66,7 +66,7 @@ object PeriodFilterHelper {
         return transactions.filter { it.timestamp in start..end }
     }
 
-    fun calculateSummary(transactions: List<Transaction>, period: DashboardPeriod, baseMonthlyBudget: Double): PeriodSummary {
+    fun calculateSummary(transactions: List<Transaction>, period: DashboardPeriod, baseMonthlyBudget: Long): PeriodSummary {
         val filtered = filterTransactions(transactions, period)
         val inflow = filtered.filter { it.amount > 0 }.sumOf { it.amount }
         val outflow = filtered.filter { it.amount < 0 }.sumOf { -it.amount }
@@ -83,7 +83,7 @@ object PeriodFilterHelper {
             totalInflow = inflow,
             totalOutflow = outflow,
             netBalance = inflow - outflow,
-            adjustedBudget = baseMonthlyBudget * multiplier,
+            adjustedBudget = (baseMonthlyBudget * multiplier).toLong(),
             transactionCount = filtered.size
         )
     }

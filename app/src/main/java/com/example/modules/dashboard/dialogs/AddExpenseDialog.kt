@@ -24,7 +24,7 @@ import com.example.shared.theme.DesignTokens
 fun AddExpenseDialog(
     wallets: List<WalletAccount>,
     categories: List<Category>,
-    onConfirm: (Double, String, String, String, Long) -> Unit,
+    onConfirm: (Long, String, String, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     var expenseAmount by remember { mutableStateOf("") }
@@ -91,8 +91,8 @@ fun AddExpenseDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val amt = expenseAmount.toDoubleOrNull()
-                    if (amt != null && amt > 0 && expenseNote.isNotBlank()) {
+                    val amt = expenseAmount.toLongOrNull() ?: expenseAmount.toDoubleOrNull()?.toLong()
+                    if (amt != null && amt > 0L && expenseNote.isNotBlank()) {
                         onConfirm(amt, expenseNote, selectedWalletId, selectedCategoryId, selectedTimestamp)
                     }
                 },

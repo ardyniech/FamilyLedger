@@ -20,9 +20,9 @@ import java.util.Locale
 
 @Composable
 fun MonthlyBudgetSummaryCard(
-    remainingBudget: Double,
-    totalExpenses: Double,
-    budget: Double,
+    remainingBudget: Long,
+    totalExpenses: Long,
+    budget: Long,
     progress: Float,
     wallets: List<WalletAccount> = emptyList(),
     onEditBudget: () -> Unit

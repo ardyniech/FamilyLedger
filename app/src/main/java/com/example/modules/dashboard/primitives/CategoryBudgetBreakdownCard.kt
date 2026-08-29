@@ -24,7 +24,7 @@ import java.util.Locale
 fun CategoryBudgetBreakdownCard(
     transactions: List<Transaction>,
     categories: List<Category>,
-    monthlyBudget: Double,
+    monthlyBudget: Long,
     onCategoryClick: ((Category) -> Unit)? = null
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -32,7 +32,7 @@ fun CategoryBudgetBreakdownCard(
     val categoryExpenses = expenseCategories.map { cat ->
         val spent = transactions.filter { it.categoryId == cat.id && it.amount < 0 }.sumOf { -it.amount }
         cat to spent
-    }.filter { it.second > 0 }.sortedByDescending { it.second }
+    }.filter { it.second > 0L }.sortedByDescending { it.second }
 
     if (categoryExpenses.isEmpty()) return
 
@@ -46,11 +46,12 @@ fun CategoryBudgetBreakdownCard(
             Text("Distribusi Pengeluaran vs Anggaran", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DesignTokens.TextPrimary)
 
             categoryExpenses.take(5).forEach { (cat, spent) ->
-                val hasSpecificLimit = cat.budgetLimit > 0.0
+                val hasSpecificLimit = cat.budgetLimit > 0L
                 val limit = if (hasSpecificLimit) cat.budgetLimit else monthlyBudget
-                val ratio = if (limit > 0) (spent / limit).toFloat().coerceIn(0f, 1f) else 0f
+                val ratio = if (limit > 0L) (spent.toFloat() / limit.toFloat()).coerceIn(0f, 1f) else 0f
                 val isExceeded = hasSpecificLimit && spent > cat.budgetLimit
                 val progressColor = if (isExceeded) DesignTokens.RoseAccent else if (hasSpecificLimit) DesignTokens.EmeraldGlow else DesignTokens.AmberAccent
+                val pct = if (limit > 0L) (spent.toDouble() / limit.toDouble() * 100.0).toInt() else 0
                 
                 Column(
                     modifier = Modifier
@@ -75,7 +76,7 @@ fun CategoryBudgetBreakdownCard(
                                 )
                             }
                         }
-                        Text("${formatter.format(spent)} (${(spent / limit * 100).toInt()}%)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isExceeded) DesignTokens.RoseAccent else DesignTokens.TextPrimary)
+                        Text("${formatter.format(spent)} ($pct%)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isExceeded) DesignTokens.RoseAccent else DesignTokens.TextPrimary)
                     }
                     LinearProgressIndicator(
                         progress = { ratio },

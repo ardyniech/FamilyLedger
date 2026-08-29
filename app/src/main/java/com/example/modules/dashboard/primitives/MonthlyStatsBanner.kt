@@ -19,9 +19,9 @@ import java.util.Locale
 
 @Composable
 fun MonthlyStatsBanner(
-    totalIncome: Double,
-    totalExpense: Double,
-    netBalance: Double,
+    totalIncome: Long,
+    totalExpense: Long,
+    netBalance: Long,
     modifier: Modifier = Modifier
 ) {
     val currencyFmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -79,7 +79,7 @@ fun MonthlyStatsBanner(
                     text = currencyFmt.format(netBalance),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = if (netBalance >= 0) DesignTokens.EmeraldGlow else Color(0xFFFF5252)
+                    color = if (netBalance >= 0L) DesignTokens.EmeraldGlow else Color(0xFFFF5252)
                 )
             }
         }

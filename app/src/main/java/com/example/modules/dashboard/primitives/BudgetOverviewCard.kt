@@ -23,16 +23,16 @@ import java.util.Locale
 
 @Composable
 fun BudgetOverviewCard(
-    monthlyBudget: Double,
-    totalExpenses: Double,
+    monthlyBudget: Long,
+    totalExpenses: Long,
     wallets: List<WalletAccount> = emptyList(),
     onEditBudget: () -> Unit
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val budgetProgress = if (monthlyBudget > 0) (totalExpenses / monthlyBudget).toFloat().coerceIn(0f, 1f) else 0f
+    val budgetProgress = if (monthlyBudget > 0L) (totalExpenses.toFloat() / monthlyBudget.toFloat()).coerceIn(0f, 1f) else 0f
     val animatedBudgetProgress by animateFloatAsState(targetValue = budgetProgress, label = "budgetProgress")
     val totalRealBalance = remember(wallets) { wallets.sumOf { it.balance } }
-    val remaining = (monthlyBudget - totalExpenses).coerceAtLeast(0.0)
+    val remaining = (monthlyBudget - totalExpenses).coerceAtLeast(0L)
 
     Card(
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),

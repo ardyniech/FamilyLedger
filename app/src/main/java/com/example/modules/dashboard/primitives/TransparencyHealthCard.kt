@@ -23,15 +23,15 @@ import java.util.Locale
 
 @Composable
 fun TransparencyHealthCard(
-    totalIncome: Double,
-    totalExpense: Double,
+    totalIncome: Long,
+    totalExpense: Long,
     transactionCount: Int,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val fmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
     val netSavings = totalIncome - totalExpense
-    val savingsRate = if (totalIncome > 0) ((netSavings / totalIncome) * 100).toInt().coerceIn(0, 100) else 0
+    val savingsRate = if (totalIncome > 0L) (((netSavings.toDouble() / totalIncome.toDouble())) * 100).toInt().coerceIn(0, 100) else 0
 
     val score = when {
         transactionCount == 0 -> 100
@@ -82,7 +82,7 @@ fun TransparencyHealthCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Net Disimpan", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    Text(text = fmt.format(netSavings.coerceAtLeast(0.0)), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = if (netSavings >= 0) DesignTokens.EmeraldGlow else Color(0xFFFF5252))
+                    Text(text = fmt.format(netSavings.coerceAtLeast(0L)), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = if (netSavings >= 0) DesignTokens.EmeraldGlow else Color(0xFFFF5252))
                 }
             }
 

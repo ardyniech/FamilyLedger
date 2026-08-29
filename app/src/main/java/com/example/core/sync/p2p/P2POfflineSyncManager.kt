@@ -34,7 +34,7 @@ class P2POfflineSyncManager(private val dao: HouseholdDao) {
         pkg.members.forEach { m -> if (!existingMembers.containsKey(m.id)) dao.insertMember(m) }
         pkg.categories.forEach { c -> if (!existingCategories.containsKey(c.id)) { dao.insertCategory(c); importedCategoryCount++ } }
         pkg.wallets.forEach { w -> if (!existingWallets.containsKey(w.id)) { dao.insertWallet(w); importedWalletCount++ } }
-        pkg.transactions.forEach { t -> if (!existingTxs.containsKey(t.id)) { dao.addTransactionAndUpdateWallet(t); importedTxCount++ } }
+        pkg.transactions.forEach { t -> if (!existingTxs.containsKey(t.id)) { dao.insertTransaction(t); dao.updateWalletBalance(t.walletId, t.amount); importedTxCount++ } }
 
         P2PImportResult(true, importedTxCount, importedWalletCount, importedCategoryCount, "Selesai mengimpor $importedTxCount transaksi & $importedWalletCount dompet dari ${pkg.senderName} (${pkg.senderRole})")
     }

@@ -34,7 +34,7 @@ fun ExpenseListScreen(
     categories: List<Category>,
     members: List<Member>,
     onTransactionClick: (Transaction) -> Unit,
-    onAddExpense: (amount: Double, note: String, walletId: String, categoryId: String, timestamp: Long) -> Unit,
+    onAddExpense: (amount: Long, note: String, walletId: String, categoryId: String, timestamp: Long) -> Unit,
     onBack: () -> Unit
 ) {
     val expenses = remember(transactions, categories) {

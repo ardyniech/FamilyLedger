@@ -2,6 +2,6 @@ package com.example.shared.models
 
 data class CategoryExceedance(
     val category: Category,
-    val budgetLimit: Double,
-    val currentSpent: Double
+    val budgetLimit: Long,
+    val currentSpent: Long
 )

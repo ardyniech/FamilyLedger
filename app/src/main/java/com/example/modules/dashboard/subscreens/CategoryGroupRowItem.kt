@@ -48,7 +48,7 @@ fun CategoryGroupRowItem(summary: GroupSpendingSummary, isExpenseMode: Boolean) 
                     Text("${summary.categoryItems.size} Kategori", fontSize = 11.sp, color = DesignTokens.TextSecondary)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Rp ${String.format("%,.0f", amount)}", fontWeight = FontWeight.Bold, color = if (isExpenseMode) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent, fontSize = 14.sp)
+                    Text("Rp ${String.format("%,d", amount)}", fontWeight = FontWeight.Bold, color = if (isExpenseMode) DesignTokens.CrimsonAccent else DesignTokens.EmeraldAccent, fontSize = 14.sp)
                     Text("${String.format("%.1f", pct)}%", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = groupColor)
                 }
                 Icon(if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = "Expand", tint = DesignTokens.TextSecondary, modifier = Modifier.padding(start = 4.dp))
@@ -61,7 +61,7 @@ fun CategoryGroupRowItem(summary: GroupSpendingSummary, isExpenseMode: Boolean) 
                         val catAmount = if (isExpenseMode) catItem.totalExpense else catItem.totalIncome
                         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("• ${catItem.category.name}", fontSize = 12.sp, color = DesignTokens.TextPrimary)
-                            Text("Rp ${String.format("%,.0f", catAmount)}", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                            Text("Rp ${String.format("%,d", catAmount)}", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                         }
                     }
                 }

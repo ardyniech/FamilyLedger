@@ -83,7 +83,7 @@ fun AnalyticsScreen(
                 members.forEachIndexed { index, member ->
                     MemberExpenseCard(
                         member = member,
-                        expense = memberExpenses[member] ?: 0.0,
+                        expense = memberExpenses[member] ?: 0L,
                         totalExpense = totalHouseholdExpense,
                         accentColor = if (index == 0) DesignTokens.CobaltAccent else DesignTokens.AmberAccent,
                         animProgress = animProgress.value,

@@ -10,7 +10,7 @@ import com.example.shared.theme.DesignTokens
 
 @Composable
 fun AddGoalDialog(
-    onConfirm: (title: String, targetAmount: Double, initialAmount: Double, category: String, iconEmoji: String) -> Unit,
+    onConfirm: (title: String, targetAmount: Long, initialAmount: Long, category: String, iconEmoji: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
@@ -53,8 +53,8 @@ fun AddGoalDialog(
                     if (title.isNotBlank()) {
                         onConfirm(
                             title,
-                            targetAmount.toDoubleOrNull() ?: 10000000.0,
-                            initialAmount.toDoubleOrNull() ?: 0.0,
+                            targetAmount.toLongOrNull() ?: targetAmount.toDoubleOrNull()?.toLong() ?: 10000000L,
+                            initialAmount.toLongOrNull() ?: initialAmount.toDoubleOrNull()?.toLong() ?: 0L,
                             category,
                             iconEmoji
                         )

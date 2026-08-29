@@ -32,7 +32,7 @@ fun RecurringBillsManagementScreen(
     wallets: List<WalletAccount>,
     categories: List<Category>,
     onPayBill: (billId: String, walletId: String) -> Unit,
-    onAddBill: (name: String, amount: Double, dueDate: String, categoryId: String, autoPay: Boolean, targetWalletId: String?, frequency: String) -> Unit,
+    onAddBill: (name: String, amount: Long, dueDate: String, categoryId: String, autoPay: Boolean, targetWalletId: String?, frequency: String) -> Unit,
     onDeleteBill: (billId: String) -> Unit,
     onBack: () -> Unit
 ) {

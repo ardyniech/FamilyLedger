@@ -8,9 +8,9 @@ data class MonthPeriodData(
     val startMillis: Long,
     val endMillis: Long,
     val transactions: List<Transaction>,
-    val totalIncome: Double,
-    val totalExpense: Double,
-    val netBalance: Double
+    val totalIncome: Long,
+    val totalExpense: Long,
+    val netBalance: Long
 )
 
 object MonthFilterHelper {

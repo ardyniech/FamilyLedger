@@ -20,7 +20,7 @@ class TransferNotificationManager {
         recipientId: String,
         recipientName: String,
         recipientRole: String,
-        amount: Double,
+        amount: Long,
         note: String,
         fromWalletName: String,
         toWalletName: String

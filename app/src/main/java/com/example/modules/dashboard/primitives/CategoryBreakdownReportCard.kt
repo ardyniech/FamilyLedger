@@ -23,7 +23,7 @@ import java.util.Locale
 fun CategoryBreakdownReportCard(
     transactions: List<Transaction>,
     categories: List<Category>,
-    totalExpenses: Double,
+    totalExpenses: Long,
     onCategoryClick: ((Category) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +37,7 @@ fun CategoryBreakdownReportCard(
             val count = catTxs.size
             Triple(cat, sum, count)
         }
-        .filter { it.second > 0 }
+        .filter { it.second > 0L }
         .sortedByDescending { it.second }
 
     Card(
@@ -62,7 +62,7 @@ fun CategoryBreakdownReportCard(
                 Text("Belum ada kategori pengeluaran bulan ini.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
             } else {
                 categoryTotals.forEach { (cat, sum, count) ->
-                    val percentage = if (totalExpenses > 0) (sum / totalExpenses).toFloat() else 0f
+                    val percentage = if (totalExpenses > 0L) (sum.toFloat() / totalExpenses.toFloat()) else 0f
 
                     Column(
                         modifier = Modifier

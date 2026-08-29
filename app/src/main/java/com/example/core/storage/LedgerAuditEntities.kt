@@ -12,8 +12,10 @@ data class LedgerEvent(
     val actorId: String,
     val deviceId: String,
     val eventType: String, // INCOME, EXPENSE, TRANSFER_INTERNAL, ADJUSTMENT, REVERSAL
-    val amount: Double,
+    val amount: Long, // Minor unit (Long IDR)
     val currency: String = "IDR",
+    val reason: String = "",
+    val referenceEntityId: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val logicalClock: Long = 1L,
     val previousEventHash: String = "",
@@ -25,13 +27,15 @@ data class LedgerEvent(
         fun computeHash(
             previousHash: String,
             eventId: String,
+            householdId: String,
             entityId: String,
             actorId: String,
             eventType: String,
-            amount: Double,
+            amount: Long,
+            reason: String,
             timestamp: Long
         ): String {
-            val raw = "$previousHash|$eventId|$entityId|$actorId|$eventType|$amount|$timestamp"
+            val raw = "$previousHash|$eventId|$householdId|$entityId|$actorId|$eventType|$amount|$reason|$timestamp"
             val digest = MessageDigest.getInstance("SHA-256")
             val hashBytes = digest.digest(raw.toByteArray(Charsets.UTF_8))
             return hashBytes.joinToString("") { "%02x".format(it) }
@@ -46,7 +50,7 @@ data class TransferEventEntity(
     @PrimaryKey val id: String,
     val sourceWalletId: String,
     val destinationWalletId: String,
-    val amount: Double,
+    val amount: Long,
     val initiatedBy: String,
     val confirmedBy: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
@@ -54,3 +58,4 @@ data class TransferEventEntity(
     val relationshipAcknowledgment: String = "❤️",
     val syncStatus: Int = 0
 )
+

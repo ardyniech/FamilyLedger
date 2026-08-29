@@ -8,15 +8,15 @@ import kotlin.math.abs
 
 data class MonthlyCashflowPoint(
     val monthLabel: String,
-    val totalIncome: Double,
-    val totalExpense: Double,
-    val netCashflow: Double
+    val totalIncome: Long,
+    val totalExpense: Long,
+    val netCashflow: Long
 )
 
 data class CashflowHealthSummary(
-    val currentPeriodIncome: Double,
-    val currentPeriodExpense: Double,
-    val netCashflow: Double,
+    val currentPeriodIncome: Long,
+    val currentPeriodExpense: Long,
+    val netCashflow: Long,
     val isSurplus: Boolean,
     val savingsRate: Double, // % of income retained
     val last3MonthsTrend: List<MonthlyCashflowPoint>,
@@ -35,8 +35,8 @@ object CashflowHealthCalculator {
             .filter { it.amount < 0 && !it.note.contains("transfer", ignoreCase = true) }
             .sumOf { abs(it.amount) }
         val net = income - expense
-        val isSurplus = net >= 0
-        val savingsRate = if (income > 0) ((net / income) * 100.0).coerceIn(-100.0, 100.0) else 0.0
+        val isSurplus = net >= 0L
+        val savingsRate = if (income > 0L) ((net.toDouble() / income.toDouble()) * 100.0).coerceIn(-100.0, 100.0) else 0.0
 
         // Compute 3-Month Trend
         val trendPoints = mutableListOf<MonthlyCashflowPoint>()
@@ -62,12 +62,12 @@ object CashflowHealthCalculator {
             trendPoints.add(MonthlyCashflowPoint(label, mInc, mExp, mNet))
         }
 
-        val lastMonthNet = if (trendPoints.size >= 2) trendPoints[trendPoints.size - 2].netCashflow else 0.0
+        val lastMonthNet = if (trendPoints.size >= 2) trendPoints[trendPoints.size - 2].netCashflow else 0L
         val currentMonthNet = trendPoints.lastOrNull()?.netCashflow ?: net
         val diff = currentMonthNet - lastMonthNet
         val comparisonMsg = when {
-            diff > 0 -> "Cashflow naik Rp ${String.format("%,.0f", diff)} dibanding bulan lalu 📈"
-            diff < 0 -> "Cashflow turun Rp ${String.format("%,.0f", abs(diff))} dibanding bulan lalu 📉"
+            diff > 0L -> "Cashflow naik Rp ${String.format(Locale("id", "ID"), "%,d", diff)} dibanding bulan lalu 📈"
+            diff < 0L -> "Cashflow turun Rp ${String.format(Locale("id", "ID"), "%,d", abs(diff))} dibanding bulan lalu 📉"
             else -> "Cashflow stabil sama seperti bulan lalu ⚖️"
         }
 
@@ -82,3 +82,4 @@ object CashflowHealthCalculator {
         )
     }
 }
+

@@ -1,13 +1,14 @@
 package com.example.modules.dashboard.logic
 
 import com.example.core.storage.HouseholdRepository
+import com.example.core.storage.TransferEventEntity
 import com.example.core.sync.TransferNotificationManager
 import com.example.shared.models.*
 import java.util.UUID
 
 object DashboardTransferHelper {
     suspend fun executeTransfer(
-        amount: Double,
+        amount: Long,
         note: String,
         fromWallet: WalletAccount,
         toWallet: WalletAccount,
@@ -22,8 +23,19 @@ object DashboardTransferHelper {
         val outCat = categories.find { it.name == "Transfer Out" && it.type == outType } ?: Category(UUID.randomUUID().toString(), "Transfer Out", outType).also { repository.addCategory(it) }
         val inCat = categories.find { it.name == "Transfer In" && it.type == inType } ?: Category(UUID.randomUUID().toString(), "Transfer In", inType).also { repository.addCategory(it) }
 
-        repository.addTransaction(Transaction(UUID.randomUUID().toString(), fromWallet.id, fromWallet.memberId, outCat.id, -amount, note))
-        repository.addTransaction(Transaction(UUID.randomUUID().toString(), toWallet.id, toWallet.memberId, inCat.id, amount, note))
+        val debitTx = Transaction(UUID.randomUUID().toString(), fromWallet.id, fromWallet.memberId, outCat.id, -amount, note)
+        val creditTx = Transaction(UUID.randomUUID().toString(), toWallet.id, toWallet.memberId, inCat.id, amount, note)
+
+        val transferEvent = TransferEventEntity(
+            id = UUID.randomUUID().toString(),
+            sourceWalletId = fromWallet.id,
+            destinationWalletId = toWallet.id,
+            amount = amount,
+            initiatedBy = fromWallet.memberId,
+            confirmedBy = toWallet.memberId
+        )
+
+        repository.executeTransfer(debitTx, creditTx, transferEvent)
 
         val fromMember = members.find { it.id == fromWallet.memberId }
         val toMember = members.find { it.id == toWallet.memberId }
@@ -37,3 +49,4 @@ object DashboardTransferHelper {
         }
     }
 }
+

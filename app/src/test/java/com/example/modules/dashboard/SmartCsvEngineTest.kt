@@ -12,9 +12,9 @@ import org.junit.Test
 class SmartCsvEngineTest {
 
     private val sampleWallets = listOf(
-        WalletAccount("w_cash", "m1", "Cash", "Cash", 100000.0),
-        WalletAccount("w_bca", "m1", "Bank", "BCA", 500000.0),
-        WalletAccount("w_deina", "m2", "Cash", "Deina", 200000.0)
+        WalletAccount("w_cash", "m1", "Cash", "Cash", 100000L),
+        WalletAccount("w_bca", "m1", "Bank", "BCA", 500000L),
+        WalletAccount("w_deina", "m2", "Cash", "Deina", 200000L)
     )
 
     private val sampleCategories = listOf(
@@ -34,8 +34,8 @@ class SmartCsvEngineTest {
 
         val result = SmartCsvParser.parse(raw, sampleWallets, sampleCategories, emptyList())
         assertEquals("Should parse 3 records", 3, result.records.size)
-        assertEquals("Expense parsed correctly", -15000.0, result.records[0].amount, 0.01)
-        assertEquals("Income parsed correctly", 250000.0, result.records[1].amount, 0.01)
+        assertEquals("Expense parsed correctly", -15000L, result.records[0].amount)
+        assertEquals("Income parsed correctly", 250000L, result.records[1].amount)
         assertTrue("Transfer detected", result.records[2].isTransfer)
         assertEquals("Target wallet matched", "w_deina", result.records[2].targetWalletId)
     }
@@ -49,7 +49,7 @@ class SmartCsvEngineTest {
 
         val result = SmartCsvParser.parse(raw, sampleWallets, sampleCategories, emptyList())
         assertEquals("Should parse 1 record", 1, result.records.size)
-        assertEquals("Amount formatted correctly", -20000.0, result.records[0].amount, 0.01)
+        assertEquals("Amount formatted correctly", -20000L, result.records[0].amount)
     }
 
     @Test
@@ -60,7 +60,7 @@ class SmartCsvEngineTest {
         """.trimIndent()
 
         val existing = listOf(
-            Transaction("tx1", "w_cash", "m1", "c_rokok", -12000.0, "surya", timestamp = 1787216400000L)
+            Transaction("tx1", "w_cash", "m1", "c_rokok", -12000L, "surya", timestamp = 1787216400000L)
         )
 
         val result = SmartCsvParser.parse(raw, sampleWallets, sampleCategories, existing)
@@ -73,9 +73,9 @@ class SmartCsvEngineTest {
         assertEquals(0, resultEmpty.records.size)
 
         val amount1 = CsvPatternMatcher.parseAmount("abc-invalid")
-        assertEquals(0.0, amount1, 0.01)
+        assertEquals(0L, amount1)
 
         val amount2 = CsvPatternMatcher.parseAmount("Rp 1.500.000,00")
-        assertEquals(1500000.0, amount2, 0.01)
+        assertEquals(1500000L, amount2)
     }
 }

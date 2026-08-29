@@ -21,8 +21,8 @@ import java.util.Locale
 @Composable
 fun GoalsAndBudgetTopBar(
     members: List<Member>,
-    monthlyBudget: Double,
-    totalExpenses: Double,
+    monthlyBudget: Long,
+    totalExpenses: Long,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -39,7 +39,7 @@ fun GoalsAndBudgetTopBar(
             IconButton(onClick = {
                 val husband = members.find { it.role == "Husband" }?.name ?: "Suami"
                 val wife = members.find { it.role == "Wife" }?.name ?: "Istri"
-                val sisa = (monthlyBudget - totalExpenses).coerceAtLeast(0.0)
+                val sisa = (monthlyBudget - totalExpenses).coerceAtLeast(0L)
                 val report = "🕊️ *EVALUASI ANGGARAN & IMPIAN KELUARGA*\nPasangan: $husband & $wife\nBatas Anggaran: ${formatter.format(monthlyBudget)}\nPengeluaran: ${formatter.format(totalExpenses)}\nSisa Anggaran: ${formatter.format(sisa)}\n\n_Dibuat dengan Family Ledgers_"
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("Rangkuman", report))

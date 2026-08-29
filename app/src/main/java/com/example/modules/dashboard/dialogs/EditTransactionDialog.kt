@@ -83,7 +83,7 @@ fun EditTransactionDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val amt = amountText.toDoubleOrNull() ?: 0.0
+                    val amt = amountText.toLongOrNull() ?: amountText.toDoubleOrNull()?.toLong() ?: 0L
                     val finalAmount = if (isIncome) kotlin.math.abs(amt) else -kotlin.math.abs(amt)
                     onSave(transaction.copy(amount = finalAmount, note = noteText, walletId = selectedWalletId, categoryId = selectedCategoryId, timestamp = selectedTimestamp))
                 },

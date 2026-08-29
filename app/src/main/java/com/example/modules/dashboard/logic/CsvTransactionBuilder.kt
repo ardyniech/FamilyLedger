@@ -45,7 +45,7 @@ object CsvTransactionBuilder {
                                 walletId = fromW,
                                 memberId = fromM,
                                 categoryId = "c_tf_out",
-                                amount = -rec.amount,
+                                amount = -rec.amount.toLong(),
                                 note = "Transfer ke $toAcc$notesSuffix",
                                 timestamp = ts
                             )
@@ -57,7 +57,7 @@ object CsvTransactionBuilder {
                                 walletId = toW,
                                 memberId = toM,
                                 categoryId = "c_tf_in",
-                                amount = rec.amount,
+                                amount = rec.amount.toLong(),
                                 note = "Transfer dari $fromAcc$notesSuffix",
                                 timestamp = ts + 1
                             )
@@ -74,7 +74,7 @@ object CsvTransactionBuilder {
                             walletId = wId,
                             memberId = mId,
                             categoryId = cId,
-                            amount = rec.amount,
+                            amount = rec.amount.toLong(),
                             note = "${rec.category.replaceFirstChar { it.uppercase() }}$notesSuffix",
                             timestamp = ts
                         )
@@ -90,7 +90,7 @@ object CsvTransactionBuilder {
                             walletId = wId,
                             memberId = mId,
                             categoryId = cId,
-                            amount = -rec.amount,
+                            amount = -rec.amount.toLong(),
                             note = "${rec.category.replaceFirstChar { it.uppercase() }}$notesSuffix",
                             timestamp = ts
                         )

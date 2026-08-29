@@ -19,11 +19,11 @@ fun CategoryFormDialog(
     editCategory: Category?,
     defaultType: String,
     onDismiss: () -> Unit,
-    onSave: (id: String?, name: String, type: String, budgetLimit: Double) -> Unit
+    onSave: (id: String?, name: String, type: String, budgetLimit: Long) -> Unit
 ) {
     var name by remember { mutableStateOf(editCategory?.name ?: "") }
     var type by remember { mutableStateOf(editCategory?.type ?: defaultType) }
-    var budgetLimitStr by remember { mutableStateOf(if ((editCategory?.budgetLimit ?: 0.0) > 0) editCategory!!.budgetLimit.toInt().toString() else "") }
+    var budgetLimitStr by remember { mutableStateOf(if ((editCategory?.budgetLimit ?: 0L) > 0L) editCategory!!.budgetLimit.toString() else "") }
 
     AlertDialog(
         onDismissRequest = onDismiss, shape = RoundedCornerShape(DesignTokens.CornerRadius), containerColor = DesignTokens.Surface,
@@ -49,7 +49,7 @@ fun CategoryFormDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { if (name.isNotBlank()) onSave(editCategory?.id, name, type, budgetLimitStr.toDoubleOrNull() ?: 0.0) }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent), modifier = Modifier.testTag("save_category_button")) { Text("Simpan") }
+            Button(onClick = { if (name.isNotBlank()) onSave(editCategory?.id, name, type, budgetLimitStr.toLongOrNull() ?: budgetLimitStr.toDoubleOrNull()?.toLong() ?: 0L) }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent), modifier = Modifier.testTag("save_category_button")) { Text("Simpan") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) } }
     )

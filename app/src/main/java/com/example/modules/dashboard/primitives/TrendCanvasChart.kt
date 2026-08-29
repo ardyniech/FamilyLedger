@@ -46,7 +46,7 @@ fun TrendCanvasChart(
                 .pointerInput(monthlyPoints) { detectDragGestures { change, _ -> onActivePointChanged(((change.position.x - pLeft) / stepX).roundToInt().coerceIn(0, monthlyPoints.size - 1)); change.consume() } }
         ) {
             if (monthlyPoints.isEmpty()) return@Canvas
-            val maxVal = monthlyPoints.maxOfOrNull { pt -> if (selectedCategoryId != null) pt.categoryAmounts[selectedCategoryId] ?: 0.0 else pt.categoryAmounts.values.sum() }?.takeIf { it > 0 } ?: 100000.0
+            val maxVal = monthlyPoints.maxOfOrNull { pt -> if (selectedCategoryId != null) pt.categoryAmounts[selectedCategoryId] ?: 0L else pt.categoryAmounts.values.sum() }?.takeIf { it > 0L }?.toDouble() ?: 100000.0
             for (i in 0..3) {
                 val y = pTop + usableH - (i.toFloat() / 3 * usableH)
                 drawLine(color = Color.LightGray.copy(alpha = 0.2f), start = Offset(pLeft, y), end = Offset(width - pRight, y), strokeWidth = 1f)
@@ -61,14 +61,14 @@ fun TrendCanvasChart(
                 monthlyPoints.forEachIndexed { i, pt ->
                     val xCenter = pLeft + (i * stepX)
                     if (selectedCategoryId != null) {
-                        val v = pt.categoryAmounts[selectedCategoryId] ?: 0.0
+                        val v = (pt.categoryAmounts[selectedCategoryId] ?: 0L).toDouble()
                         val bH = ((v / maxVal).toFloat() * usableH)
                         val alpha = if (activePointIndex == null || activePointIndex == i) 1.0f else 0.4f
                         drawRect(color = colors[0].copy(alpha = alpha), topLeft = Offset(xCenter - barW / 2, pTop + usableH - bH), size = Size(barW, bH))
                     } else {
                         var curY = 0f
                         filterCats.forEachIndexed { idx, cat ->
-                            val v = pt.categoryAmounts[cat.id] ?: 0.0
+                            val v = (pt.categoryAmounts[cat.id] ?: 0L).toDouble()
                             val bH = ((v / maxVal).toFloat() * usableH)
                             val alpha = if (activePointIndex == null || activePointIndex == i) 1f else 0.4f
                             drawRect(color = colors[idx % colors.size].copy(alpha = alpha), topLeft = Offset(xCenter - barW / 2, pTop + usableH - curY - bH), size = Size(barW, bH))
@@ -81,7 +81,7 @@ fun TrendCanvasChart(
                     val strokeColor = colors[idx % colors.size]
                     val path = Path()
                     monthlyPoints.forEachIndexed { i, pt ->
-                        val v = pt.categoryAmounts[cat.id] ?: 0.0
+                        val v = (pt.categoryAmounts[cat.id] ?: 0L).toDouble()
                         val x = pLeft + (i * stepX)
                         val y = pTop + usableH - ((v / maxVal).toFloat() * usableH)
                         if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)

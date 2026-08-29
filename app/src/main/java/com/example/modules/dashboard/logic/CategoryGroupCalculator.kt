@@ -7,15 +7,15 @@ import kotlin.math.abs
 
 data class CategoryGroupItem(
     val category: Category,
-    val totalExpense: Double,
-    val totalIncome: Double,
+    val totalExpense: Long,
+    val totalIncome: Long,
     val transactionCount: Int
 )
 
 data class GroupSpendingSummary(
     val group: CategoryGroup,
-    val totalExpense: Double,
-    val totalIncome: Double,
+    val totalExpense: Long,
+    val totalIncome: Long,
     val percentOfTotalExpense: Double,
     val percentOfTotalIncome: Double,
     val categoryItems: List<CategoryGroupItem>
@@ -56,19 +56,20 @@ object CategoryGroupCalculator {
             val expSum = groupTxs.filter { it.amount < 0 && !it.note.contains("transfer", ignoreCase = true) }.sumOf { abs(it.amount) }
             val incSum = groupTxs.filter { it.amount > 0 && !it.note.contains("transfer", ignoreCase = true) }.sumOf { it.amount }
 
-            if (expSum == 0.0 && incSum == 0.0 && group.id == "unassigned") return@mapNotNull null
+            if (expSum == 0L && incSum == 0L && group.id == "unassigned") return@mapNotNull null
 
             val items = groupCategories.map { cat ->
                 val catTxs = transactions.filter { it.categoryId == cat.id }
                 val catExp = catTxs.filter { it.amount < 0 && !it.note.contains("transfer", ignoreCase = true) }.sumOf { abs(it.amount) }
                 val catInc = catTxs.filter { it.amount > 0 && !it.note.contains("transfer", ignoreCase = true) }.sumOf { it.amount }
                 CategoryGroupItem(cat, catExp, catInc, catTxs.size)
-            }.filter { it.totalExpense > 0 || it.totalIncome > 0 }
+            }.filter { it.totalExpense > 0L || it.totalIncome > 0L }
 
-            val expPct = if (totalExpenseAll > 0) (expSum / totalExpenseAll) * 100.0 else 0.0
-            val incPct = if (totalIncomeAll > 0) (incSum / totalIncomeAll) * 100.0 else 0.0
+            val expPct = if (totalExpenseAll > 0L) (expSum.toDouble() / totalExpenseAll.toDouble()) * 100.0 else 0.0
+            val incPct = if (totalIncomeAll > 0L) (incSum.toDouble() / totalIncomeAll.toDouble()) * 100.0 else 0.0
 
             GroupSpendingSummary(group, expSum, incSum, expPct, incPct, items)
         }.sortedByDescending { it.totalExpense }
     }
 }
+

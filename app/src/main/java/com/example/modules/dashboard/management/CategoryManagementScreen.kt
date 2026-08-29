@@ -28,7 +28,7 @@ import com.example.shared.theme.DesignTokens
 @Composable
 fun CategoryManagementScreen(
     categories: List<Category>,
-    onSaveCategory: (id: String?, name: String, type: String, budgetLimit: Double) -> Unit,
+    onSaveCategory: (id: String?, name: String, type: String, budgetLimit: Long) -> Unit,
     onDeleteCategory: (Category) -> Unit,
     onBack: () -> Unit
 ) {

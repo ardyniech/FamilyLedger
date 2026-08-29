@@ -28,7 +28,7 @@ fun AddTransactionModal(
     wallets: List<WalletAccount>,
     categories: List<Category>,
     onDismiss: () -> Unit,
-    onSubmit: (amount: Double, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long) -> Unit
+    onSubmit: (amount: Long, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long) -> Unit
 ) {
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
@@ -106,7 +106,7 @@ fun AddTransactionModal(
                             if (amount.isNotEmpty() && note.isNotEmpty()) {
                                 MathUtils.evaluateMath(amount)?.let { result ->
                                     if (result > 0) {
-                                        onSubmit(result, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp)
+                                        onSubmit(result.toLong(), note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp)
                                         onDismiss()
                                     }
                                 }

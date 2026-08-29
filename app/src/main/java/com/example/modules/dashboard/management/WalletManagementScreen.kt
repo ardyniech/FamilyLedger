@@ -34,7 +34,7 @@ import java.util.Locale
 fun WalletManagementScreen(
     wallets: List<WalletAccount>,
     members: List<Member>,
-    onSaveWallet: (id: String?, memberId: String, type: String, name: String, balance: Double) -> Unit,
+    onSaveWallet: (id: String?, memberId: String, type: String, name: String, balance: Long) -> Unit,
     onBack: () -> Unit
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
@@ -109,7 +109,7 @@ fun WalletManagementScreen(
             },
             confirmButton = {
                 Button(onClick = {
-                    val bal = balanceStr.toDoubleOrNull() ?: 0.0
+                    val bal = balanceStr.toLongOrNull() ?: balanceStr.toDoubleOrNull()?.toLong() ?: 0L
                     if (name.isNotBlank()) {
                         onSaveWallet(editWallet?.id, memberId, type, name, if (isEdit) editWallet!!.balance else bal)
                         showAddDialog = false; editWallet = null

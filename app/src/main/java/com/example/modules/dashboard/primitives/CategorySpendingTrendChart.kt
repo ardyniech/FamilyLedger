@@ -55,7 +55,7 @@ fun CategorySpendingTrendChart(
     val tip = remember(monthlyPoints, expenseCategories) {
         if (monthlyPoints.size >= 2) {
             val last = monthlyPoints.last().categoryAmounts; val prev = monthlyPoints[monthlyPoints.size - 2].categoryAmounts
-            val maxSpike = expenseCategories.mapNotNull { cat -> val d = (last[cat.id] ?: 0.0) - (prev[cat.id] ?: 0.0); if (d > 0 && (prev[cat.id] ?: 0.0) > 0) cat to d else null }.maxByOrNull { it.second }
+            val maxSpike = expenseCategories.mapNotNull { cat -> val d = (last[cat.id] ?: 0L) - (prev[cat.id] ?: 0L); if (d > 0L && (prev[cat.id] ?: 0L) > 0L) cat to d else null }.maxByOrNull { it.second }
             maxSpike?.let { (cat, diff) -> "💡 Tren: '${cat.name}' melonjak ${currencyFmt.format(diff)} dibanding bulan lalu. Evaluasi anggaran keluarga." } ?: "💡 Tren pengeluaran keluarga stabil. Tetap jaga batas anggaran bulanan!"
         } else "💡 Belum cukup data tren bulanan untuk optimasi."
     }

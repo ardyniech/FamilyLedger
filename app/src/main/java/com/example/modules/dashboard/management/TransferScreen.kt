@@ -29,7 +29,7 @@ fun TransferScreen(
     wallets: List<WalletAccount>,
     members: List<Member>,
     transactions: List<com.example.shared.models.Transaction> = emptyList(),
-    onTransfer: (amount: Double, note: String, fromWalletId: String, toWalletId: String) -> Unit,
+    onTransfer: (amount: Long, note: String, fromWalletId: String, toWalletId: String) -> Unit,
     onBack: () -> Unit
 ) {
     var amountStr by remember { mutableStateOf("") }
@@ -46,7 +46,7 @@ fun TransferScreen(
 
     val toWallet = remember(toWalletId, wallets) { wallets.find { it.id == toWalletId } }
     val capEvaluation = remember(toWallet, amountStr, transactions) {
-        val amt = amountStr.toDoubleOrNull() ?: 0.0
+        val amt = amountStr.toLongOrNull() ?: amountStr.toDoubleOrNull()?.toLong() ?: 0L
         com.example.modules.dashboard.logic.TransferBudgetCapCalculator.evaluate(toWallet, amt, transactions)
     }
 
@@ -104,8 +104,8 @@ fun TransferScreen(
             
             Button(
                 onClick = {
-                    val amount = amountStr.toDoubleOrNull() ?: 0.0
-                    if (amount > 0 && fromWalletId != toWalletId && fromWalletId.isNotBlank() && toWalletId.isNotBlank()) {
+                    val amount = amountStr.toLongOrNull() ?: amountStr.toDoubleOrNull()?.toLong() ?: 0L
+                    if (amount > 0L && fromWalletId != toWalletId && fromWalletId.isNotBlank() && toWalletId.isNotBlank()) {
                         onTransfer(amount, if (note.isBlank()) "Transfer" else note, fromWalletId, toWalletId)
                         onBack()
                     }

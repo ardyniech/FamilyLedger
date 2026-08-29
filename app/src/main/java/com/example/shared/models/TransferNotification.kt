@@ -7,8 +7,8 @@ data class TransferNotification(
     val senderRole: String, // "Husband" or "Wife"
     val recipientId: String,
     val recipientName: String,
-    val recipientRole: String, // "Wife" or "Husband"
-    val amount: Double,
+    val recipientRole: String,
+    val amount: Long,
     val note: String,
     val fromWalletName: String,
     val toWalletName: String,

@@ -68,7 +68,7 @@ fun WalletDetailScreen(
                             }
                             Column {
                                 Text("Balance", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
-                                Text(formatter.format(wallet?.balance ?: 0.0), color = Color.White, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
+                                Text(formatter.format(wallet?.balance ?: 0L), color = Color.White, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }
@@ -80,12 +80,12 @@ fun WalletDetailScreen(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Saldo Hutang-Piutang", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                            Text((if (debtBalance > 0) "+" else "") + formatter.format(debtBalance), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (debtBalance > 0) DesignTokens.CobaltAccent else if (debtBalance < 0) DesignTokens.CrimsonAccent else DesignTokens.TextPrimary)
+                            Text((if (debtBalance > 0L) "+" else "") + formatter.format(debtBalance), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (debtBalance > 0L) DesignTokens.CobaltAccent else if (debtBalance < 0L) DesignTokens.CrimsonAccent else DesignTokens.TextPrimary)
                         }
-                        if ((wallet?.monthlyTransferCap ?: 0.0) > 0) {
+                        if ((wallet?.monthlyTransferCap ?: 0L) > 0L) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("Plafon Transfer Bulanan", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                                Text(formatter.format(wallet?.monthlyTransferCap ?: 0.0), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
+                                Text(formatter.format(wallet?.monthlyTransferCap ?: 0L), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
                             }
                         }
                     }

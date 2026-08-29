@@ -24,15 +24,15 @@ import com.example.shared.theme.DesignTokens
 
 @Composable
 fun GoalsAndBudgetScreen(
-    monthlyBudget: Double,
+    monthlyBudget: Long,
     financialGoals: List<FinancialGoal>,
     transactions: List<Transaction>,
     categories: List<Category>,
     members: List<Member>,
     wallets: List<WalletAccount> = emptyList(),
-    onUpdateBudget: (Double) -> Unit,
-    onAddGoal: (title: String, targetAmount: Double, initialAmount: Double, category: String, iconEmoji: String) -> Unit,
-    onDepositToGoal: (goalId: String, amount: Double) -> Unit,
+    onUpdateBudget: (Long) -> Unit,
+    onAddGoal: (title: String, targetAmount: Long, initialAmount: Long, category: String, iconEmoji: String) -> Unit,
+    onDepositToGoal: (goalId: String, amount: Long) -> Unit,
     onTransactionClick: (Transaction) -> Unit = {},
     onBack: () -> Unit
 ) {

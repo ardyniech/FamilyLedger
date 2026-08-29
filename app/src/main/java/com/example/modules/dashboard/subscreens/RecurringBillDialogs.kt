@@ -35,7 +35,7 @@ fun PayBillDialog(
         title = { Text("Deduct Account Payment", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Select source wallet to debit ${formatter.format(targetBill?.amount ?: 0.0)}:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                Text("Select source wallet to debit ${formatter.format(targetBill?.amount ?: 0L)}:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                 wallets.forEach { wallet ->
                     val isSelected = wallet.id == selectedWalletId
                     Row(
@@ -63,7 +63,7 @@ fun AddRecurringBillDialog(
     categories: List<Category>,
     formatter: NumberFormat,
     onDismiss: () -> Unit,
-    onAdd: (name: String, amount: Double, dueDate: String, categoryId: String, autoPay: Boolean, targetWalletId: String?, frequency: String) -> Unit
+    onAdd: (name: String, amount: Long, dueDate: String, categoryId: String, autoPay: Boolean, targetWalletId: String?, frequency: String) -> Unit
 ) {
     var billName by remember { mutableStateOf("") }
     var billAmount by remember { mutableStateOf("") }
@@ -112,8 +112,8 @@ fun AddRecurringBillDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                val parsed = billAmount.toDoubleOrNull() ?: 0.0
-                if (billName.isNotEmpty() && parsed > 0.0 && billDueDate.isNotEmpty()) {
+                val parsed = billAmount.toLongOrNull() ?: billAmount.toDoubleOrNull()?.toLong() ?: 0L
+                if (billName.isNotEmpty() && parsed > 0L && billDueDate.isNotEmpty()) {
                     onAdd(billName, parsed, billDueDate, selectedCategoryId, autoPay, if (autoPay) targetWalletId else null, frequency)
                 }
                 onDismiss()

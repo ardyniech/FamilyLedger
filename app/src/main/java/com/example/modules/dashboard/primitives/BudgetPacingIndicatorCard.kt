@@ -20,8 +20,8 @@ import java.util.Locale
 
 @Composable
 fun BudgetPacingIndicatorCard(
-    monthlyBudget: Double,
-    totalExpenses: Double,
+    monthlyBudget: Long,
+    totalExpenses: Long,
     goalCount: Int
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -30,12 +30,12 @@ fun BudgetPacingIndicatorCard(
     val maxDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
     val daysRemaining = (maxDays - dayOfMonth + 1).coerceAtLeast(1)
 
-    val remainingBudget = (monthlyBudget - totalExpenses).coerceAtLeast(0.0)
+    val remainingBudget = (monthlyBudget - totalExpenses).coerceAtLeast(0L)
     val recommendedDaily = remainingBudget / daysRemaining
     val currentDailyAvg = if (dayOfMonth > 0) totalExpenses / dayOfMonth else totalExpenses
 
     val isOverBudget = totalExpenses > monthlyBudget
-    val isNearLimit = !isOverBudget && (totalExpenses / monthlyBudget) > 0.85
+    val isNearLimit = !isOverBudget && (monthlyBudget > 0L && (totalExpenses.toFloat() / monthlyBudget.toFloat()) > 0.85f)
 
     Card(
         modifier = Modifier.fillMaxWidth(),

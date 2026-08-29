@@ -1,40 +1,40 @@
 package com.example.core.storage
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.util.UUID
 
 data class BalanceBreakdown(
-    val openingBalance: Double,
-    val income: Double,
-    val expenses: Double,
-    val internalTransfers: Double,
-    val adjustments: Double,
-    val currentBalance: Double
+    val openingBalance: Long,
+    val income: Long,
+    val expenses: Long,
+    val internalTransfers: Long,
+    val adjustments: Long,
+    val currentBalance: Long
 )
 
 class LedgerEngineService(private val auditDao: LedgerAuditDao) {
 
-    suspend fun recordEvent(
+    suspend fun createEvent(
         householdId: String,
         entityId: String,
         actorId: String,
         deviceId: String,
         eventType: String,
-        amount: Double,
+        amount: Long,
+        reason: String = "",
+        referenceEntityId: String = "",
         currency: String = "IDR"
     ): LedgerEventEntity {
-        val latest = auditDao.getLatestLedgerEvent()
-        val prevHash = latest?.eventHash ?: "GENESIS_HASH"
+        val latest = auditDao.getLatestLedgerEvent(householdId)
+        val prevHash = latest?.eventHash ?: "GENESIS_HOUSEHOLD_${householdId.hashCode()}"
         val logicalClock = (latest?.logicalClock ?: 0L) + 1L
         val eventId = UUID.randomUUID().toString()
         val timestamp = System.currentTimeMillis()
 
         val newHash = LedgerEventEntity.computeHash(
-            prevHash, eventId, entityId, actorId, eventType, amount, timestamp
+            prevHash, eventId, householdId, entityId, actorId, eventType, amount, reason, timestamp
         )
 
-        val event = LedgerEventEntity(
+        return LedgerEventEntity(
             eventId = eventId,
             householdId = householdId,
             entityId = entityId,
@@ -43,6 +43,8 @@ class LedgerEngineService(private val auditDao: LedgerAuditDao) {
             eventType = eventType,
             amount = amount,
             currency = currency,
+            reason = reason,
+            referenceEntityId = referenceEntityId,
             createdAt = timestamp,
             logicalClock = logicalClock,
             previousEventHash = prevHash,
@@ -50,7 +52,22 @@ class LedgerEngineService(private val auditDao: LedgerAuditDao) {
             syncStatus = 0,
             trustState = "PENDING"
         )
+    }
 
+    suspend fun recordEvent(
+        householdId: String,
+        entityId: String,
+        actorId: String,
+        deviceId: String,
+        eventType: String,
+        amount: Long,
+        reason: String = "",
+        referenceEntityId: String = "",
+        currency: String = "IDR"
+    ): LedgerEventEntity {
+        val event = createEvent(
+            householdId, entityId, actorId, deviceId, eventType, amount, reason, referenceEntityId, currency
+        )
         auditDao.insertLedgerEvent(event)
         return event
     }
@@ -60,56 +77,52 @@ class LedgerEngineService(private val auditDao: LedgerAuditDao) {
         targetEntityId: String,
         actorId: String,
         deviceId: String,
-        originalAmount: Double,
+        originalAmount: Long,
         reason: String
-    ) {
-        // Reversal event negates the original amount
-        recordEvent(
+    ): LedgerEventEntity {
+        return recordEvent(
             householdId = householdId,
             entityId = targetEntityId,
             actorId = actorId,
             deviceId = deviceId,
             eventType = "REVERSAL",
-            amount = -originalAmount
+            amount = -originalAmount,
+            reason = reason,
+            referenceEntityId = targetEntityId
         )
     }
 
-    fun computeBalanceBreakdown(events: List<LedgerEventEntity>, opening: Double = 5000000.0): BalanceBreakdown {
-        var income = 0.0
-        var expenses = 0.0
-        var internalTransfers = 0.0
-        var adjustments = 0.0
+    fun computeBalanceBreakdown(events: List<LedgerEventEntity>, opening: Long = 5000000L): BalanceBreakdown {
+        var income = 0L
+        var expenses = 0L
+        var internalTransfers = 0L
+        var adjustments = 0L
 
         for (e in events) {
             when (e.eventType) {
                 "INCOME" -> income += e.amount
                 "EXPENSE" -> expenses += kotlin.math.abs(e.amount)
                 "TRANSFER_INTERNAL" -> internalTransfers += e.amount
-                "ADJUSTMENT" -> adjustments += e.amount
-                "REVERSAL" -> adjustments += e.amount // Reversal affects adjustment / balance correction
+                "ADJUSTMENT", "REVERSAL" -> adjustments += e.amount
             }
         }
 
         val current = opening + income - expenses + adjustments
-        return BalanceBreakdown(
-            openingBalance = opening,
-            income = income,
-            expenses = expenses,
-            internalTransfers = internalTransfers,
-            adjustments = adjustments,
-            currentBalance = current
-        )
+        return BalanceBreakdown(opening, income, expenses, internalTransfers, adjustments, current)
     }
 
-    fun verifyHashChain(events: List<LedgerEventEntity>): Boolean {
-        // Ordered ascending by logicalClock
-        val sorted = events.sortedBy { it.logicalClock }
-        var expectedPrev = "GENESIS_HASH"
+    fun verifyHashChain(events: List<LedgerEventEntity>, householdId: String? = null): Boolean {
+        val filtered = if (householdId != null) events.filter { it.householdId == householdId } else events
+        val sorted = filtered.sortedBy { it.logicalClock }
+        var expectedPrev = if (householdId != null) "GENESIS_HOUSEHOLD_${householdId.hashCode()}" else "GENESIS_HASH"
 
         for (e in sorted) {
+            if (e.logicalClock == 1L && e.previousEventHash.startsWith("GENESIS_")) {
+                expectedPrev = e.previousEventHash
+            }
             if (e.previousEventHash != expectedPrev) return false
             val computed = LedgerEventEntity.computeHash(
-                e.previousEventHash, e.eventId, e.entityId, e.actorId, e.eventType, e.amount, e.createdAt
+                e.previousEventHash, e.eventId, e.householdId, e.entityId, e.actorId, e.eventType, e.amount, e.reason, e.createdAt
             )
             if (computed != e.eventHash) return false
             expectedPrev = e.eventHash
@@ -117,3 +130,4 @@ class LedgerEngineService(private val auditDao: LedgerAuditDao) {
         return true
     }
 }
+

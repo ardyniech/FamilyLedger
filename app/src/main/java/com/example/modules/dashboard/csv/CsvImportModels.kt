@@ -5,7 +5,7 @@ data class ParsedTransaction(
     val rawDate: String,
     val timestamp: Long,
     val rawType: String,
-    val amount: Double,
+    val amount: Long,
     val rawCategory: String,
     val categoryId: String,
     val rawAccount: String,
@@ -22,8 +22,8 @@ data class CsvParseResult(
     val delimiter: Char,
     val hasHeader: Boolean,
     val records: List<ParsedTransaction>,
-    val totalIncome: Double,
-    val totalExpense: Double,
+    val totalIncome: Long,
+    val totalExpense: Long,
     val newCount: Int,
     val duplicateCount: Int,
     val detectedFormatName: String,
@@ -33,8 +33,8 @@ data class CsvParseResult(
 data class ImportExecutionResult(
     val insertedCount: Int,
     val skippedDuplicates: Int,
-    val totalInflow: Double,
-    val totalOutflow: Double,
+    val totalInflow: Long,
+    val totalOutflow: Long,
     val isSuccess: Boolean,
     val message: String
 )

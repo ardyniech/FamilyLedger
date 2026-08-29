@@ -13,7 +13,7 @@ import com.example.shared.theme.DesignTokens
 @Composable
 fun DepositGoalDialog(
     goal: FinancialGoal,
-    onConfirm: (Double) -> Unit,
+    onConfirm: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     var amountInput by remember { mutableStateOf("") }
@@ -36,8 +36,8 @@ fun DepositGoalDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val amount = amountInput.toDoubleOrNull() ?: 0.0
-                    if (amount > 0) {
+                    val amount = amountInput.toLongOrNull() ?: amountInput.toDoubleOrNull()?.toLong() ?: 0L
+                    if (amount > 0L) {
                         onConfirm(amount)
                     }
                 },

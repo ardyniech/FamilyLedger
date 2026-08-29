@@ -36,7 +36,7 @@ fun MonthlyTransactionHistoryScreen(
     categories: List<Category>,
     members: List<Member>,
     onTransactionClick: (Transaction) -> Unit,
-    onAddExpense: (amount: Double, note: String, walletId: String, categoryId: String, timestamp: Long) -> Unit,
+    onAddExpense: (amount: Long, note: String, walletId: String, categoryId: String, timestamp: Long) -> Unit,
     onImportCsvClick: () -> Unit,
     onBack: () -> Unit
 ) {

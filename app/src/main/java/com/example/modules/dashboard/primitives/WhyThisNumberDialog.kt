@@ -72,7 +72,7 @@ fun WhyThisNumberDialog(
 }
 
 @Composable
-private fun BreakdownRow(label: String, amount: Double, format: NumberFormat, isPositive: Boolean = false, isNegative: Boolean = false, isBold: Boolean = false) {
+private fun BreakdownRow(label: String, amount: Long, format: NumberFormat, isPositive: Boolean = false, isNegative: Boolean = false, isBold: Boolean = false) {
     val color = when {
         isPositive -> MaterialTheme.colorScheme.primary
         isNegative -> MaterialTheme.colorScheme.error

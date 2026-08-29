@@ -17,9 +17,9 @@ class P2POfflineSyncTest {
     @Test
     fun testP2PPackageSerializationAndCompression() {
         val member = Member("m1", "h1", "Husband", "Suami", "")
-        val wallet = WalletAccount("w1", "m1", "Cash", "Dompet Suami", 500000.0)
+        val wallet = WalletAccount("w1", "m1", "Cash", "Dompet Suami", 500000L)
         val category = Category("c1", "Makanan", "Expense")
-        val tx = Transaction("t1", "w1", "m1", "c1", -25000.0, "Makan Siang", System.currentTimeMillis())
+        val tx = Transaction("t1", "w1", "m1", "c1", -25000L, "Makan Siang", System.currentTimeMillis())
 
         val pkg = P2PSyncPackage(
             pairCode = "FAM-8821",
@@ -40,7 +40,7 @@ class P2POfflineSyncTest {
         assertEquals("Suami", restoredPkg.senderName)
         assertEquals(1, restoredPkg.transactions.size)
         assertEquals("t1", restoredPkg.transactions[0].id)
-        assertEquals(-25000.0, restoredPkg.transactions[0].amount, 0.01)
+        assertEquals(-25000L, restoredPkg.transactions[0].amount)
         assertEquals(1, restoredPkg.wallets.size)
         assertEquals("w1", restoredPkg.wallets[0].id)
     }

@@ -12,12 +12,12 @@ object SmartCsvImportEngine {
     ): ImportExecutionResult {
         val targets = if (skipDuplicates) parsedTransactions.filter { !it.isDuplicate } else parsedTransactions
         if (targets.isEmpty()) {
-            return ImportExecutionResult(0, parsedTransactions.size, 0.0, 0.0, true, "Tidak ada transaksi baru untuk diimpor.")
+            return ImportExecutionResult(0, parsedTransactions.size, 0L, 0L, true, "Tidak ada transaksi baru untuk diimpor.")
         }
 
         var insertedCount = 0
-        var totalInflow = 0.0
-        var totalOutflow = 0.0
+        var totalInflow = 0L
+        var totalOutflow = 0L
 
         for (item in targets) {
             if (item.isTransfer && item.targetWalletId != null) {

@@ -50,17 +50,17 @@ data class P2PSyncPackage(
             val txArr = root.optJSONArray("transactions") ?: JSONArray()
             val txList = (0 until txArr.length()).map { i ->
                 val o = txArr.getJSONObject(i)
-                Transaction(o.getString("id"), o.getString("walletId"), o.getString("memberId"), o.getString("categoryId"), o.getDouble("amount"), o.optString("note", ""), o.getLong("timestamp"))
+                Transaction(o.getString("id"), o.getString("walletId"), o.getString("memberId"), o.getString("categoryId"), o.optLong("amount", 0L), o.optString("note", ""), o.getLong("timestamp"))
             }
             val wArr = root.optJSONArray("wallets") ?: JSONArray()
             val walletList = (0 until wArr.length()).map { i ->
                 val o = wArr.getJSONObject(i)
-                WalletAccount(o.getString("id"), o.getString("memberId"), o.getString("type"), o.getString("name"), o.getDouble("balance"))
+                WalletAccount(o.getString("id"), o.getString("memberId"), o.getString("type"), o.getString("name"), o.optLong("balance", 0L))
             }
             val cArr = root.optJSONArray("categories") ?: JSONArray()
             val catList = (0 until cArr.length()).map { i ->
                 val o = cArr.getJSONObject(i)
-                Category(id = o.getString("id"), name = o.getString("name"), type = o.getString("type"), parentId = if (o.has("parentId")) o.getString("parentId") else null, budgetLimit = if (o.has("budgetLimit")) o.getDouble("budgetLimit") else 0.0)
+                Category(id = o.getString("id"), name = o.getString("name"), type = o.getString("type"), parentId = if (o.has("parentId")) o.getString("parentId") else null, budgetLimit = o.optLong("budgetLimit", 0L))
             }
             val mArr = root.optJSONArray("members") ?: JSONArray()
             val memList = (0 until mArr.length()).map { i ->

@@ -21,7 +21,7 @@ import java.util.Locale
 fun SpendingByMemberCard(
     members: List<Member>,
     transactions: List<Transaction>,
-    totalExpenses: Double,
+    totalExpenses: Long,
     onMemberClick: ((Member) -> Unit)? = null
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -42,7 +42,7 @@ fun SpendingByMemberCard(
                 val memberExpenses = transactions
                     .filter { it.memberId == member.id && it.amount < 0 }
                     .sumOf { -it.amount }
-                val ratio = if (totalExpenses > 0) (memberExpenses / totalExpenses).toFloat() else 0f
+                val ratio = if (totalExpenses > 0L) (memberExpenses.toFloat() / totalExpenses.toFloat()) else 0f
 
                 Row(
                     modifier = Modifier
