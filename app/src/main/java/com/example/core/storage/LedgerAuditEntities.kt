@@ -24,6 +24,13 @@ data class LedgerEvent(
     val trustState: String = "PENDING" // SYNCED, PENDING, LOCAL_ONLY, CONFLICT, INTEGRITY_ISSUE
 ) {
     companion object {
+        fun computeGenesisHash(householdId: String): String {
+            val raw = "FAMILYLEDGER:GENESIS:$householdId"
+            val digest = MessageDigest.getInstance("SHA-256")
+            val hashBytes = digest.digest(raw.toByteArray(Charsets.UTF_8))
+            return "GENESIS_" + hashBytes.joinToString("") { "%02x".format(it) }
+        }
+
         fun computeHash(
             previousHash: String,
             eventId: String,

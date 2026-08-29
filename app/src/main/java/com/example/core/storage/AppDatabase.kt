@@ -65,6 +65,21 @@ abstract class AppDatabase : RoomDatabase() {
                 try {
                     db.execSQL("ALTER TABLE ledger_events ADD COLUMN referenceEntityId TEXT NOT NULL DEFAULT ''")
                 } catch (_: Exception) {}
+
+                db.execSQL("CREATE TABLE IF NOT EXISTS transactions_new (id TEXT PRIMARY KEY NOT NULL, walletId TEXT NOT NULL, memberId TEXT NOT NULL, categoryId TEXT NOT NULL, amount INTEGER NOT NULL, note TEXT NOT NULL, timestamp INTEGER NOT NULL, syncStatus INTEGER NOT NULL DEFAULT 0, updatedAt INTEGER NOT NULL DEFAULT 0, isDeleted INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("INSERT INTO transactions_new SELECT id, walletId, memberId, categoryId, CAST(amount AS INTEGER), note, timestamp, syncStatus, updatedAt, isDeleted FROM transactions")
+                db.execSQL("DROP TABLE transactions")
+                db.execSQL("ALTER TABLE transactions_new RENAME TO transactions")
+
+                db.execSQL("CREATE TABLE IF NOT EXISTS wallet_accounts_new (id TEXT PRIMARY KEY NOT NULL, memberId TEXT NOT NULL, type TEXT NOT NULL, name TEXT NOT NULL, balance INTEGER NOT NULL, monthlyTransferCap INTEGER NOT NULL DEFAULT 0, syncStatus INTEGER NOT NULL DEFAULT 0, updatedAt INTEGER NOT NULL DEFAULT 0, isDeleted INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("INSERT INTO wallet_accounts_new SELECT id, memberId, type, name, CAST(balance AS INTEGER), CAST(monthlyTransferCap AS INTEGER), syncStatus, updatedAt, isDeleted FROM wallet_accounts")
+                db.execSQL("DROP TABLE wallet_accounts")
+                db.execSQL("ALTER TABLE wallet_accounts_new RENAME TO wallet_accounts")
+
+                db.execSQL("CREATE TABLE IF NOT EXISTS categories_new (id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, type TEXT NOT NULL, iconName TEXT NOT NULL DEFAULT '', parentId TEXT, groupId TEXT, isSavings INTEGER NOT NULL DEFAULT 0, syncStatus INTEGER NOT NULL DEFAULT 0, updatedAt INTEGER NOT NULL DEFAULT 0, isDeleted INTEGER NOT NULL DEFAULT 0, budgetLimit INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("INSERT INTO categories_new SELECT id, name, type, iconName, parentId, groupId, isSavings, syncStatus, updatedAt, isDeleted, CAST(budgetLimit AS INTEGER) FROM categories")
+                db.execSQL("DROP TABLE categories")
+                db.execSQL("ALTER TABLE categories_new RENAME TO categories")
             }
         }
 

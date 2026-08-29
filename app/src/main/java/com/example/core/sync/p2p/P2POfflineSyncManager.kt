@@ -12,9 +12,13 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
-class P2POfflineSyncManager(private val dao: HouseholdDao) {
+class P2POfflineSyncManager(
+    private val dao: HouseholdDao,
+    private val auditDao: com.example.core.storage.LedgerAuditDao? = null
+) {
     private val isServerRunning = AtomicBoolean(false)
     private var serverSocket: ServerSocket? = null
+    private val syncProtocol = com.example.core.sync.SyncProtocol(dao, auditDao)
 
     suspend fun createSyncPackage(pairCode: String, senderName: String, senderRole: String): P2PSyncPackage = withContext(Dispatchers.IO) {
         val txs = dao.getAllTransactions().first()
@@ -25,18 +29,7 @@ class P2POfflineSyncManager(private val dao: HouseholdDao) {
     }
 
     suspend fun importSyncPackage(pkg: P2PSyncPackage): P2PImportResult = withContext(Dispatchers.IO) {
-        var importedTxCount = 0; var importedWalletCount = 0; var importedCategoryCount = 0
-        val existingTxs = dao.getAllTransactions().first().associateBy { it.id }
-        val existingCategories = dao.getAllCategories().first().associateBy { it.id }
-        val existingWallets = dao.getAllWallets().first().associateBy { it.id }
-        val existingMembers = dao.getAllMembers().first().associateBy { it.id }
-
-        pkg.members.forEach { m -> if (!existingMembers.containsKey(m.id)) dao.insertMember(m) }
-        pkg.categories.forEach { c -> if (!existingCategories.containsKey(c.id)) { dao.insertCategory(c); importedCategoryCount++ } }
-        pkg.wallets.forEach { w -> if (!existingWallets.containsKey(w.id)) { dao.insertWallet(w); importedWalletCount++ } }
-        pkg.transactions.forEach { t -> if (!existingTxs.containsKey(t.id)) { dao.insertTransaction(t); dao.updateWalletBalance(t.walletId, t.amount); importedTxCount++ } }
-
-        P2PImportResult(true, importedTxCount, importedWalletCount, importedCategoryCount, "Selesai mengimpor $importedTxCount transaksi & $importedWalletCount dompet dari ${pkg.senderName} (${pkg.senderRole})")
+        syncProtocol.reconcileAndCommit(pkg)
     }
 
     suspend fun startLocalWifiHost(port: Int = 8888, pairCode: String, senderName: String, senderRole: String, onClientSynced: (P2PImportResult) -> Unit) = withContext(Dispatchers.IO) {

@@ -2,8 +2,13 @@ package com.example.modules.dashboard
 
 import com.example.modules.dashboard.logic.*
 import com.example.shared.models.*
+import com.example.core.storage.LedgerEventEntity
+import com.example.core.storage.TransferEventEntity
 import org.junit.Assert.*
 import org.junit.Test
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class FamilyLedgerFeaturesTest {
 
@@ -93,5 +98,91 @@ class FamilyLedgerFeaturesTest {
         assertEquals(4_000_000L, summary.netCashflow)
         assertTrue(summary.isSurplus)
         assertEquals(40.0, summary.savingsRate, 0.01)
+    }
+
+    @Test
+    fun testFinancialInvariantsValidation() {
+        val debitTx = Transaction("t_deb", "w1", "m1", "c1", -500_000L, "Transfer out")
+        val creditTx = Transaction("t_cred", "w2", "m1", "c1", 500_000L, "Transfer in")
+
+        // Valid transfer should pass without exception
+        com.example.core.storage.FinancialInvariants.validateTransfer(debitTx, creditTx)
+
+        // Invalid transfer: asymmetric amount
+        val invalidCredit = Transaction("t_cred2", "w2", "m1", "c1", 400_000L, "Mismatch")
+        try {
+            com.example.core.storage.FinancialInvariants.validateTransfer(debitTx, invalidCredit)
+            fail("Should throw InvariantViolationException for mismatched amounts")
+        } catch (e: com.example.core.storage.FinancialInvariants.InvariantViolationException) {
+            assertTrue(e.message!!.contains("Debit amount"))
+        }
+
+        // Invalid transfer: same wallet
+        val sameWalletCredit = Transaction("t_cred3", "w1", "m1", "c1", 500_000L, "Same wallet")
+        try {
+            com.example.core.storage.FinancialInvariants.validateTransfer(debitTx, sameWalletCredit)
+            fail("Should throw InvariantViolationException for same wallet transfer")
+        } catch (e: com.example.core.storage.FinancialInvariants.InvariantViolationException) {
+            assertTrue(e.message!!.contains("must be different"))
+        }
+    }
+
+    @Test
+    fun testDeterministicGenesisHash() {
+        val hash1 = LedgerEventEntity.computeGenesisHash("FAM-HOUSEHOLD-123")
+        val hash2 = LedgerEventEntity.computeGenesisHash("FAM-HOUSEHOLD-123")
+        assertEquals(hash1, hash2)
+        assertTrue(hash1.startsWith("GENESIS_"))
+        assertEquals(72, hash1.length) // "GENESIS_" + 64 hex characters
+    }
+
+    @Test
+    fun testConflictResolverLWW() {
+        val oldTx = Transaction("t1", "w1", "m1", "c1", -100_000L, "Note", updatedAt = 1000L)
+        val newTx = Transaction("t1", "w1", "m1", "c1", -150_000L, "Updated Note", updatedAt = 2000L)
+
+        val resNewer = com.example.core.sync.ConflictResolver.resolveTransaction(oldTx, newTx)
+        assertEquals(com.example.core.sync.ConflictResolution.ACCEPT_INCOMING, resNewer)
+
+        val resOlder = com.example.core.sync.ConflictResolver.resolveTransaction(newTx, oldTx)
+        assertEquals(com.example.core.sync.ConflictResolution.KEEP_LOCAL, resOlder)
+    }
+
+    @Test
+    fun testConcurrentHashChainGeneration() = runBlocking {
+        val storedEvents = mutableListOf<LedgerEventEntity>()
+        val mockDao = object : com.example.core.storage.LedgerAuditDao {
+            override fun getAllLedgerEvents(): kotlinx.coroutines.flow.Flow<List<LedgerEventEntity>> = kotlinx.coroutines.flow.flowOf(storedEvents)
+            override fun getLedgerEventsByHousehold(householdId: String): kotlinx.coroutines.flow.Flow<List<LedgerEventEntity>> = kotlinx.coroutines.flow.flowOf(storedEvents.filter { it.householdId == householdId })
+            override suspend fun getLatestLedgerEvent(householdId: String): LedgerEventEntity? = synchronized(storedEvents) { storedEvents.filter { it.householdId == householdId }.maxByOrNull { it.logicalClock } }
+            override suspend fun getLatestLedgerEvent(): LedgerEventEntity? = synchronized(storedEvents) { storedEvents.maxByOrNull { it.logicalClock } }
+            override suspend fun insertLedgerEvent(event: LedgerEventEntity) { synchronized(storedEvents) { storedEvents.add(event) } }
+            override suspend fun insertLedgerEvents(events: List<LedgerEventEntity>) { synchronized(storedEvents) { storedEvents.addAll(events) } }
+            override suspend fun getPendingLedgerEvents(): List<LedgerEventEntity> = emptyList()
+            override suspend fun markLedgerEventsSynced(ids: List<String>) {}
+            override fun getAllTransfers(): kotlinx.coroutines.flow.Flow<List<TransferEventEntity>> = kotlinx.coroutines.flow.flowOf(emptyList())
+            override suspend fun insertTransfer(transfer: TransferEventEntity) {}
+            override suspend fun updateTransferStatus(transferId: String, status: String, confirmedBy: String) {}
+            override suspend fun updateTransferAcknowledgment(transferId: String, ack: String) {}
+        }
+
+        val ledgerEngine = com.example.core.storage.LedgerEngineService(mockDao)
+        val jobs = (1..10).map { i ->
+            launch(Dispatchers.Default) {
+                ledgerEngine.recordEvent(
+                    householdId = "FAM-CONCURRENT",
+                    entityId = "entity_$i",
+                    actorId = "actor_$i",
+                    deviceId = "DEV1",
+                    eventType = "EXPENSE",
+                    amount = i * 1000L,
+                    reason = "Concurrent test $i"
+                )
+            }
+        }
+        jobs.forEach { it.join() }
+
+        assertEquals(10, storedEvents.size)
+        assertTrue(ledgerEngine.verifyHashChain(storedEvents, "FAM-CONCURRENT"))
     }
 }
