@@ -20,6 +20,7 @@ class DefaultAppContainer(override val context: Context) : AppContainer {
     }
 
     override val householdRepository: HouseholdRepository by lazy {
-        HouseholdRepository(AppDatabase.getDatabase(context).householdDao())
+        val db = AppDatabase.getDatabase(context)
+        HouseholdRepository(db.householdDao(), db.ledgerAuditDao())
     }
 }

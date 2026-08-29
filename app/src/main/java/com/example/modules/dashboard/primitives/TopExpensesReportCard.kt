@@ -16,9 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.shared.models.Category
-import com.example.shared.models.Member
-import com.example.shared.models.Transaction
+import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -38,7 +36,7 @@ fun TopExpensesReportCard(
 
     val topExpenses = transactions
         .filter { t -> t.amount < 0 && categories.find { it.id == t.categoryId }?.type == "Expense" }
-        .sortedBy { it.amount } // lowest amount is largest negative
+        .sortedBy { it.amount }
         .take(5)
 
     Card(
@@ -48,16 +46,8 @@ fun TopExpensesReportCard(
         border = BorderStroke(1.dp, DesignTokens.BorderGlass),
         elevation = CardDefaults.cardElevation(defaultElevation = DesignTokens.ElevationSoft)
     ) {
-        Column(
-            modifier = Modifier.padding(DesignTokens.PaddingMedium),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = "5 Pengeluaran Terbesar Bulan Ini",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = DesignTokens.TextPrimary
-            )
+        Column(modifier = Modifier.padding(DesignTokens.PaddingMedium), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("5 Pengeluaran Terbesar Bulan Ini", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DesignTokens.TextPrimary)
 
             if (topExpenses.isEmpty()) {
                 Text("Belum ada transaksi pengeluaran bulan ini.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
@@ -69,58 +59,25 @@ fun TopExpensesReportCard(
                     val tagBg = if (member?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onTransactionClick?.invoke(tx) },
+                        modifier = Modifier.fillMaxWidth().clickable { onTransactionClick?.invoke(tx) },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(DesignTokens.SurfaceGlass),
-                                contentAlignment = Alignment.Center
-                            ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
+                            Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(DesignTokens.SurfaceGlass), contentAlignment = Alignment.Center) {
                                 Text("#${index + 1}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DesignTokens.TextSecondary)
                             }
                             Column {
-                                Text(
-                                    text = tx.note.ifEmpty { category?.name ?: "Pengeluaran" },
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 13.sp,
-                                    color = DesignTokens.TextPrimary,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                Text(tx.note.ifEmpty { category?.name ?: "Pengeluaran" }, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = DesignTokens.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Text(dateFmt.format(Date(tx.timestamp)), fontSize = 10.sp, color = DesignTokens.TextSecondary)
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(tagBg.copy(alpha = 0.2f))
-                                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                                    ) {
+                                    Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(tagBg.copy(alpha = 0.2f)).padding(horizontal = 4.dp, vertical = 1.dp)) {
                                         Text(memberTag, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = tagBg)
                                     }
                                 }
                             }
                         }
-
-                        Text(
-                            text = "-${fmt.format(-tx.amount)}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFFFF5252)
-                        )
+                        Text("-${fmt.format(-tx.amount)}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFFFF5252))
                     }
 
                     if (index < topExpenses.lastIndex) {
@@ -131,3 +88,4 @@ fun TopExpensesReportCard(
         }
     }
 }
+

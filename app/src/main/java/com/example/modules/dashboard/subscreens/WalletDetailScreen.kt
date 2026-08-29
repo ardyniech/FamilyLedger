@@ -47,11 +47,7 @@ fun WalletDetailScreen(
                 title = { Text(wallet?.name ?: "Wallet Detail", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = DesignTokens.TextPrimary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -60,68 +56,34 @@ fun WalletDetailScreen(
         containerColor = Color.Transparent
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(DesignTokens.PaddingMedium),
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(DesignTokens.PaddingMedium),
             verticalArrangement = Arrangement.spacedBy(DesignTokens.PaddingMedium)
         ) {
-            // Wallet Card Header
             item {
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp),
+                    modifier = Modifier.fillMaxWidth().height(140.dp),
                     shape = RoundedCornerShape(DesignTokens.CornerRadius),
                     elevation = CardDefaults.cardElevation(defaultElevation = DesignTokens.ElevationSoft)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(tint, tint.copy(alpha = 0.7f))
-                                )
-                            )
-                            .padding(DesignTokens.PaddingLarge)
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                    Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(listOf(tint, tint.copy(alpha = 0.7f)))).padding(DesignTokens.PaddingLarge)) {
+                        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(wallet?.name ?: "Unknown Wallet", color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 Text(wallet?.type ?: "Savings", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
                             }
                             Column {
                                 Text("Balance", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    text = formatter.format(wallet?.balance ?: 0.0),
-                                    color = Color.White,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
+                                Text(formatter.format(wallet?.balance ?: 0.0), color = Color.White, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }
                 }
             }
 
-            // Title
             item {
-                Text(
-                    text = "Transaction History",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = DesignTokens.TextPrimary
-                )
+                Text("Transaction History", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = DesignTokens.TextPrimary)
             }
 
-            // Transaction List
             if (walletTransactions.isEmpty()) {
                 item {
                     Card(
@@ -130,22 +92,14 @@ fun WalletDetailScreen(
                         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass)
                     ) {
-                        Box(
-                            modifier = Modifier.padding(DesignTokens.PaddingLarge).fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.padding(DesignTokens.PaddingLarge).fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text("No transactions logged for this wallet yet.", color = DesignTokens.TextSecondary)
                         }
                     }
                 }
             } else {
                 items(walletTransactions) { tx ->
-                    TransactionItem(
-                        tx = tx,
-                        member = member,
-                        category = categories.find { it.id == tx.categoryId },
-                        onClick = { onTransactionClick(tx) }
-                    )
+                    TransactionItem(tx = tx, member = member, category = categories.find { it.id == tx.categoryId }, onClick = { onTransactionClick(tx) })
                 }
             }
         }

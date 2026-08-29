@@ -1,9 +1,6 @@
 package com.example.core.sync.p2p
 
-import com.example.shared.models.Category
-import com.example.shared.models.Member
-import com.example.shared.models.Transaction
-import com.example.shared.models.WalletAccount
+import com.example.shared.models.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -31,161 +28,51 @@ data class P2PSyncPackage(
     val members: List<Member>
 ) {
     fun toJsonString(): String {
-        val root = JSONObject()
-        root.put("pairCode", pairCode)
-        root.put("senderName", senderName)
-        root.put("senderRole", senderRole)
-        root.put("timestamp", timestamp)
-
-        val txArray = JSONArray()
-        transactions.forEach { t ->
-            val obj = JSONObject()
-            obj.put("id", t.id)
-            obj.put("walletId", t.walletId)
-            obj.put("memberId", t.memberId)
-            obj.put("categoryId", t.categoryId)
-            obj.put("amount", t.amount)
-            obj.put("note", t.note)
-            obj.put("timestamp", t.timestamp)
-            txArray.put(obj)
+        val root = JSONObject().apply {
+            put("pairCode", pairCode); put("senderName", senderName); put("senderRole", senderRole); put("timestamp", timestamp)
+            put("transactions", JSONArray().apply { transactions.forEach { t -> put(JSONObject().apply { put("id", t.id); put("walletId", t.walletId); put("memberId", t.memberId); put("categoryId", t.categoryId); put("amount", t.amount); put("note", t.note); put("timestamp", t.timestamp) }) } })
+            put("wallets", JSONArray().apply { wallets.forEach { w -> put(JSONObject().apply { put("id", w.id); put("memberId", w.memberId); put("type", w.type); put("name", w.name); put("balance", w.balance) }) } })
+            put("categories", JSONArray().apply { categories.forEach { c -> put(JSONObject().apply { put("id", c.id); put("name", c.name); put("type", c.type); put("budgetLimit", c.budgetLimit); c.parentId?.let { put("parentId", it) } }) } })
+            put("members", JSONArray().apply { members.forEach { m -> put(JSONObject().apply { put("id", m.id); put("householdId", m.householdId); put("role", m.role); put("name", m.name); put("avatarUrl", m.avatarUrl) }) } })
         }
-        root.put("transactions", txArray)
-
-        val walletArray = JSONArray()
-        wallets.forEach { w ->
-            val obj = JSONObject()
-            obj.put("id", w.id)
-            obj.put("memberId", w.memberId)
-            obj.put("type", w.type)
-            obj.put("name", w.name)
-            obj.put("balance", w.balance)
-            walletArray.put(obj)
-        }
-        root.put("wallets", walletArray)
-
-        val catArray = JSONArray()
-        categories.forEach { c ->
-            val obj = JSONObject()
-            obj.put("id", c.id)
-            obj.put("name", c.name)
-            obj.put("type", c.type)
-            obj.put("budgetLimit", c.budgetLimit)
-            c.parentId?.let { obj.put("parentId", it) }
-            catArray.put(obj)
-        }
-        root.put("categories", catArray)
-
-        val memArray = JSONArray()
-        members.forEach { m ->
-            val obj = JSONObject()
-            obj.put("id", m.id)
-            obj.put("householdId", m.householdId)
-            obj.put("name", m.name)
-            obj.put("role", m.role)
-            obj.put("avatarUrl", m.avatarUrl)
-            memArray.put(obj)
-        }
-        root.put("members", memArray)
-
         return root.toString()
     }
 
     fun toCompressedBase64(): String {
-        val json = toJsonString()
         val bos = ByteArrayOutputStream()
-        val gzos = GZIPOutputStream(bos)
-        gzos.write(json.toByteArray(Charsets.UTF_8))
-        gzos.finish()
-        gzos.close()
+        GZIPOutputStream(bos).use { it.write(toJsonString().toByteArray(Charsets.UTF_8)) }
         return Base64.getEncoder().encodeToString(bos.toByteArray())
     }
 
     companion object {
         fun fromJsonString(jsonString: String): P2PSyncPackage {
             val root = JSONObject(jsonString)
-            val pairCode = root.optString("pairCode", "FAM-8821")
-            val senderName = root.optString("senderName", "Pasangan")
-            val senderRole = root.optString("senderRole", "Husband")
-            val timestamp = root.optLong("timestamp", System.currentTimeMillis())
-
-            val txList = mutableListOf<Transaction>()
             val txArr = root.optJSONArray("transactions") ?: JSONArray()
-            for (i in 0 until txArr.length()) {
+            val txList = (0 until txArr.length()).map { i ->
                 val o = txArr.getJSONObject(i)
-                txList.add(
-                    Transaction(
-                        id = o.getString("id"),
-                        walletId = o.getString("walletId"),
-                        memberId = o.getString("memberId"),
-                        categoryId = o.getString("categoryId"),
-                        amount = o.getDouble("amount"),
-                        note = o.optString("note", ""),
-                        timestamp = o.getLong("timestamp")
-                    )
-                )
+                Transaction(o.getString("id"), o.getString("walletId"), o.getString("memberId"), o.getString("categoryId"), o.getDouble("amount"), o.optString("note", ""), o.getLong("timestamp"))
             }
-
-            val walletList = mutableListOf<WalletAccount>()
             val wArr = root.optJSONArray("wallets") ?: JSONArray()
-            for (i in 0 until wArr.length()) {
+            val walletList = (0 until wArr.length()).map { i ->
                 val o = wArr.getJSONObject(i)
-                walletList.add(
-                    WalletAccount(
-                        id = o.getString("id"),
-                        memberId = o.getString("memberId"),
-                        type = o.getString("type"),
-                        name = o.getString("name"),
-                        balance = o.getDouble("balance")
-                    )
-                )
+                WalletAccount(o.getString("id"), o.getString("memberId"), o.getString("type"), o.getString("name"), o.getDouble("balance"))
             }
-
-            val catList = mutableListOf<Category>()
             val cArr = root.optJSONArray("categories") ?: JSONArray()
-            for (i in 0 until cArr.length()) {
+            val catList = (0 until cArr.length()).map { i ->
                 val o = cArr.getJSONObject(i)
-                catList.add(
-                    Category(
-                        id = o.getString("id"),
-                        name = o.getString("name"),
-                        type = o.getString("type"),
-                        parentId = if (o.has("parentId")) o.getString("parentId") else null,
-                        budgetLimit = if (o.has("budgetLimit")) o.getDouble("budgetLimit") else 0.0
-                    )
-                )
+                Category(id = o.getString("id"), name = o.getString("name"), type = o.getString("type"), parentId = if (o.has("parentId")) o.getString("parentId") else null, budgetLimit = if (o.has("budgetLimit")) o.getDouble("budgetLimit") else 0.0)
             }
-
-            val memList = mutableListOf<Member>()
             val mArr = root.optJSONArray("members") ?: JSONArray()
-            for (i in 0 until mArr.length()) {
+            val memList = (0 until mArr.length()).map { i ->
                 val o = mArr.getJSONObject(i)
-                memList.add(
-                    Member(
-                        id = o.getString("id"),
-                        householdId = o.optString("householdId", "h1"),
-                        role = o.getString("role"),
-                        name = o.getString("name"),
-                        avatarUrl = o.optString("avatarUrl", "")
-                    )
-                )
+                Member(o.getString("id"), o.optString("householdId", "h1"), o.getString("role"), o.getString("name"), o.optString("avatarUrl", ""))
             }
-
-            return P2PSyncPackage(
-                pairCode = pairCode,
-                senderName = senderName,
-                senderRole = senderRole,
-                timestamp = timestamp,
-                transactions = txList,
-                wallets = walletList,
-                categories = catList,
-                members = memList
-            )
+            return P2PSyncPackage(root.optString("pairCode", "FAM-8821"), root.optString("senderName", "Pasangan"), root.optString("senderRole", "Husband"), root.optLong("timestamp", System.currentTimeMillis()), txList, walletList, catList, memList)
         }
 
         fun fromCompressedBase64(base64Str: String): P2PSyncPackage {
             val bytes = Base64.getDecoder().decode(base64Str.trim())
-            val gis = GZIPInputStream(ByteArrayInputStream(bytes))
-            val json = gis.bufferedReader(Charsets.UTF_8).use { it.readText() }
+            val json = GZIPInputStream(ByteArrayInputStream(bytes)).bufferedReader(Charsets.UTF_8).use { it.readText() }
             return fromJsonString(json)
         }
     }

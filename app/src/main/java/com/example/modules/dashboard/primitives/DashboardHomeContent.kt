@@ -27,7 +27,7 @@ fun DashboardHomeContent(
     selectedPeriod: DashboardPeriod,
     periodSummary: PeriodSummary,
     transferNotification: TransferNotification? = null,
-    budgetExceedances: List<com.example.modules.dashboard.CategoryExceedance> = emptyList(),
+    budgetExceedances: List<CategoryExceedance> = emptyList(),
     onPeriodSelected: (DashboardPeriod) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onSyncBadgeClick: () -> Unit,

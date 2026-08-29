@@ -11,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,15 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.core.sync.SyncState
+import com.example.core.sync.p2p.P2POfflineSyncManager
 import com.example.modules.dashboard.primitives.*
+import com.example.modules.updater.logic.UpdaterManager
+import com.example.modules.updater.models.UpdateStatus
 import com.example.shared.models.AuthUiState
 import com.example.shared.models.Member
 import com.example.shared.theme.DesignTokens
-
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
-import com.example.modules.updater.logic.UpdaterManager
-import com.example.modules.updater.models.UpdateStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +36,7 @@ fun PairingScreen(
     pairCode: String,
     syncState: SyncState,
     authState: AuthUiState,
-    p2pManager: com.example.core.sync.p2p.P2POfflineSyncManager,
+    p2pManager: P2POfflineSyncManager,
     updaterManager: UpdaterManager,
     onSelectActiveMember: (String) -> Unit,
     onJoinHousehold: (String) -> Unit,
@@ -50,27 +48,21 @@ fun PairingScreen(
 ) {
     val activeMember = members.find { it.id == activeMemberId }
     val activeRole = activeMember?.role ?: "Husband"
+    val status by updaterManager.status.collectAsState()
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Sinkronisasi & Akun Pasangan", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = DesignTokens.TextPrimary)
-                    }
-                },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = DesignTokens.TextPrimary) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
         containerColor = Color.Transparent
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Card(colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass), border = BorderStroke(1.dp, DesignTokens.BorderGlass), modifier = Modifier.fillMaxWidth()) {
@@ -85,71 +77,28 @@ fun PairingScreen(
                 }
             }
 
-            P2POfflineSyncCard(
-                p2pManager = p2pManager,
-                pairCode = pairCode,
-                activeRole = activeRole
-            )
-
-            LocalAuthCard(
-                authState = authState,
-                onSignIn = onSignInLocal,
-                onCreateAccount = onCreateLocalAccount,
-                onSignOut = onSignOut,
-                onClearError = onClearAuthError
-            )
-
+            P2POfflineSyncCard(p2pManager = p2pManager, pairCode = pairCode, activeRole = activeRole)
+            LocalAuthCard(authState = authState, onSignIn = onSignInLocal, onCreateAccount = onCreateLocalAccount, onSignOut = onSignOut, onClearError = onClearAuthError)
             PairingRoleSelector(members = members, activeMemberId = activeMemberId, onSelectActiveMember = onSelectActiveMember)
-
             PairingCodeCard(pairCode = pairCode)
-
             JoinHouseholdCard(onJoinHousehold = onJoinHousehold)
-
             SyncStatusCard(syncState = syncState)
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass),
-                border = BorderStroke(1.dp, DesignTokens.BorderGlass),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "Pembaruan Aplikasi (OTA)",
-                        fontWeight = FontWeight.Bold,
-                        color = DesignTokens.TextPrimary,
-                        fontSize = 15.sp
-                    )
-                    Text(
-                        "Periksa dan unduh rilis versi terbaru langsung secara mandiri dari GitHub.",
-                        fontSize = 12.sp,
-                        color = DesignTokens.TextSecondary
-                    )
-                    
-                    val status by updaterManager.status.collectAsState()
-                    val scope = rememberCoroutineScope()
-                    
-                    Button(
-                        onClick = {
-                            updaterManager.checkForUpdates(scope)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
-                    ) {
-                        Text(
-                            when (status) {
-                                is UpdateStatus.Checking -> "Memeriksa..."
-                                is UpdateStatus.Downloading -> "Mengunduh..."
-                                is UpdateStatus.Verifying -> "Memverifikasi..."
-                                is UpdateStatus.ReadyToInstall -> "Siap Pasang"
-                                else -> "Periksa Pembaruan"
-                            }
-                        )
+            Card(colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass), border = BorderStroke(1.dp, DesignTokens.BorderGlass), modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Pembaruan Aplikasi (OTA)", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 15.sp)
+                    Text("Periksa dan unduh rilis versi terbaru langsung secara mandiri dari GitHub.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                    Button(onClick = { updaterManager.checkForUpdates(scope) }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)) {
+                        Text(when (status) {
+                            is UpdateStatus.Checking -> "Memeriksa..."
+                            is UpdateStatus.Downloading -> "Mengunduh..."
+                            is UpdateStatus.Verifying -> "Memverifikasi..."
+                            is UpdateStatus.ReadyToInstall -> "Siap Pasang"
+                            else -> "Periksa Pembaruan"
+                        })
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

@@ -1,22 +1,16 @@
 package com.example.modules.dashboard.primitives
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,9 +46,7 @@ fun LoveReactionBanner(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(DesignTokens.PaddingMedium),
+            modifier = Modifier.fillMaxWidth().padding(DesignTokens.PaddingMedium),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -62,24 +54,11 @@ fun LoveReactionBanner(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Apresiasi & Kasih Sayang 💕",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = DesignTokens.TextPrimary
-                )
-                Text(
-                    text = "Kirim ke $partnerName",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DesignTokens.AmberAccent,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Apresiasi & Kasih Sayang 💕", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
+                Text("Kirim ke $partnerName", style = MaterialTheme.typography.bodySmall, color = DesignTokens.AmberAccent, fontWeight = FontWeight.SemiBold)
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 reactions.forEach { (emoji, label) ->
                     Box(
                         modifier = Modifier
@@ -100,27 +79,15 @@ fun LoveReactionBanner(
                 }
             }
 
-            AnimatedVisibility(
-                visible = lastSentMessage != null,
-                enter = fadeIn(tween(200)),
-                exit = fadeOut(tween(200))
-            ) {
+            AnimatedVisibility(visible = lastSentMessage != null, enter = fadeIn(tween(200)), exit = fadeOut(tween(200))) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DesignTokens.EmeraldGlow.copy(alpha = 0.15f))
-                        .padding(vertical = 4.dp),
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(DesignTokens.EmeraldGlow.copy(alpha = 0.15f)).padding(vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = lastSentMessage ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DesignTokens.EmeraldGlow,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = lastSentMessage ?: "", style = MaterialTheme.typography.bodySmall, color = DesignTokens.EmeraldGlow, fontWeight = FontWeight.Bold)
                 }
             }
         }
     }
 }
+

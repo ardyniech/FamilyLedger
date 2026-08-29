@@ -1,7 +1,5 @@
 package com.example.modules.updater.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -23,16 +21,12 @@ import com.example.shared.theme.DesignTokens
 import java.util.Locale
 
 @Composable
-fun UpdateProgressModal(
-    updaterManager: UpdaterManager,
-    onDismiss: () -> Unit
-) {
+fun UpdateProgressModal(updaterManager: UpdaterManager, onDismiss: () -> Unit) {
     val status by updaterManager.status.collectAsState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    // Dialog presentation wrapping
     Dialog(onDismissRequest = { if (status !is UpdateStatus.Downloading) onDismiss() }) {
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -51,16 +45,10 @@ fun UpdateProgressModal(
                         val info = currentStatus.info
                         Text(info.name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.CobaltAccent)
                         Text(info.body.ifEmpty { "Pembaruan performa dan keamanan sistem." }, fontSize = 12.sp, color = DesignTokens.TextSecondary)
-                        
                         Button(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                updaterManager.startDownload(context, scope)
-                            },
+                            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); updaterManager.startDownload(context, scope) },
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
-                        ) {
-                            Text("Unduh & Pasang Sekarang")
-                        }
+                        ) { Text("Unduh & Pasang Sekarang") }
                     }
                     is UpdateStatus.Downloading -> {
                         Text("Mengunduh payload...", fontSize = 13.sp, color = DesignTokens.TextPrimary)
@@ -82,55 +70,25 @@ fun UpdateProgressModal(
                     is UpdateStatus.ReadyToInstall -> {
                         LaunchedEffect(Unit) { haptic.performHapticFeedback(HapticFeedbackType.LongPress) }
                         Text("Siap Memasang Pembaruan", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow)
-                        
                         if (!PackageInstallerManager.canInstallPackages(context)) {
-                            Text(
-                                "Silakan aktifkan opsi 'Izinkan pemasangan aplikasi dari sumber tidak dikenal' untuk aplikasi ini di Pengaturan Sistem Anda.",
-                                fontSize = 11.sp,
-                                color = DesignTokens.RoseAccent,
-                                fontWeight = FontWeight.Medium
-                            )
+                            Text("Aktifkan izin 'Install unknown apps' di Pengaturan Sistem.", fontSize = 11.sp, color = DesignTokens.RoseAccent, fontWeight = FontWeight.Medium)
                         }
-                        
                         Button(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                updaterManager.installUpdate(context)
-                            },
+                            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); updaterManager.installUpdate(context) },
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.EmeraldGlow)
-                        ) {
-                            Text("Pasang Pembaruan")
-                        }
+                        ) { Text("Pasang Pembaruan") }
                     }
                     is UpdateStatus.UpToDate -> {
                         Text("Aplikasi Sudah Terbaru", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow)
-                        Text(
-                            "Anda sudah menggunakan versi terbaru (v1.0) dari FamilyLedger.\nTidak ada pembaruan lebih baru yang ditemukan di GitHub saat ini.",
-                            fontSize = 12.sp,
-                            color = DesignTokens.TextSecondary,
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        Button(
-                            onClick = { updaterManager.resetToIdle(); onDismiss() },
-                            colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
-                        ) {
-                            Text("Selesai")
-                        }
+                        Text("FamilyLedger sudah versi terbaru (v1.0).", fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Button(onClick = { updaterManager.resetToIdle(); onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)) { Text("Selesai") }
                     }
                     is UpdateStatus.Failed -> {
                         Text("Gagal Memeriksa", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.RoseAccent)
                         Text(currentStatus.errorMsg, fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                        Button(
-                            onClick = { updaterManager.resetToIdle(); onDismiss() },
-                            colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.RoseAccent)
-                        ) {
-                            Text("Tutup")
-                        }
+                        Button(onClick = { updaterManager.resetToIdle(); onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.RoseAccent)) { Text("Tutup") }
                     }
-                    else -> {
-                        CircularProgressIndicator(color = DesignTokens.CobaltAccent)
-                    }
+                    else -> CircularProgressIndicator(color = DesignTokens.CobaltAccent)
                 }
             }
         }

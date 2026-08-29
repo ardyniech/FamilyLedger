@@ -1,13 +1,11 @@
 package com.example.modules.dashboard.dialogs
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -55,58 +53,27 @@ fun CsvExportDialog(
             shape = RoundedCornerShape(DesignTokens.CornerRadius),
             color = DesignTokens.Surface,
             tonalElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(DesignTokens.PaddingMedium)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(DesignTokens.PaddingMedium).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "📤 Ekspor Data Transaksi (CSV)",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = DesignTokens.TextPrimary
-                )
-                Text(
-                    text = "Total ${transactions.size} transaksi siap diekspor.",
-                    fontSize = 12.sp,
-                    color = DesignTokens.TextSecondary
-                )
+                Text("📤 Ekspor Data Transaksi (CSV)", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = DesignTokens.TextPrimary)
+                Text("Total ${transactions.size} transaksi siap diekspor.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass),
                     border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
+                    modifier = Modifier.fillMaxWidth().height(160.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        Text(
-                            text = csvText,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = DesignTokens.TextPrimary
-                        )
+                    Box(modifier = Modifier.padding(10.dp).verticalScroll(rememberScrollState())) {
+                        Text(text = csvText, fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = DesignTokens.TextPrimary)
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
                         Text("Tutup", color = DesignTokens.TextSecondary, fontSize = 13.sp)
                     }
                     Button(
@@ -118,15 +85,11 @@ fun CsvExportDialog(
                         colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.EmeraldGlow),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text(
-                            text = if (copied) "✓ Tersalin!" else "📋 Salin Teks CSV",
-                            fontWeight = FontWeight.Bold,
-                            color = androidx.compose.ui.graphics.Color.White,
-                            fontSize = 13.sp
-                        )
+                        Text(if (copied) "✓ Tersalin!" else "📋 Salin Teks CSV", fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White, fontSize = 13.sp)
                     }
                 }
             }
         }
     }
 }
+

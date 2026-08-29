@@ -4,14 +4,17 @@ import com.example.shared.models.*
 import com.example.core.sync.SyncEngine
 import kotlinx.coroutines.flow.Flow
 
-class HouseholdRepository(val dao: HouseholdDao) {
+class HouseholdRepository(val dao: HouseholdDao, val auditDao: LedgerAuditDao) {
     val syncEngine = SyncEngine(dao)
     val p2pSyncManager = com.example.core.sync.p2p.P2POfflineSyncManager(dao)
+    val ledgerEngine = LedgerEngineService(auditDao)
 
     val members: Flow<List<Member>> = dao.getAllMembers()
     val wallets: Flow<List<WalletAccount>> = dao.getAllWallets()
     val categories: Flow<List<Category>> = dao.getAllCategories()
     val transactions: Flow<List<Transaction>> = dao.getAllTransactions()
+    val ledgerEvents: Flow<List<LedgerEventEntity>> = auditDao.getAllLedgerEvents()
+    val internalTransfers: Flow<List<TransferEventEntity>> = auditDao.getAllTransfers()
 
     suspend fun addMember(member: Member) = dao.insertMember(member)
     suspend fun addWallet(wallet: WalletAccount) = dao.insertWallet(wallet)

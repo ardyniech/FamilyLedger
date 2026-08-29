@@ -16,11 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.modules.dashboard.primitives.CategorySelectorRow
-import com.example.modules.dashboard.primitives.CustomKeypad
-import com.example.modules.dashboard.primitives.DateTimePickerRow
-import com.example.modules.dashboard.primitives.TransactionTypeToggle
-import com.example.modules.dashboard.primitives.WalletSelectorRow
+import com.example.modules.dashboard.primitives.*
 import com.example.shared.models.Category
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
@@ -43,9 +39,7 @@ fun AddTransactionModal(
         categories.filter { if (isIncome) it.type == "Income" else it.type == "Expense" }
     }
     var selectedCategoryId by remember { mutableStateOf("") }
-    LaunchedEffect(isIncome, filteredCategories) {
-        selectedCategoryId = filteredCategories.firstOrNull()?.id ?: ""
-    }
+    LaunchedEffect(isIncome, filteredCategories) { selectedCategoryId = filteredCategories.firstOrNull()?.id ?: "" }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -63,10 +57,7 @@ fun AddTransactionModal(
                 TransactionTypeToggle(isIncome = isIncome, onToggle = { isIncome = it })
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingMedium))
 
-                DateTimePickerRow(
-                    selectedTimestamp = selectedTimestamp,
-                    onTimestampChanged = { selectedTimestamp = it }
-                )
+                DateTimePickerRow(selectedTimestamp = selectedTimestamp, onTimestampChanged = { selectedTimestamp = it })
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingLarge))
 
                 WalletSelectorRow(wallets = wallets, selectedWalletId = selectedWalletId, onSelectWallet = { selectedWalletId = it })
@@ -101,10 +92,7 @@ fun AddTransactionModal(
                     when (key) {
                         "C" -> amount = ""
                         "Del" -> if (amount.isNotEmpty()) amount = amount.dropLast(1)
-                        "=" -> {
-                            val res = MathUtils.evaluateMath(amount)
-                            if (res != null) amount = if (res % 1.0 == 0.0) res.toLong().toString() else res.toString()
-                        }
+                        "=" -> MathUtils.evaluateMath(amount)?.let { res -> amount = if (res % 1.0 == 0.0) res.toLong().toString() else res.toString() }
                         "" -> {}
                         else -> if (amount.length < 24) amount += key
                     }
@@ -112,17 +100,15 @@ fun AddTransactionModal(
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingLarge))
 
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(DesignTokens.CornerRadius))
+                    modifier = Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(DesignTokens.CornerRadius))
                         .background(Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow)))
                         .clickable {
                             if (amount.isNotEmpty() && note.isNotEmpty()) {
-                                val result = MathUtils.evaluateMath(amount)
-                                if (result != null && result > 0) {
-                                    onSubmit(result, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp)
-                                    onDismiss()
+                                MathUtils.evaluateMath(amount)?.let { result ->
+                                    if (result > 0) {
+                                        onSubmit(result, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp)
+                                        onDismiss()
+                                    }
                                 }
                             }
                         },

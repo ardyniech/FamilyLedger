@@ -44,73 +44,38 @@ fun EditTransactionDialog(
                     Button(
                         onClick = { isIncome = false },
                         colors = ButtonDefaults.buttonColors(containerColor = if (!isIncome) Color(0xFFFF5252) else DesignTokens.Surface),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Pengeluaran", color = if (!isIncome) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp)
-                    }
+                        modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp)
+                    ) { Text("Pengeluaran", color = if (!isIncome) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp) }
                     Button(
                         onClick = { isIncome = true },
                         colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) DesignTokens.EmeraldGlow else DesignTokens.Surface),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Pemasukan", color = if (isIncome) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp)
-                    }
+                        modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp)
+                    ) { Text("Pemasukan", color = if (isIncome) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp) }
                 }
 
-                DateTimePickerRow(
-                    selectedTimestamp = selectedTimestamp,
-                    onTimestampChanged = { selectedTimestamp = it }
-                )
+                DateTimePickerRow(selectedTimestamp = selectedTimestamp, onTimestampChanged = { selectedTimestamp = it })
 
-                OutlinedTextField(
-                    value = amountText,
-                    onValueChange = { input -> amountText = input.filter { it.isDigit() } },
-                    label = { Text("Nominal (Rp)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = noteText,
-                    onValueChange = { noteText = it },
-                    label = { Text("Catatan") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                OutlinedTextField(value = amountText, onValueChange = { input -> amountText = input.filter { it.isDigit() } }, label = { Text("Nominal (Rp)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = noteText, onValueChange = { noteText = it }, label = { Text("Catatan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
 
                 Text("Pilih Dompet", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = DesignTokens.TextPrimary)
                 Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     wallets.forEach { w ->
                         val isSelected = w.id == selectedWalletId
                         Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) DesignTokens.CobaltAccent else DesignTokens.Surface)
-                                .clickable { selectedWalletId = w.id }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(w.name, color = if (isSelected) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                        }
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.CobaltAccent else DesignTokens.Surface).clickable { selectedWalletId = w.id }.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) { Text(w.name, color = if (isSelected) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     }
                 }
 
                 Text("Pilih Kategori", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = DesignTokens.TextPrimary)
                 Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val filteredCats = categories.filter { if (isIncome) it.type == "Income" else it.type == "Expense" }
-                    val displayCats = if (filteredCats.isEmpty()) categories else filteredCats
-                    displayCats.forEach { c ->
+                    (if (filteredCats.isEmpty()) categories else filteredCats).forEach { c ->
                         val isSelected = c.id == selectedCategoryId
                         Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) DesignTokens.AmberAccent else DesignTokens.Surface)
-                                .clickable { selectedCategoryId = c.id }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(c.name, color = if (isSelected) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                        }
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.AmberAccent else DesignTokens.Surface).clickable { selectedCategoryId = c.id }.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) { Text(c.name, color = if (isSelected) Color.White else DesignTokens.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     }
                 }
             }
@@ -120,22 +85,11 @@ fun EditTransactionDialog(
                 onClick = {
                     val amt = amountText.toDoubleOrNull() ?: 0.0
                     val finalAmount = if (isIncome) kotlin.math.abs(amt) else -kotlin.math.abs(amt)
-                    val updated = transaction.copy(
-                        amount = finalAmount,
-                        note = noteText,
-                        walletId = selectedWalletId,
-                        categoryId = selectedCategoryId,
-                        timestamp = selectedTimestamp
-                    )
-                    onSave(updated)
+                    onSave(transaction.copy(amount = finalAmount, note = noteText, walletId = selectedWalletId, categoryId = selectedCategoryId, timestamp = selectedTimestamp))
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
-            ) {
-                Text("Simpan Perubahan")
-            }
+            ) { Text("Simpan Perubahan") }
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) }
-        }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) } }
     )
 }

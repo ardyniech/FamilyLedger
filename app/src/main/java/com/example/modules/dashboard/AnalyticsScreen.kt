@@ -38,26 +38,18 @@ fun AnalyticsScreen(
     var selectedCategoryForDetail by remember { mutableStateOf<Category?>(null) }
     var selectedMemberForDetail by remember { mutableStateOf<Member?>(null) }
     val memberExpenses = remember(transactions, members, categories) {
-        val expenses = transactions.filter { t -> 
-            t.amount < 0 && categories.find { it.id == t.categoryId }?.type == "Expense"
-        }
+        val expenses = transactions.filter { t -> t.amount < 0 && categories.find { it.id == t.categoryId }?.type == "Expense" }
         members.associateWith { m -> expenses.filter { it.memberId == m.id }.sumOf { -it.amount } }
     }
     val totalHouseholdExpense = memberExpenses.values.sum()
     val animProgress = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
-        animProgress.animateTo(1f, animationSpec = tween(900, easing = FastOutSlowInEasing))
-    }
+    LaunchedEffect(Unit) { animProgress.animateTo(1f, animationSpec = tween(900, easing = FastOutSlowInEasing)) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Laporan Transparansi", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary)
-                    }
-                },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
@@ -101,10 +93,7 @@ fun AnalyticsScreen(
                 }
             }
 
-            CategorySpendingTrendChart(
-                transactions = transactions,
-                categories = categories
-            )
+            CategorySpendingTrendChart(transactions = transactions, categories = categories)
 
             CategoryBreakdownReportCard(
                 transactions = transactions,
@@ -112,28 +101,15 @@ fun AnalyticsScreen(
                 totalExpenses = totalHouseholdExpense,
                 onCategoryClick = { selectedCategoryForDetail = it }
             )
-
             Spacer(modifier = Modifier.height(30.dp))
         }
     }
 
     selectedCategoryForDetail?.let { cat ->
-        CategoryTransactionsDialog(
-            category = cat,
-            transactions = transactions,
-            members = members,
-            onTransactionClick = onTransactionClick,
-            onDismiss = { selectedCategoryForDetail = null }
-        )
+        CategoryTransactionsDialog(category = cat, transactions = transactions, members = members, onTransactionClick = onTransactionClick, onDismiss = { selectedCategoryForDetail = null })
     }
 
     selectedMemberForDetail?.let { mem ->
-        MemberTransactionsDialog(
-            member = mem,
-            transactions = transactions,
-            categories = categories,
-            onTransactionClick = onTransactionClick,
-            onDismiss = { selectedMemberForDetail = null }
-        )
+        MemberTransactionsDialog(member = mem, transactions = transactions, categories = categories, onTransactionClick = onTransactionClick, onDismiss = { selectedMemberForDetail = null })
     }
 }

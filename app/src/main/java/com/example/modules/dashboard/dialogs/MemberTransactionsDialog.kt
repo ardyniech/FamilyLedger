@@ -37,70 +37,23 @@ fun MemberTransactionsDialog(
     val roleColor = if (member.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(DesignTokens.CornerRadius),
-            color = DesignTokens.Surface,
-            tonalElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(DesignTokens.PaddingMedium)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .clip(RoundedCornerShape(7.dp))
-                                .background(roleColor)
-                        )
+        Surface(shape = RoundedCornerShape(DesignTokens.CornerRadius), color = DesignTokens.Surface, tonalElevation = 8.dp, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+            Column(modifier = Modifier.padding(DesignTokens.PaddingMedium).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Box(modifier = Modifier.size(14.dp).clip(RoundedCornerShape(7.dp)).background(roleColor))
                         Column {
-                            Text(
-                                text = "Riwayat ${member.name}",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = DesignTokens.TextPrimary
-                            )
-                            Text(
-                                text = "${member.role} • ${memberTxs.size} Transaksi",
-                                fontSize = 12.sp,
-                                color = DesignTokens.TextSecondary
-                            )
+                            Text("Riwayat ${member.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DesignTokens.TextPrimary)
+                            Text("${member.role} • ${memberTxs.size} Transaksi", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                         }
                     }
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(roleColor.copy(alpha = 0.15f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = member.role,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = roleColor
-                        )
+                    Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(roleColor.copy(alpha = 0.15f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        Text(member.role, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = roleColor)
                     }
                 }
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DesignTokens.SurfaceGlass)
-                        .padding(12.dp),
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(DesignTokens.SurfaceGlass).padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
@@ -116,46 +69,19 @@ fun MemberTransactionsDialog(
                 HorizontalDivider(color = DesignTokens.BorderGlass)
 
                 if (memberTxs.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Belum ada transaksi untuk ${member.name}.",
-                            color = DesignTokens.TextSecondary,
-                            fontSize = 13.sp
-                        )
+                    Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                        Text("Belum ada transaksi untuk ${member.name}.", color = DesignTokens.TextSecondary, fontSize = 13.sp)
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 300.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(memberTxs) { tx ->
-                            TransactionItem(
-                                tx = tx,
-                                member = member,
-                                category = categories.find { it.id == tx.categoryId },
-                                onClick = {
-                                    onTransactionClick(tx)
-                                    onDismiss()
-                                }
-                            )
+                            TransactionItem(tx = tx, member = member, category = categories.find { it.id == tx.categoryId }, onClick = { onTransactionClick(tx); onDismiss() })
                         }
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Tutup", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
-                    }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Tutup", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent) }
                 }
             }
         }

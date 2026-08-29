@@ -55,51 +55,35 @@ fun ExpenseListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Riwayat Pengeluaran", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary)
-                    }
-                },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
         containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddExpenseDialog = true },
-                containerColor = DesignTokens.AmberAccent,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Expense")
-            }
+                onClick = { showAddExpenseDialog = true }, containerColor = DesignTokens.AmberAccent, contentColor = Color.White,
+                shape = RoundedCornerShape(16.dp), modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
+            ) { Icon(Icons.Default.Add, contentDescription = "Add Expense") }
         }
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = DesignTokens.PaddingMedium)) {
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+                value = searchQuery, onValueChange = { searchQuery = it },
                 placeholder = { Text("Cari pengeluaran...", color = DesignTokens.TextSecondary) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = DesignTokens.TextSecondary) },
-                singleLine = true,
-                shape = RoundedCornerShape(DesignTokens.CornerRadius),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                singleLine = true, shape = RoundedCornerShape(DesignTokens.CornerRadius), modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
 
             Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Box(
                     modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(if (selectedFilterCategory == null) DesignTokens.CobaltAccent else DesignTokens.SurfaceGlass).clickable { selectedFilterCategory = null }.padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text("Semua", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (selectedFilterCategory == null) Color.White else DesignTokens.TextSecondary)
-                }
+                ) { Text("Semua", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (selectedFilterCategory == null) Color.White else DesignTokens.TextSecondary) }
                 categories.filter { it.type == "Expense" }.forEach { cat ->
                     val isSel = selectedFilterCategory == cat.id
                     Box(
                         modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(if (isSel) DesignTokens.AmberAccent else DesignTokens.SurfaceGlass).clickable { selectedFilterCategory = if (isSel) null else cat.id }.padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(cat.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.White else DesignTokens.TextSecondary)
-                    }
+                    ) { Text(cat.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.White else DesignTokens.TextSecondary) }
                 }
             }
 
@@ -111,10 +95,8 @@ fun ExpenseListScreen(
                 LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 80.dp)) {
                     items(filteredExpenses) { expense ->
                         ExpenseListItemCard(
-                            expense = expense,
-                            category = categories.find { it.id == expense.categoryId },
-                            wallet = wallets.find { it.id == expense.walletId },
-                            member = members.find { it.id == expense.memberId },
+                            expense = expense, category = categories.find { it.id == expense.categoryId },
+                            wallet = wallets.find { it.id == expense.walletId }, member = members.find { it.id == expense.memberId },
                             onClick = { onTransactionClick(expense) }
                         )
                     }
@@ -125,8 +107,7 @@ fun ExpenseListScreen(
 
     if (showAddExpenseDialog) {
         AddExpenseDialog(
-            wallets = wallets,
-            categories = categories,
+            wallets = wallets, categories = categories,
             onConfirm = { amt, note, w, c, t -> onAddExpense(amt, note, w, c, t); showAddExpenseDialog = false },
             onDismiss = { showAddExpenseDialog = false }
         )

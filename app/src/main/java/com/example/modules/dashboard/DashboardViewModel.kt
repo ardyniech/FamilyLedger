@@ -6,10 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.auth.AuthManager
 import com.example.core.storage.HouseholdRepository
 import com.example.core.sync.SyncState
-import com.example.modules.dashboard.logic.DashboardPeriod
-import com.example.modules.dashboard.logic.GoalsAndBudgetManager
-import com.example.modules.dashboard.logic.RecurringBillsManager
-import com.example.modules.dashboard.logic.SampleDataInitializer
+import com.example.core.sync.TransferNotificationManager
+import com.example.modules.dashboard.logic.*
 import com.example.shared.models.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,86 +20,46 @@ class DashboardViewModel(
 ) : ViewModel() {
     private val goalsManager = GoalsAndBudgetManager()
     private val billsManager = RecurringBillsManager()
-
     val syncState: StateFlow<SyncState> = repository.syncEngine.syncState
     val authState: StateFlow<AuthUiState> = authManager.authState
     val p2pSyncManager = repository.p2pSyncManager
-    val transferNotificationManager = com.example.core.sync.TransferNotificationManager()
-    val transferActiveBanner: StateFlow<com.example.shared.models.TransferNotification?> = transferNotificationManager.activeBanner
+    val transferNotificationManager = TransferNotificationManager()
+    val transferActiveBanner: StateFlow<TransferNotification?> = transferNotificationManager.activeBanner
 
     private val _activeMemberId = MutableStateFlow("m1")
     val activeMemberId: StateFlow<String> = _activeMemberId.asStateFlow()
 
-    private fun getOrCreateHouseholdCode(context: Context): String {
-        val prefs = context.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE)
-        var code = prefs.getString("household_pair_code", null)
-        if (code == null) {
-            val randomNum = (1000..9999).random()
-            code = "FAM-$randomNum"
-            prefs.edit().putString("household_pair_code", code).apply()
+    private fun getHouseholdCode(ctx: Context): String {
+        val prefs = ctx.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("household_pair_code", null) ?: "FAM-${(1000..9999).random()}".also {
+            prefs.edit().putString("household_pair_code", it).apply()
         }
-        return code
     }
 
-    private val _householdPairCode = MutableStateFlow(getOrCreateHouseholdCode(context))
+    private val _householdPairCode = MutableStateFlow(getHouseholdCode(context))
     val householdPairCode: StateFlow<String> = _householdPairCode.asStateFlow()
-
     private val _selectedPeriod = MutableStateFlow(DashboardPeriod.MONTHLY)
     val selectedPeriod: StateFlow<DashboardPeriod> = _selectedPeriod.asStateFlow()
 
     val monthlyBudget: StateFlow<Double> = goalsManager.monthlyBudget
     val financialGoals: StateFlow<List<FinancialGoal>> = goalsManager.financialGoals
     val recurringBills: StateFlow<List<RecurringBill>> = billsManager.recurringBills
-
     val members: StateFlow<List<Member>> = repository.members.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val wallets: StateFlow<List<WalletAccount>> = repository.wallets.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val transactions: StateFlow<List<Transaction>> = repository.transactions.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val categories: StateFlow<List<Category>> = repository.categories.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val totalBalance: StateFlow<Double> = wallets.combine(members) { w, _ -> w.sumOf { it.balance } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
-
-    val budgetExceedances: StateFlow<List<CategoryExceedance>> = combine(transactions, categories) { txs, cats ->
-        val calendar = java.util.Calendar.getInstance()
-        val currentYear = calendar.get(java.util.Calendar.YEAR)
-        val currentMonth = calendar.get(java.util.Calendar.MONTH)
-
-        val currentMonthTxs = txs.filter { t ->
-            val txCal = java.util.Calendar.getInstance().apply { timeInMillis = t.timestamp }
-            txCal.get(java.util.Calendar.YEAR) == currentYear &&
-                    txCal.get(java.util.Calendar.MONTH) == currentMonth &&
-                    t.amount < 0 &&
-                    !t.isDeleted
-        }
-
-        cats.filter { it.type == "Expense" && !it.isDeleted && it.budgetLimit > 0.0 }.mapNotNull { cat ->
-            val spent = currentMonthTxs.filter { it.categoryId == cat.id }.sumOf { -it.amount }
-            if (spent > cat.budgetLimit) {
-                CategoryExceedance(cat, cat.budgetLimit, spent)
-            } else {
-                null
-            }
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val budgetExceedances: StateFlow<List<CategoryExceedance>> = combine(transactions, categories) { txs, cats -> DashboardExceedanceCalculator.calculate(txs, cats) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         repository.syncEngine.startBackgroundSync(viewModelScope, _householdPairCode.value)
-        
-        // Auto process scheduled auto-pay recurring bills when due
         viewModelScope.launch {
-            combine(wallets, recurringBills) { wList, bList ->
-                Pair(wList, bList)
-            }.collect { (wList, bList) ->
+            combine(wallets, recurringBills) { w, b -> Pair(w, b) }.collect { (wList, bList) ->
                 if (wList.isNotEmpty()) {
                     val now = System.currentTimeMillis()
-                    bList.forEach { bill ->
-                        if (!bill.isPaid && bill.autoPay && bill.targetWalletId != null) {
-                            val dueTime = com.example.modules.dashboard.csv.CsvDateParser.parseTimestamp(bill.dueDate)
-                            if (dueTime <= now) {
-                                val wallet = wList.find { it.id == bill.targetWalletId }
-                                if (wallet != null) {
-                                    // Process payment automatically
-                                    payRecurringBill(bill.id, wallet.id)
-                                }
-                            }
+                    bList.filter { !it.isPaid && it.autoPay && it.targetWalletId != null }.forEach { bill ->
+                        if (com.example.modules.dashboard.csv.CsvDateParser.parseTimestamp(bill.dueDate) <= now) {
+                            wList.find { it.id == bill.targetWalletId }?.let { payRecurringBill(bill.id, it.id) }
                         }
                     }
                 }
@@ -109,167 +67,56 @@ class DashboardViewModel(
         }
     }
 
-    fun setSelectedPeriod(period: DashboardPeriod) { _selectedPeriod.value = period }
-    fun setActiveMember(memberId: String) { _activeMemberId.value = memberId }
-    fun joinHousehold(pairCode: String) {
-        val upperCode = pairCode.trim().uppercase()
-        _householdPairCode.value = upperCode
-        val prefs = context.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putString("household_pair_code", upperCode).apply()
-        repository.syncEngine.updateHouseholdPairCode(viewModelScope, upperCode)
+    fun setSelectedPeriod(p: DashboardPeriod) { _selectedPeriod.value = p }
+    fun setActiveMember(mId: String) { _activeMemberId.value = mId }
+    fun joinHousehold(code: String) {
+        val upper = code.trim().uppercase()
+        _householdPairCode.value = upper
+        context.getSharedPreferences("family_ledger_prefs", Context.MODE_PRIVATE).edit().putString("household_pair_code", upper).apply()
+        repository.syncEngine.updateHouseholdPairCode(viewModelScope, upper)
     }
 
-    fun signInLocal(userId: String, pass: String, context: Context) {
-        authManager.signInLocal(userId, pass, context) {
-            val user = (authManager.authState.value as? AuthUiState.Authenticated)?.user
-            if (user != null) {
-                viewModelScope.launch {
-                    val currentMember = members.value.find { it.id == _activeMemberId.value }
-                    if (currentMember != null) {
-                        repository.addMember(currentMember.copy(name = user.displayName, avatarUrl = user.photoUrl ?: ""))
-                    }
-                }
-            }
+    fun signInLocal(uId: String, p: String, ctx: Context) = authManager.signInLocal(uId, p, ctx) { updateAuthProfile() }
+    fun createLocalAccount(uId: String, p: String, ctx: Context) = authManager.createLocalAccount(uId, p, ctx) { updateAuthProfile() }
+    private fun updateAuthProfile() {
+        (authManager.authState.value as? AuthUiState.Authenticated)?.user?.let { u ->
+            viewModelScope.launch { members.value.find { it.id == _activeMemberId.value }?.let { repository.addMember(it.copy(name = u.displayName, avatarUrl = u.photoUrl ?: "")) } }
         }
     }
 
-    fun createLocalAccount(userId: String, pass: String, context: Context) {
-        authManager.createLocalAccount(userId, pass, context) {
-            val user = (authManager.authState.value as? AuthUiState.Authenticated)?.user
-            if (user != null) {
-                viewModelScope.launch {
-                    val currentMember = members.value.find { it.id == _activeMemberId.value }
-                    if (currentMember != null) {
-                        repository.addMember(currentMember.copy(name = user.displayName, avatarUrl = user.photoUrl ?: ""))
-                    }
-                }
-            }
-        }
-    }
-
-    fun signOut(context: Context) = authManager.signOut(context, viewModelScope)
+    fun signOut(ctx: Context) = authManager.signOut(ctx, viewModelScope)
     fun clearAuthError() = authManager.clearError()
-
-    fun updateMonthlyBudget(newBudget: Double) = goalsManager.updateMonthlyBudget(newBudget)
-    fun addFinancialGoal(title: String, target: Double, initial: Double, cat: String, emoji: String) = goalsManager.addFinancialGoal(title, target, initial, cat, emoji)
-    fun depositToGoal(goalId: String, amount: Double) = goalsManager.depositToGoal(goalId, amount)
-    fun addRecurringBill(
-        name: String,
-        amount: Double,
-        due: String,
-        catId: String,
-        autoPay: Boolean = false,
-        targetWalletId: String? = null,
-        frequency: String = "Monthly"
-    ) = billsManager.addRecurringBill(name, amount, due, catId, autoPay, targetWalletId, frequency)
-
-    fun deleteRecurringBill(billId: String) = billsManager.deleteRecurringBill(billId)
-    fun deleteCategory(category: Category) = viewModelScope.launch { repository.addCategory(category.copy(isDeleted = true, syncStatus = 0, updatedAt = System.currentTimeMillis())) }
+    fun updateMonthlyBudget(b: Double) = goalsManager.updateMonthlyBudget(b)
+    fun addFinancialGoal(t: String, tgt: Double, init: Double, c: String, e: String) = goalsManager.addFinancialGoal(t, tgt, init, c, e)
+    fun depositToGoal(gId: String, amt: Double) = goalsManager.depositToGoal(gId, amt)
+    fun addRecurringBill(n: String, a: Double, d: String, c: String, ap: Boolean = false, w: String? = null, f: String = "Monthly") = billsManager.addRecurringBill(n, a, d, c, ap, w, f)
+    fun deleteRecurringBill(bId: String) = billsManager.deleteRecurringBill(bId)
+    fun deleteCategory(cat: Category) = viewModelScope.launch { repository.addCategory(cat.copy(isDeleted = true, syncStatus = 0, updatedAt = System.currentTimeMillis())) }
     fun saveCategory(id: String?, name: String, type: String, parentId: String? = null, budgetLimit: Double = 0.0) = viewModelScope.launch { repository.addCategory(Category(id ?: UUID.randomUUID().toString(), name, type, parentId = parentId, syncStatus = 0, updatedAt = System.currentTimeMillis(), budgetLimit = budgetLimit)) }
-    fun saveWalletAccount(id: String?, memberId: String, type: String, name: String, balance: Double) = viewModelScope.launch { repository.addWallet(WalletAccount(id ?: UUID.randomUUID().toString(), memberId, type, name, balance)) }
-
-    fun addTransaction(amount: Double, note: String, walletId: String, categoryId: String, isIncome: Boolean = false, timestamp: Long = System.currentTimeMillis()) {
-        viewModelScope.launch {
-            wallets.value.find { it.id == walletId }?.let { wallet ->
-                repository.addTransaction(Transaction(UUID.randomUUID().toString(), wallet.id, wallet.memberId, categoryId, if (isIncome) amount else -amount, note, timestamp))
-            }
-        }
+    fun saveWalletAccount(id: String?, mId: String, type: String, name: String, bal: Double) = viewModelScope.launch { repository.addWallet(WalletAccount(id ?: UUID.randomUUID().toString(), mId, type, name, bal)) }
+    fun addTransaction(amt: Double, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis()) = viewModelScope.launch {
+        wallets.value.find { it.id == wId }?.let { repository.addTransaction(Transaction(UUID.randomUUID().toString(), it.id, it.memberId, cId, if (isIncome) amt else -amt, note, ts)) }
     }
-
-    fun deleteTransaction(transaction: Transaction) = viewModelScope.launch {
-        repository.deleteTransaction(transaction)
+    fun deleteTransaction(tx: Transaction) = viewModelScope.launch { repository.deleteTransaction(tx) }
+    fun updateTransaction(oldTx: Transaction, newTx: Transaction) = viewModelScope.launch { repository.updateTransaction(oldTx, newTx) }
+    fun transferFunds(amount: Double, note: String, fWId: String, tWId: String) = viewModelScope.launch {
+        val fW = wallets.value.find { it.id == fWId } ?: return@launch
+        val tW = wallets.value.find { it.id == tWId } ?: return@launch
+        DashboardTransferHelper.executeTransfer(amount, note, fW, tW, categories.value, members.value, repository, transferNotificationManager)
     }
-
-    fun updateTransaction(oldTx: Transaction, newTx: Transaction) = viewModelScope.launch {
-        repository.updateTransaction(oldTx, newTx)
-    }
-
-    fun transferFunds(amount: Double, note: String, fromWalletId: String, toWalletId: String) {
-        viewModelScope.launch {
-            val fromWallet = wallets.value.find { it.id == fromWalletId } ?: return@launch
-            val toWallet = wallets.value.find { it.id == toWalletId } ?: return@launch
-            val isCross = fromWallet.memberId != toWallet.memberId
-            val outType = if (isCross) "Expense" else "Transfer"
-            val inType = if (isCross) "Income" else "Transfer"
-            val outCat = categories.value.find { it.name == "Transfer Out" && it.type == outType } ?: Category(UUID.randomUUID().toString(), "Transfer Out", outType).also { repository.addCategory(it) }
-            val inCat = categories.value.find { it.name == "Transfer In" && it.type == inType } ?: Category(UUID.randomUUID().toString(), "Transfer In", inType).also { repository.addCategory(it) }
-            repository.addTransaction(Transaction(UUID.randomUUID().toString(), fromWallet.id, fromWallet.memberId, outCat.id, -amount, note))
-            repository.addTransaction(Transaction(UUID.randomUUID().toString(), toWallet.id, toWallet.memberId, inCat.id, amount, note))
-
-            val fromMember = members.value.find { it.id == fromWallet.memberId }
-            val toMember = members.value.find { it.id == toWallet.memberId }
-            if (fromMember != null && toMember != null && isCross) {
-                transferNotificationManager.createTransferNotification(
-                    senderId = fromMember.id,
-                    senderName = fromMember.name,
-                    senderRole = fromMember.role,
-                    recipientId = toMember.id,
-                    recipientName = toMember.name,
-                    recipientRole = toMember.role,
-                    amount = amount,
-                    note = if (note.isBlank()) "Transfer Dana" else note,
-                    fromWalletName = fromWallet.name,
-                    toWalletName = toWallet.name
-                )
-            }
-        }
-    }
-
-    fun confirmTransferNotification(notificationId: String, emojiReaction: String) {
-        transferNotificationManager.confirmTransfer(notificationId, emojiReaction)
-    }
-
-    fun dismissTransferBanner() {
-        transferNotificationManager.dismissBanner()
-    }
-
+    fun confirmTransferNotification(nId: String, emoji: String) = transferNotificationManager.confirmTransfer(nId, emoji)
+    fun dismissTransferBanner() = transferNotificationManager.dismissBanner()
     fun payRecurringBill(billId: String, walletId: String) = viewModelScope.launch {
-        val bill = recurringBills.value.find { it.id == billId }
-        if (bill != null && !bill.isPaid && wallets.value.any { it.id == walletId }) {
-            addTransaction(bill.amount, "Paid: ${bill.name}", walletId, bill.categoryId)
-            billsManager.markBillPaid(billId)
-        }
+        recurringBills.value.find { it.id == billId }?.let { if (!it.isPaid && wallets.value.any { w -> w.id == walletId }) { addTransaction(it.amount, "Paid: ${it.name}", walletId, it.categoryId); billsManager.markBillPaid(billId) } }
     }
-
     fun importCsvTransactions(parsed: List<com.example.modules.dashboard.csv.ParsedTransaction>, skipDuplicates: Boolean = true, onComplete: ((com.example.modules.dashboard.csv.ImportExecutionResult) -> Unit)? = null) = viewModelScope.launch {
-        val res = com.example.modules.dashboard.csv.SmartCsvImportEngine.executeImport(repository, parsed, skipDuplicates)
-        onComplete?.invoke(res)
+        onComplete?.invoke(com.example.modules.dashboard.csv.SmartCsvImportEngine.executeImport(repository, parsed, skipDuplicates))
     }
-
-    fun initializeMockDataIfNeeded() = viewModelScope.launch {
-        val memberList = repository.members.firstOrNull()
-        if (memberList.isNullOrEmpty() || memberList.none { it.name == "Ardy" }) {
-            SampleDataInitializer.populateDefaultFamilyData(repository, _householdPairCode.value)
-        }
-    }
-
-    fun exportSyncPayload(onResult: (String) -> Unit) {
-        viewModelScope.launch {
-            val member = members.value.find { it.id == _activeMemberId.value }
-            val pkg = p2pSyncManager.createSyncPackage(
-                pairCode = _householdPairCode.value,
-                senderName = member?.name ?: "Unknown",
-                senderRole = member?.role ?: "Member"
-            )
-            onResult(pkg.toCompressedBase64())
-        }
-    }
-
-    fun importSyncPayload(payload: String, onResult: (Boolean, String) -> Unit) {
-        viewModelScope.launch {
-            try {
-                val pkg = com.example.core.sync.p2p.P2PSyncPackage.fromCompressedBase64(payload)
-                val result = p2pSyncManager.importSyncPackage(pkg)
-                onResult(result.success, result.message)
-            } catch (e: Exception) {
-                onResult(false, "Format data tidak valid: ${e.message}")
-            }
-        }
+    fun initializeMockDataIfNeeded() = viewModelScope.launch { DashboardSyncHelper.initMockIfNeeded(repository, _householdPairCode.value) }
+    fun exportSyncPayload(onResult: (String) -> Unit) = viewModelScope.launch { onResult(DashboardSyncHelper.exportPayload(p2pSyncManager, _householdPairCode.value, members.value.find { it.id == _activeMemberId.value })) }
+    fun importSyncPayload(payload: String, onResult: (Boolean, String) -> Unit) = viewModelScope.launch {
+        val (ok, msg) = DashboardSyncHelper.importPayload(p2pSyncManager, payload)
+        onResult(ok, msg)
     }
 }
 
-data class CategoryExceedance(
-    val category: Category,
-    val budgetLimit: Double,
-    val currentSpent: Double
-)

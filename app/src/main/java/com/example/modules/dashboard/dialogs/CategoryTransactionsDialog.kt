@@ -39,14 +39,10 @@ fun CategoryTransactionsDialog(
             shape = RoundedCornerShape(DesignTokens.CornerRadius),
             color = DesignTokens.Surface,
             tonalElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(DesignTokens.PaddingMedium)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(DesignTokens.PaddingMedium).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
@@ -55,56 +51,22 @@ fun CategoryTransactionsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(
-                            text = category.name,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = DesignTokens.TextPrimary
-                        )
-                        Text(
-                            text = "${catTxs.size} Transaksi • Total: ${fmt.format(totalAmount)}",
-                            fontSize = 12.sp,
-                            color = DesignTokens.CobaltAccent,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Text(category.name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DesignTokens.TextPrimary)
+                        Text("${catTxs.size} Transaksi • Total: ${fmt.format(totalAmount)}", fontSize = 12.sp, color = DesignTokens.CobaltAccent, fontWeight = FontWeight.SemiBold)
                     }
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DesignTokens.CobaltAccent.copy(alpha = 0.15f))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = category.type,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DesignTokens.CobaltAccent
-                        )
+                    Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(DesignTokens.CobaltAccent.copy(alpha = 0.15f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                        Text(category.type, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
                     }
                 }
 
                 HorizontalDivider(color = DesignTokens.BorderGlass)
 
                 if (catTxs.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Belum ada transaksi di kategori ini.",
-                            color = DesignTokens.TextSecondary,
-                            fontSize = 13.sp
-                        )
+                    Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                        Text("Belum ada transaksi di kategori ini.", color = DesignTokens.TextSecondary, fontSize = 13.sp)
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 320.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(catTxs) { tx ->
                             TransactionItem(
                                 tx = tx,
@@ -119,10 +81,7 @@ fun CategoryTransactionsDialog(
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) {
                         Text("Tutup", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
                     }
@@ -131,3 +90,4 @@ fun CategoryTransactionsDialog(
         }
     }
 }
+

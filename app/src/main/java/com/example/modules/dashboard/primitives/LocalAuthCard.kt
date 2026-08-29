@@ -9,13 +9,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -81,7 +79,7 @@ fun LocalAuthCard(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Keamanan Lokal", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Amankan aplikasi ini dengan sandi lokal. Tanpa cloud tracking.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                            Text("Amankan aplikasi dengan sandi lokal.", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -89,15 +87,11 @@ fun LocalAuthCard(
                             onClick = { isCreateMode = false; showDialog = true },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)
-                        ) {
-                            Text("Masuk", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        }
+                        ) { Text("Masuk", fontWeight = FontWeight.Bold, fontSize = 13.sp) }
                         OutlinedButton(
                             onClick = { isCreateMode = true; showDialog = true },
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Buat Akun", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        }
+                        ) { Text("Buat Akun", fontWeight = FontWeight.Bold, fontSize = 13.sp) }
                     }
                 }
             }
@@ -110,37 +104,17 @@ fun LocalAuthCard(
             title = { Text(if (isCreateMode) "Buat Akun Lokal" else "Masuk") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = userId,
-                        onValueChange = { userId = it },
-                        label = { Text("ID Pengguna") },
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Kata Sandi") },
-                        singleLine = true
-                    )
+                    OutlinedTextField(value = userId, onValueChange = { userId = it }, label = { Text("ID Pengguna") }, singleLine = true)
+                    OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Kata Sandi") }, singleLine = true)
                 }
             },
             confirmButton = {
                 Button(onClick = {
-                    if (isCreateMode) {
-                        onCreateAccount(userId, password, context)
-                    } else {
-                        onSignIn(userId, password, context)
-                    }
+                    if (isCreateMode) onCreateAccount(userId, password, context) else onSignIn(userId, password, context)
                     showDialog = false
-                }) {
-                    Text("Konfirmasi")
-                }
+                }) { Text("Konfirmasi") }
             },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Batal")
-                }
-            }
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Batal") } }
         )
     }
 }
