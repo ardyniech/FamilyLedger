@@ -23,14 +23,7 @@ class SyncEngine(private val dao: HouseholdDao) {
 
         syncJob?.cancel()
         syncJob = scope.launch(Dispatchers.IO) {
-            while (isActive) {
-                try {
-                    _syncState.value = SyncState.IDLE
-                } catch (e: Exception) {
-                    _syncState.value = SyncState.OFFLINE
-                }
-                delay(3000)
-            }
+            _syncState.value = SyncState.SYNCED
         }
     }
 

@@ -31,6 +31,19 @@ data class WalletAccount(
     val type: String, // Cash, EWallet, Bank, Vault
     val name: String,
     val balance: Double,
+    val monthlyTransferCap: Double = 0.0,
+    val syncStatus: Int = 0,
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isDeleted: Boolean = false
+)
+
+@Entity(tableName = "category_groups")
+data class CategoryGroup(
+    @PrimaryKey val id: String,
+    val name: String,
+    val colorHex: String = "#3B82F6",
+    val iconName: String = "📁",
+    val description: String = "",
     val syncStatus: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
     val isDeleted: Boolean = false
@@ -43,6 +56,8 @@ data class Category(
     val type: String, // Income or Expense
     val iconName: String = "",
     val parentId: String? = null,
+    val groupId: String? = null,
+    val isSavings: Boolean = false,
     val syncStatus: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
     val isDeleted: Boolean = false,

@@ -10,11 +10,15 @@ object DesignTokens {
     val EmeraldGlow = Color(0xFF059669)
     val EmeraldAccent = Color(0xFF059669)
     val RoseAccent = Color(0xFFE11D48)
+    val CrimsonAccent = Color(0xFFE11D48)
+    val PurpleAccent = Color(0xFF8B5CF6)
 
+    val Background = Color(0xFFFFFBEB)
     val BackgroundTop = Color(0xFFF0F9FF) // Light Sky Blue
     val BackgroundBottom = Color(0xFFFFFBEB) // Soft Warm Amber Light
 
     val Surface = Color(0xFFFFFFFF) // Crisp Light White Card Background
+    val SurfaceCard = Color(0xFFFFFFFF)
     val SurfaceGlass = Color(0xFFF8FAFC) // Crisp Light Soft Surface
     val SurfaceElevated = Color(0xFFFFFFFF) // Pure White Opaque Surface
 

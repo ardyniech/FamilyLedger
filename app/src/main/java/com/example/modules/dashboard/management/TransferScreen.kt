@@ -28,6 +28,7 @@ import java.util.Locale
 fun TransferScreen(
     wallets: List<WalletAccount>,
     members: List<Member>,
+    transactions: List<com.example.shared.models.Transaction> = emptyList(),
     onTransfer: (amount: Double, note: String, fromWalletId: String, toWalletId: String) -> Unit,
     onBack: () -> Unit
 ) {
@@ -41,6 +42,12 @@ fun TransferScreen(
             val nextWallet = wallets.firstOrNull { it.id != fromWalletId }
             if (nextWallet != null) toWalletId = nextWallet.id
         }
+    }
+
+    val toWallet = remember(toWalletId, wallets) { wallets.find { it.id == toWalletId } }
+    val capEvaluation = remember(toWallet, amountStr, transactions) {
+        val amt = amountStr.toDoubleOrNull() ?: 0.0
+        com.example.modules.dashboard.logic.TransferBudgetCapCalculator.evaluate(toWallet, amt, transactions)
     }
 
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -57,15 +64,9 @@ fun TransferScreen(
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("💡 Transfer ke akun milik pasangan otomatis tercatat sebagai Pengeluaran Anda dan Pemasukan baginya sesuai standar akuntansi.", style = MaterialTheme.typography.bodySmall, color = DesignTokens.TextSecondary, modifier = Modifier.padding(16.dp))
-            }
+            com.example.modules.dashboard.primitives.TransferCapWarningCard(capEvaluation)
 
             OutlinedTextField(value = amountStr, onValueChange = { if(it.all { c -> c.isDigit() }) amountStr = it }, label = { Text("Transfer Amount (Rp)") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = note, onValueChange = { note = it }, label = { Text("Note (Optional)") }, modifier = Modifier.fillMaxWidth())
@@ -92,7 +93,8 @@ fun TransferScreen(
                     Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.EmeraldGlow else DesignTokens.Surface).clickable { toWalletId = w.id }.padding(12.dp)) {
                         Column {
                             Text(w.name, color = if (isSelected) Color.White else DesignTokens.TextPrimary, fontWeight = FontWeight.Bold)
-                            Text("${m?.name} • ${formatter.format(w.balance)}", color = if (isSelected) Color.White.copy(alpha=0.8f) else DesignTokens.TextSecondary, fontSize = 10.sp)
+                            val capNote = if (w.monthlyTransferCap > 0) " (Plafon: ${formatter.format(w.monthlyTransferCap)})" else ""
+                            Text("${m?.name}$capNote • ${formatter.format(w.balance)}", color = if (isSelected) Color.White.copy(alpha=0.8f) else DesignTokens.TextSecondary, fontSize = 10.sp)
                         }
                     }
                 }

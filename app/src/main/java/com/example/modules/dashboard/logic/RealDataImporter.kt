@@ -12,6 +12,7 @@ object RealDataImporter {
 
         // 2. Prepare Base Entities
         val members: List<Member> = UserDataEntities.getMembers(pairCode)
+        val categoryGroups = UserDataEntities.getCategoryGroups()
         val categories: List<Category> = UserDataEntities.getCategories()
         val initialWallets: List<WalletAccount> = UserDataEntities.getWallets()
         val transactions = CsvTransactionBuilder.buildTransactions()
@@ -26,6 +27,7 @@ object RealDataImporter {
 
         // 4. Batch insert all real records into Room Database
         repository.insertMembers(members)
+        repository.insertCategoryGroups(categoryGroups)
         repository.insertCategories(categories)
         repository.insertWallets(calculatedWallets)
         repository.insertTransactions(transactions)

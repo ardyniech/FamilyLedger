@@ -36,6 +36,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     val selectedPeriod by viewModel.selectedPeriod.collectAsState()
     val activeTransferNotification by viewModel.transferActiveBanner.collectAsState()
     val budgetExceedances by viewModel.budgetExceedances.collectAsState()
+    val categoryGroups by viewModel.categoryGroups.collectAsState()
     
     val activeMember = remember(members, activeMemberId) { members.find { it.id == activeMemberId } ?: members.firstOrNull() }
     val periodTransactions = remember(transactions, selectedPeriod) { PeriodFilterHelper.filterTransactions(transactions, selectedPeriod) }
@@ -48,6 +49,8 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     var selectedTxForEdit by remember { mutableStateOf<Transaction?>(null) }
     var selectedTxForDelete by remember { mutableStateOf<Transaction?>(null) }
     var transferNotifForDialog by remember { mutableStateOf<com.example.shared.models.TransferNotification?>(null) }
+    var showAddCategoryGroupDialog by remember { mutableStateOf(false) }
+    var showEditMemberDialog by remember { mutableStateOf<com.example.shared.models.Member?>(null) }
     val updaterManager = remember { com.example.modules.updater.logic.UpdaterManager("ardyniech", "FamilyLedger", "1.0") }
     val updaterStatus by updaterManager.status.collectAsState()
     var showUpdateModal by remember { mutableStateOf(false) }
@@ -73,8 +76,9 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             when (dest) {
                 is DashboardDestination.Dashboard -> DashboardHomeContent(
                     activeMember = activeMember, syncState = syncState, totalBalance = totalBalance, wallets = wallets, members = members, financialGoals = financialGoals, recurringBills = recurringBills, transactions = transactions, groupedTransactions = groupedTransactions, categories = categories, selectedPeriod = selectedPeriod, periodSummary = periodSummary, transferNotification = activeTransferNotification, budgetExceedances = budgetExceedances,
-                    onPeriodSelected = { viewModel.setSelectedPeriod(it) }, onTransactionClick = { selectedTxForDetail = it }, onSyncBadgeClick = { currentDestination = DashboardDestination.Pairing }, onProfileClick = { val o = members.find { it.id != activeMemberId }; if (o != null) viewModel.setActiveMember(o.id) else currentDestination = DashboardDestination.Pairing }, onNetWorthClick = { currentDestination = DashboardDestination.NetWorthDetail }, onTransferClick = { currentDestination = DashboardDestination.Transfer }, onWalletsClick = { currentDestination = DashboardDestination.WalletManagement }, onCategoriesClick = { currentDestination = DashboardDestination.CategoryManagement }, onPairingClick = { currentDestination = DashboardDestination.Pairing }, onWalletClick = { currentDestination = DashboardDestination.WalletDetail(it) }, onMonthlyReportClick = { currentDestination = DashboardDestination.MonthlyReport }, onAnalyticsClick = { currentDestination = DashboardDestination.Analytics }, onGoalsClick = { currentDestination = DashboardDestination.GoalsAndBudget }, onRecurringBillsClick = { currentDestination = DashboardDestination.RecurringBills }, onQuickRecordClick = { showAddModal = true }, onViewAllExpensesClick = { currentDestination = DashboardDestination.MonthlyTransactionHistory }, onImportCsvClick = { currentDestination = DashboardDestination.SmartCsvImport }, onClickTransferNotification = { transferNotifForDialog = it }
+                    onPeriodSelected = { viewModel.setSelectedPeriod(it) }, onTransactionClick = { selectedTxForDetail = it }, onSyncBadgeClick = { currentDestination = DashboardDestination.Pairing }, onProfileClick = { showEditMemberDialog = activeMember }, onNetWorthClick = { currentDestination = DashboardDestination.NetWorthDetail }, onTransferClick = { currentDestination = DashboardDestination.Transfer }, onWalletsClick = { currentDestination = DashboardDestination.WalletManagement }, onCategoriesClick = { currentDestination = DashboardDestination.CategoryManagement }, onPairingClick = { currentDestination = DashboardDestination.Pairing }, onWalletClick = { currentDestination = DashboardDestination.WalletDetail(it) }, onMonthlyReportClick = { currentDestination = DashboardDestination.MonthlyReport }, onAnalyticsClick = { currentDestination = DashboardDestination.Analytics }, onCategoryGroupsClick = { currentDestination = DashboardDestination.CategoryGroupDashboard }, onGoalsClick = { currentDestination = DashboardDestination.GoalsAndBudget }, onRecurringBillsClick = { currentDestination = DashboardDestination.RecurringBills }, onQuickRecordClick = { showAddModal = true }, onViewAllExpensesClick = { currentDestination = DashboardDestination.MonthlyTransactionHistory }, onImportCsvClick = { currentDestination = DashboardDestination.SmartCsvImport }, onClickTransferNotification = { transferNotifForDialog = it }
                 )
+                is DashboardDestination.CategoryGroupDashboard -> CategoryGroupDashboardScreen(transactions = transactions, categories = categories, groups = categoryGroups, onBackClick = { currentDestination = DashboardDestination.Dashboard }, onManageGroupsClick = { showAddCategoryGroupDialog = true })
                 is DashboardDestination.MonthlyTransactionHistory -> MonthlyTransactionHistoryScreen(transactions = transactions, wallets = wallets, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onAddExpense = { a, n, w, c, t -> viewModel.addTransaction(a, n, w, c, false, t) }, onImportCsvClick = { currentDestination = DashboardDestination.SmartCsvImport }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.SmartCsvImport -> SmartCsvImportScreen(wallets = wallets, categories = categories, transactions = transactions, onExecuteImport = { l, s -> viewModel.importCsvTransactions(l, s) { currentDestination = DashboardDestination.Dashboard } }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.NetWorthDetail -> NetWorthDetailScreen(totalBalance = totalBalance, wallets = wallets, members = members, onBack = { currentDestination = DashboardDestination.Dashboard })
@@ -85,7 +89,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 is DashboardDestination.ExpenseList -> ExpenseListScreen(transactions = transactions, wallets = wallets, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onAddExpense = { a, n, w, c, t -> viewModel.addTransaction(a, n, w, c, false, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.CategoryManagement -> CategoryManagementScreen(categories = categories, onSaveCategory = { id, n, t, b -> viewModel.saveCategory(id, n, t, budgetLimit = b) }, onDeleteCategory = { viewModel.deleteCategory(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.WalletManagement -> WalletManagementScreen(wallets = wallets, members = members, onSaveWallet = { id, m, t, n, b -> viewModel.saveWalletAccount(id, m, t, n, b) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.Transfer -> TransferScreen(wallets = wallets, members = members, onTransfer = { a, n, f, t -> viewModel.transferFunds(a, n, f, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
+                is DashboardDestination.Transfer -> TransferScreen(wallets = wallets, members = members, transactions = transactions, onTransfer = { a, n, f, t -> viewModel.transferFunds(a, n, f, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.Pairing -> PairingScreen(members = members, activeMemberId = activeMemberId, pairCode = householdPairCode, syncState = syncState, authState = authState, p2pManager = viewModel.p2pSyncManager, updaterManager = updaterManager, onSelectActiveMember = { viewModel.setActiveMember(it) }, onJoinHousehold = { viewModel.joinHousehold(it) }, onSignInLocal = { id, pass, ctx -> viewModel.signInLocal(id, pass, ctx) }, onCreateLocalAccount = { id, pass, ctx -> viewModel.createLocalAccount(id, pass, ctx) }, onSignOut = { viewModel.signOut(it) }, onClearAuthError = { viewModel.clearAuthError() }, onBack = { currentDestination = DashboardDestination.Dashboard })
                 is DashboardDestination.GoalsAndBudget -> GoalsAndBudgetScreen(monthlyBudget = monthlyBudget, financialGoals = financialGoals, transactions = transactions, categories = categories, members = members, wallets = wallets, onUpdateBudget = { viewModel.updateMonthlyBudget(it) }, onAddGoal = { t, tgt, init, c, i -> viewModel.addFinancialGoal(t, tgt, init, c, i) }, onDepositToGoal = { g, a -> viewModel.depositToGoal(g, a) }, onBack = { currentDestination = DashboardDestination.Dashboard })
             }
@@ -102,6 +106,12 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
         transferNotif = transferNotifForDialog, onDismissTransferNotif = { transferNotifForDialog = null }
     )
 
+    if (showAddCategoryGroupDialog) {
+        AddEditCategoryGroupDialog(onDismiss = { showAddCategoryGroupDialog = false }, onSave = { viewModel.saveCategoryGroup(it); showAddCategoryGroupDialog = false })
+    }
+    showEditMemberDialog?.let { m ->
+        EditMemberRoleDialog(member = m, allMembers = members, onDismiss = { showEditMemberDialog = null }, onSave = { viewModel.updateMemberRole(it); showEditMemberDialog = null })
+    }
     if (showUpdateModal) {
         com.example.modules.updater.ui.UpdateProgressModal(updaterManager = updaterManager, onDismiss = { showUpdateModal = false; updaterManager.resetToIdle() })
     }

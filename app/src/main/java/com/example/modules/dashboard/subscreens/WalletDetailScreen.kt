@@ -15,11 +15,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.modules.dashboard.primitives.TransactionItem
-import com.example.shared.models.Category
-import com.example.shared.models.Member
-import com.example.shared.models.Transaction
-import com.example.shared.models.WalletAccount
+import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
@@ -39,17 +37,18 @@ fun WalletDetailScreen(
     val wallet = wallets.find { it.id == walletId }
     val member = members.find { it.id == wallet?.memberId }
     val walletTransactions = transactions.filter { it.walletId == walletId }
-    val tint = if (member?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+    val tint = com.example.shared.utils.MemberRoleHelper.getRoleColor(member, members)
+
+    val tfIn = walletTransactions.filter { it.amount > 0 && (it.note.contains("transfer", ignoreCase = true) || it.categoryId.contains("tf", ignoreCase = true)) }.sumOf { it.amount }
+    val tfOut = walletTransactions.filter { it.amount < 0 && (it.note.contains("transfer", ignoreCase = true) || it.categoryId.contains("tf", ignoreCase = true)) }.sumOf { kotlin.math.abs(it.amount) }
+    val expPaid = walletTransactions.filter { it.amount < 0 && !it.note.contains("transfer", ignoreCase = true) && !it.categoryId.contains("tf", ignoreCase = true) }.sumOf { kotlin.math.abs(it.amount) }
+    val debtBalance = tfIn - tfOut - expPaid
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(wallet?.name ?: "Wallet Detail", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary)
-                    }
-                },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
@@ -60,11 +59,7 @@ fun WalletDetailScreen(
             verticalArrangement = Arrangement.spacedBy(DesignTokens.PaddingMedium)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth().height(140.dp),
-                    shape = RoundedCornerShape(DesignTokens.CornerRadius),
-                    elevation = CardDefaults.cardElevation(defaultElevation = DesignTokens.ElevationSoft)
-                ) {
+                Card(modifier = Modifier.fillMaxWidth().height(140.dp), shape = RoundedCornerShape(DesignTokens.CornerRadius), elevation = CardDefaults.cardElevation(defaultElevation = DesignTokens.ElevationSoft)) {
                     Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(listOf(tint, tint.copy(alpha = 0.7f)))).padding(DesignTokens.PaddingLarge)) {
                         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -81,17 +76,27 @@ fun WalletDetailScreen(
             }
 
             item {
-                Text("Transaction History", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = DesignTokens.TextPrimary)
+                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceCard)) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Saldo Hutang-Piutang", fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                            Text((if (debtBalance > 0) "+" else "") + formatter.format(debtBalance), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (debtBalance > 0) DesignTokens.CobaltAccent else if (debtBalance < 0) DesignTokens.CrimsonAccent else DesignTokens.TextPrimary)
+                        }
+                        if ((wallet?.monthlyTransferCap ?: 0.0) > 0) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Plafon Transfer Bulanan", fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                                Text(formatter.format(wallet?.monthlyTransferCap ?: 0.0), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
+                            }
+                        }
+                    }
+                }
             }
+
+            item { Text("Transaction History", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = DesignTokens.TextPrimary) }
 
             if (walletTransactions.isEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(DesignTokens.CornerRadius),
-                        colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass)
-                    ) {
+                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(DesignTokens.CornerRadius), colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface), border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass)) {
                         Box(modifier = Modifier.padding(DesignTokens.PaddingLarge).fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text("No transactions logged for this wallet yet.", color = DesignTokens.TextSecondary)
                         }

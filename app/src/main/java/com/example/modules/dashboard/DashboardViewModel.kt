@@ -48,6 +48,7 @@ class DashboardViewModel(
     val wallets: StateFlow<List<WalletAccount>> = repository.wallets.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val transactions: StateFlow<List<Transaction>> = repository.transactions.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val categories: StateFlow<List<Category>> = repository.categories.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val categoryGroups: StateFlow<List<CategoryGroup>> = repository.categoryGroups.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val totalBalance: StateFlow<Double> = wallets.combine(members) { w, _ -> w.sumOf { it.balance } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
     val budgetExceedances: StateFlow<List<CategoryExceedance>> = combine(transactions, categories) { txs, cats -> DashboardExceedanceCalculator.calculate(txs, cats) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -69,6 +70,9 @@ class DashboardViewModel(
 
     fun setSelectedPeriod(p: DashboardPeriod) { _selectedPeriod.value = p }
     fun setActiveMember(mId: String) { _activeMemberId.value = mId }
+    fun updateMemberRole(member: Member) = viewModelScope.launch { repository.addMember(member) }
+    fun saveCategoryGroup(group: CategoryGroup) = viewModelScope.launch { repository.addCategoryGroup(group) }
+    fun deleteCategoryGroup(group: CategoryGroup) = viewModelScope.launch { repository.deleteCategoryGroup(group) }
     fun joinHousehold(code: String) {
         val upper = code.trim().uppercase()
         _householdPairCode.value = upper
@@ -119,4 +123,3 @@ class DashboardViewModel(
         onResult(ok, msg)
     }
 }
-

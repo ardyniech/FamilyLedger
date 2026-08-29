@@ -12,16 +12,18 @@ import com.example.shared.models.*
         Member::class,
         WalletAccount::class,
         Category::class,
+        CategoryGroup::class,
         Transaction::class,
         LedgerEvent::class,
         TransferEventEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun householdDao(): HouseholdDao
     abstract fun ledgerAuditDao(): LedgerAuditDao
+    abstract fun categoryGroupDao(): CategoryGroupDao
 
     companion object {
         @Volatile

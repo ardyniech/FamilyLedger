@@ -40,6 +40,7 @@ fun DashboardHomeContent(
     onWalletClick: (String) -> Unit,
     onMonthlyReportClick: () -> Unit,
     onAnalyticsClick: () -> Unit,
+    onCategoryGroupsClick: () -> Unit = {},
     onGoalsClick: () -> Unit,
     onRecurringBillsClick: () -> Unit,
     onQuickRecordClick: () -> Unit,
@@ -60,15 +61,15 @@ fun DashboardHomeContent(
                 onDismiss = {}
             )
         }
-        item {
-            BudgetExceedancesBanner(exceedances = budgetExceedances)
-        }
+        item { BudgetExceedancesBanner(exceedances = budgetExceedances) }
         item { HeroCard(totalBalance = totalBalance, wallets = wallets, members = members, onClick = onNetWorthClick) }
-        item {
-            val partner = members.find { it.id != (activeMember?.id ?: "") } ?: activeMember
-            LoveReactionBanner(partnerName = partner?.name ?: "Pasangan", onSendReaction = {})
-        }
+        item { CashflowHealthWidget(filteredTransactions = transactions, allTransactions = transactions) }
         item { DashboardActionRow(onTransferClick = onTransferClick, onWalletsClick = onWalletsClick, onCategoriesClick = onCategoriesClick, onPairingClick = onPairingClick) }
+        item {
+            com.example.modules.dashboard.primitives.CategoryGroupBanner(onClick = onCategoryGroupsClick)
+        }
+        item { SavingsIntegrityCard(transactions = transactions, categories = categories) }
+        item { WalletDebtLedgerCard(wallets = wallets, members = members, transactions = transactions) }
         item { SmartCsvImportBanner(onClick = onImportCsvClick) }
         item {
             Spacer(modifier = Modifier.height(DesignTokens.PaddingSmall))

@@ -14,5 +14,6 @@ sealed class DashboardDestination {
     object Transfer : DashboardDestination()
     object Pairing : DashboardDestination()
     object GoalsAndBudget : DashboardDestination()
+    object CategoryGroupDashboard : DashboardDestination()
     object SmartCsvImport : DashboardDestination()
 }

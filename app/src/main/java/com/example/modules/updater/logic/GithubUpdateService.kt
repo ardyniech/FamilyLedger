@@ -21,20 +21,28 @@ object GithubUpdateService {
         return try {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    if (response.code == 404) {
-                        Log.i(TAG, "No public release found (HTTP 404) for repository '$owner/$repo'. Assuming up-to-date.")
-                        return null
-                    } else {
-                        Log.e(TAG, "Failed to fetch release: HTTP ${response.code}")
-                        throw Exception("Gagal memeriksa pembaruan (HTTP ${response.code}).")
+                    when (response.code) {
+                        404 -> {
+                            Log.i(TAG, "No public release found (HTTP 404) for repository '$owner/$repo'. Assuming up-to-date.")
+                            return null
+                        }
+                        403, 429 -> {
+                            val rateLimitReset = response.header("X-RateLimit-Reset")
+                            Log.w(TAG, "GitHub API rate limit exceeded (HTTP ${response.code}). Reset: $rateLimitReset")
+                            return null
+                        }
+                        else -> {
+                            Log.e(TAG, "Failed to fetch release: HTTP ${response.code}")
+                            return null
+                        }
                     }
                 }
-                val bodyStr = response.body?.string() ?: throw Exception("Gagal membaca data respon dari server GitHub.")
+                val bodyStr = response.body?.string() ?: return null
                 parseReleaseJson(bodyStr)
             }
         } catch (e: Exception) {
             Log.e(TAG, "[Module:Updater] Error in fetchLatestRelease: ${e.message}", e)
-            throw e
+            null
         }
     }
 
