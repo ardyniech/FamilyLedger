@@ -11,7 +11,6 @@ import com.example.modules.dashboard.logic.*
 import com.example.shared.models.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class DashboardViewModel(
     private val repository: HouseholdRepository,
@@ -20,10 +19,13 @@ class DashboardViewModel(
 ) : ViewModel() {
     private val goalsManager = GoalsAndBudgetManager()
     private val billsManager = RecurringBillsManager()
+    val transferNotificationManager = TransferNotificationManager()
+    private val actionDelegate = DashboardActionDelegate(repository, viewModelScope, transferNotificationManager)
+    private val recurringAutoScheduler = RecurringBillAutoScheduler(viewModelScope, billsManager, actionDelegate)
+
     val syncState: StateFlow<SyncState> = repository.syncEngine.syncState
     val authState: StateFlow<AuthUiState> = authManager.authState
     val p2pSyncManager = repository.p2pSyncManager
-    val transferNotificationManager = TransferNotificationManager()
     val transferActiveBanner: StateFlow<TransferNotification?> = transferNotificationManager.activeBanner
 
     private val _activeMemberId = MutableStateFlow("m1")
@@ -53,19 +55,9 @@ class DashboardViewModel(
     val budgetExceedances: StateFlow<List<CategoryExceedance>> = combine(transactions, categories) { txs, cats -> DashboardExceedanceCalculator.calculate(txs, cats) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        initializeMockDataIfNeeded()
         repository.syncEngine.startBackgroundSync(viewModelScope, _householdPairCode.value)
-        viewModelScope.launch {
-            combine(wallets, recurringBills) { w, b -> Pair(w, b) }.collect { (wList, bList) ->
-                if (wList.isNotEmpty()) {
-                    val now = System.currentTimeMillis()
-                    bList.filter { !it.isPaid && it.autoPay && it.targetWalletId != null }.forEach { bill ->
-                        if (com.example.modules.dashboard.csv.CsvDateParser.parseTimestamp(bill.dueDate) <= now) {
-                            wList.find { it.id == bill.targetWalletId }?.let { payRecurringBill(bill.id, it.id) }
-                        }
-                    }
-                }
-            }
-        }
+        recurringAutoScheduler.startAutoProcessing(wallets, recurringBills)
     }
 
     fun setSelectedPeriod(p: DashboardPeriod) { _selectedPeriod.value = p }
@@ -91,28 +83,22 @@ class DashboardViewModel(
     fun signOut(ctx: Context) = authManager.signOut(ctx, viewModelScope)
     fun clearAuthError() = authManager.clearError()
     fun updateMonthlyBudget(b: Long) = goalsManager.updateMonthlyBudget(b)
-    fun addFinancialGoal(t: String, tgt: Long, init: Long, c: String, e: String) = goalsManager.addFinancialGoal(t, tgt, init, c, e)
+    fun addFinancialGoal(t: String, tgt: Long, init: Long, c: String, e: String, d: String = "", ts: Long = 0L, hex: String = "#3B82F6") = goalsManager.addFinancialGoal(t, tgt, init, c, e, d, ts, hex)
+    fun updateFinancialGoal(g: FinancialGoal) = goalsManager.updateFinancialGoal(g)
+    fun deleteFinancialGoal(gId: String) = goalsManager.deleteFinancialGoal(gId)
     fun depositToGoal(gId: String, amt: Long) = goalsManager.depositToGoal(gId, amt)
     fun addRecurringBill(n: String, a: Long, d: String, c: String, ap: Boolean = false, w: String? = null, f: String = "Monthly") = billsManager.addRecurringBill(n, a, d, c, ap, w, f)
     fun deleteRecurringBill(bId: String) = billsManager.deleteRecurringBill(bId)
-    fun deleteCategory(cat: Category) = viewModelScope.launch { repository.addCategory(cat.copy(isDeleted = true, syncStatus = 0, updatedAt = System.currentTimeMillis())) }
-    fun saveCategory(id: String?, name: String, type: String, parentId: String? = null, budgetLimit: Long = 0L) = viewModelScope.launch { repository.addCategory(Category(id ?: UUID.randomUUID().toString(), name, type, parentId = parentId, syncStatus = 0, updatedAt = System.currentTimeMillis(), budgetLimit = budgetLimit)) }
-    fun saveWalletAccount(id: String?, mId: String, type: String, name: String, bal: Long) = viewModelScope.launch { repository.addWallet(WalletAccount(id ?: UUID.randomUUID().toString(), mId, type, name, bal)) }
-    fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis()) = viewModelScope.launch {
-        wallets.value.find { it.id == wId }?.let { repository.addTransaction(Transaction(UUID.randomUUID().toString(), it.id, it.memberId, cId, if (isIncome) amt else -amt, note, ts)) }
-    }
-    fun deleteTransaction(tx: Transaction) = viewModelScope.launch { repository.deleteTransaction(tx) }
-    fun updateTransaction(oldTx: Transaction, newTx: Transaction) = viewModelScope.launch { repository.updateTransaction(oldTx, newTx) }
-    fun transferFunds(amount: Long, note: String, fWId: String, tWId: String) = viewModelScope.launch {
-        val fW = wallets.value.find { it.id == fWId } ?: return@launch
-        val tW = wallets.value.find { it.id == tWId } ?: return@launch
-        DashboardTransferHelper.executeTransfer(amount, note, fW, tW, categories.value, members.value, repository, transferNotificationManager)
-    }
+    fun deleteCategory(cat: Category) = actionDelegate.deleteCategory(cat)
+    fun saveCategory(id: String?, name: String, type: String, parentId: String? = null, budgetLimit: Long = 0L) = actionDelegate.saveCategory(id, name, type, parentId, budgetLimit)
+    fun saveWalletAccount(id: String?, mId: String, type: String, name: String, bal: Long, monthlyTransferCap: Long = 0L) = actionDelegate.saveWalletAccount(id, mId, type, name, bal, monthlyTransferCap)
+    fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis(), goalId: String? = null) = actionDelegate.addTransaction(amt, note, wId, cId, isIncome, ts, wallets.value, goalId)
+    fun deleteTransaction(tx: Transaction) = actionDelegate.deleteTransaction(tx)
+    fun updateTransaction(oldTx: Transaction, newTx: Transaction) = actionDelegate.updateTransaction(oldTx, newTx)
+    fun transferFunds(amount: Long, note: String, fWId: String, tWId: String) = actionDelegate.transferFunds(amount, note, fWId, tWId, wallets.value, categories.value, members.value)
     fun confirmTransferNotification(nId: String, emoji: String) = transferNotificationManager.confirmTransfer(nId, emoji)
     fun dismissTransferBanner() = transferNotificationManager.dismissBanner()
-    fun payRecurringBill(billId: String, walletId: String) = viewModelScope.launch {
-        recurringBills.value.find { it.id == billId }?.let { if (!it.isPaid && wallets.value.any { w -> w.id == walletId }) { addTransaction(it.amount, "Paid: ${it.name}", walletId, it.categoryId); billsManager.markBillPaid(billId) } }
-    }
+    fun payRecurringBill(billId: String, walletId: String) = recurringAutoScheduler.payRecurringBill(billId, walletId, wallets.value, recurringBills.value)
     fun importCsvTransactions(parsed: List<com.example.modules.dashboard.csv.ParsedTransaction>, skipDuplicates: Boolean = true, onComplete: ((com.example.modules.dashboard.csv.ImportExecutionResult) -> Unit)? = null) = viewModelScope.launch {
         onComplete?.invoke(com.example.modules.dashboard.csv.SmartCsvImportEngine.executeImport(repository, parsed, skipDuplicates))
     }

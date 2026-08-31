@@ -16,46 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.models.Category
-import com.example.shared.models.RecurringBill
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
-
-@Composable
-fun PayBillDialog(
-    targetBill: RecurringBill?,
-    wallets: List<WalletAccount>,
-    formatter: NumberFormat,
-    onDismiss: () -> Unit,
-    onConfirm: (billId: String, walletId: String) -> Unit
-) {
-    var selectedWalletId by remember { mutableStateOf(wallets.firstOrNull()?.id ?: "") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Deduct Account Payment", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Select source wallet to debit ${formatter.format(targetBill?.amount ?: 0L)}:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
-                wallets.forEach { wallet ->
-                    val isSelected = wallet.id == selectedWalletId
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.1f) else Color.Transparent).clickable { selectedWalletId = wallet.id }.padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(wallet.name, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 13.sp)
-                        Text(formatter.format(wallet.balance), fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { if (targetBill != null && selectedWalletId.isNotEmpty()) onConfirm(targetBill.id, selectedWalletId) }) {
-                Text("Confirm Debit", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
-            }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = DesignTokens.TextSecondary) } }
-    )
-}
 
 @Composable
 fun AddRecurringBillDialog(
@@ -76,13 +39,13 @@ fun AddRecurringBillDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Schedule Subscription / Bill", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+        title = { Text("Jadwalkan Tagihan / Langganan", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = billName, onValueChange = { billName = it }, label = { Text("Agreement / Bill Name") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = billAmount, onValueChange = { billAmount = it }, label = { Text("Amount (Rp)") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = billDueDate, onValueChange = { billDueDate = it }, label = { Text("Next Due Date (e.g., Sep 01, 2026)") }, modifier = Modifier.fillMaxWidth())
-                Text("Billing Frequency", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                OutlinedTextField(value = billName, onValueChange = { billName = it }, label = { Text("Nama Tagihan / Layanan") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = billAmount, onValueChange = { billAmount = it.filter { c -> c.isDigit() } }, label = { Text("Nominal (Rp)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = billDueDate, onValueChange = { billDueDate = it }, label = { Text("Jatuh Tempo (misal: 01 Setiap Bulan)") }, modifier = Modifier.fillMaxWidth())
+                Text("Frekuensi Tagihan", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     frequencies.forEach { freq ->
                         val isSel = freq == frequency
@@ -93,13 +56,13 @@ fun AddRecurringBillDialog(
                 }
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Automatic Ledger Population", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text("Auto-deduct and post on specific date", fontSize = 10.sp, color = DesignTokens.TextSecondary)
+                        Text("Auto-Debet Otomatis", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Catat transaksi otomatis saat jatuh tempo", fontSize = 10.sp, color = DesignTokens.TextSecondary)
                     }
                     Switch(checked = autoPay, onCheckedChange = { autoPay = it })
                 }
                 if (autoPay) {
-                    Text("Auto-Deduct From Account", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                    Text("Pilih Dompet Sumber", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
                     wallets.forEach { wallet ->
                         val isSelected = wallet.id == targetWalletId
                         Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.1f) else Color.Transparent).clickable { targetWalletId = wallet.id }.padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -112,13 +75,13 @@ fun AddRecurringBillDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                val parsed = billAmount.toLongOrNull() ?: billAmount.toDoubleOrNull()?.toLong() ?: 0L
+                val parsed = billAmount.toLongOrNull() ?: 0L
                 if (billName.isNotEmpty() && parsed > 0L && billDueDate.isNotEmpty()) {
                     onAdd(billName, parsed, billDueDate, selectedCategoryId, autoPay, if (autoPay) targetWalletId else null, frequency)
                 }
                 onDismiss()
-            }) { Text("Schedule Commit", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent) }
+            }) { Text("Simpan Jadwal", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = DesignTokens.TextSecondary) } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) } }
     )
 }

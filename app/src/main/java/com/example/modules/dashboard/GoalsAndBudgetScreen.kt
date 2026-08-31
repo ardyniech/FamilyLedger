@@ -31,8 +31,9 @@ fun GoalsAndBudgetScreen(
     members: List<Member>,
     wallets: List<WalletAccount> = emptyList(),
     onUpdateBudget: (Long) -> Unit,
-    onAddGoal: (title: String, targetAmount: Long, initialAmount: Long, category: String, iconEmoji: String) -> Unit,
+    onAddGoal: (title: String, targetAmount: Long, initialAmount: Long, category: String, iconEmoji: String, deadline: String, targetTimestamp: Long, colorHex: String) -> Unit,
     onDepositToGoal: (goalId: String, amount: Long) -> Unit,
+    onDeleteGoal: (goalId: String) -> Unit = {},
     onTransactionClick: (Transaction) -> Unit = {},
     onBack: () -> Unit
 ) {
@@ -45,7 +46,7 @@ fun GoalsAndBudgetScreen(
 
     var showEditBudgetDialog by remember { mutableStateOf(false) }
     var showAddGoalDialog by remember { mutableStateOf(false) }
-    var depositGoalTarget by remember { mutableStateOf<FinancialGoal?>(null) }
+    var selectedGoalForDetail by remember { mutableStateOf<FinancialGoal?>(null) }
     var selectedCategoryForDetail by remember { mutableStateOf<Category?>(null) }
     var selectedMemberForDetail by remember { mutableStateOf<Member?>(null) }
 
@@ -70,26 +71,32 @@ fun GoalsAndBudgetScreen(
             item { CategoryBudgetBreakdownCard(transactions = monthData.transactions, categories = categories, monthlyBudget = monthlyBudget, onCategoryClick = { selectedCategoryForDetail = it }) }
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Impian & Tabungan Keluarga", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = DesignTokens.TextPrimary)
+                    Text("Target Impian & Tabungan (${financialGoals.size})", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = DesignTokens.TextPrimary)
                     TextButton(onClick = { showAddGoalDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = DesignTokens.CobaltAccent)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Tambah Impian", fontSize = 12.sp, color = DesignTokens.CobaltAccent, fontWeight = FontWeight.Bold)
+                        Text("Tambah Target", fontSize = 12.sp, color = DesignTokens.CobaltAccent, fontWeight = FontWeight.Bold)
                     }
                 }
             }
-            items(financialGoals) { goal -> GoalItemCard(goal = goal, onDepositClick = { depositGoalTarget = goal }) }
+            items(financialGoals) { goal ->
+                GoalItemCard(goal = goal, transactions = transactions, onClick = { selectedGoalForDetail = goal })
+            }
             item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 
     if (showEditBudgetDialog) EditBudgetDialog(monthlyBudget = monthlyBudget, onConfirm = { onUpdateBudget(it); showEditBudgetDialog = false }, onDismiss = { showEditBudgetDialog = false })
-    if (showAddGoalDialog) AddGoalDialog(onConfirm = { t, tgt, init, cat, ico -> onAddGoal(t, tgt, init, cat, ico); showAddGoalDialog = false }, onDismiss = { showAddGoalDialog = false })
-    depositGoalTarget?.let { target -> DepositGoalDialog(goal = target, onConfirm = { onDepositToGoal(target.id, it); depositGoalTarget = null }, onDismiss = { depositGoalTarget = null }) }
-    selectedCategoryForDetail?.let { cat ->
-        CategoryTransactionsDialog(category = cat, transactions = monthData.transactions, members = members, onTransactionClick = onTransactionClick, onDismiss = { selectedCategoryForDetail = null })
+    if (showAddGoalDialog) AddGoalDialog(onConfirm = { t, tgt, init, cat, ico, d, ts, hex -> onAddGoal(t, tgt, init, cat, ico, d, ts, hex); showAddGoalDialog = false }, onDismiss = { showAddGoalDialog = false })
+    selectedGoalForDetail?.let { target ->
+        GoalDetailDialog(
+            goal = target,
+            transactions = transactions,
+            onDeposit = { onDepositToGoal(target.id, it) },
+            onDelete = { onDeleteGoal(target.id); selectedGoalForDetail = null },
+            onDismiss = { selectedGoalForDetail = null }
+        )
     }
-    selectedMemberForDetail?.let { mem ->
-        MemberTransactionsDialog(member = mem, transactions = monthData.transactions, categories = categories, onTransactionClick = onTransactionClick, onDismiss = { selectedMemberForDetail = null })
-    }
+    selectedCategoryForDetail?.let { cat -> CategoryTransactionsDialog(category = cat, transactions = monthData.transactions, members = members, onTransactionClick = onTransactionClick, onDismiss = { selectedCategoryForDetail = null }) }
+    selectedMemberForDetail?.let { mem -> MemberTransactionsDialog(member = mem, transactions = monthData.transactions, categories = categories, onTransactionClick = onTransactionClick, onDismiss = { selectedMemberForDetail = null }) }
 }

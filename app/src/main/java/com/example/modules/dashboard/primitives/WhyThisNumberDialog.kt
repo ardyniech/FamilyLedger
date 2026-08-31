@@ -58,7 +58,7 @@ fun WhyThisNumberDialog(
                 BreakdownRow("Expenses (Pengeluaran)", breakdown.expenses, currencyFormat, isNegative = true)
                 BreakdownRow("Internal Transfers", breakdown.internalTransfers, currencyFormat)
                 BreakdownRow("Adjustments / Reversals", breakdown.adjustments, currencyFormat)
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 BreakdownRow("Current Net Balance", breakdown.currentBalance, currencyFormat, isBold = true)
             }
         },

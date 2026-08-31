@@ -1,23 +1,20 @@
 package com.example.modules.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.modules.dashboard.primitives.*
 import com.example.shared.models.Category
+import com.example.shared.models.FinancialGoal
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
 import com.example.shared.utils.MathUtils
@@ -27,14 +24,16 @@ import com.example.shared.utils.MathUtils
 fun AddTransactionModal(
     wallets: List<WalletAccount>,
     categories: List<Category>,
+    goals: List<FinancialGoal> = emptyList(),
     onDismiss: () -> Unit,
-    onSubmit: (amount: Long, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long) -> Unit
+    onSubmit: (amount: Long, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long, goalId: String?) -> Unit
 ) {
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var isIncome by remember { mutableStateOf(false) }
     var selectedWalletId by remember { mutableStateOf(wallets.firstOrNull()?.id ?: "") }
     var selectedTimestamp by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var selectedGoalId by remember { mutableStateOf<String?>(null) }
     val filteredCategories = remember(isIncome, categories) {
         categories.filter { if (isIncome) it.type == "Income" else it.type == "Expense" }
     }
@@ -64,6 +63,9 @@ fun AddTransactionModal(
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingMedium))
 
                 CategorySelectorRow(categories = filteredCategories, selectedCategoryId = selectedCategoryId, isIncome = isIncome, onSelectCategory = { selectedCategoryId = it })
+                Spacer(modifier = Modifier.height(DesignTokens.PaddingMedium))
+
+                GoalSelectorRow(goals = goals, selectedGoalId = selectedGoalId, onSelectGoal = { selectedGoalId = it })
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingLarge))
 
                 Text(
@@ -99,23 +101,10 @@ fun AddTransactionModal(
                 })
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingLarge))
 
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(DesignTokens.CornerRadius))
-                        .background(Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow)))
-                        .clickable {
-                            if (amount.isNotEmpty() && note.isNotEmpty()) {
-                                MathUtils.evaluateMath(amount)?.let { result ->
-                                    if (result > 0) {
-                                        onSubmit(result.toLong(), note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp)
-                                        onDismiss()
-                                    }
-                                }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Konfirmasi & Simpan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                }
+                TransactionSubmitButton(amount = amount, note = note, onValidatedSubmit = { validAmt ->
+                    onSubmit(validAmt, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp, selectedGoalId)
+                    onDismiss()
+                })
             }
         }
     }

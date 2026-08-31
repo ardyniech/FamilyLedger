@@ -86,7 +86,7 @@ fun DashboardHomeContent(
         }
         item { WalletCarousel(wallets = wallets, members = members, onWalletClick = onWalletClick) }
         item { ExpenseBreakdownCard(transactions = transactions, categories = categories, onClick = onAnalyticsClick) }
-        item { GoalsBannerCard(goalCount = financialGoals.size, onClick = onGoalsClick) }
+        item { GoalsBannerCard(goals = financialGoals, transactions = transactions, onClick = onGoalsClick) }
         item { UpcomingRecurringBillsCard(bills = recurringBills, onClick = onRecurringBillsClick) }
         item { QuickRecordButton(onClick = onQuickRecordClick) }
         item {

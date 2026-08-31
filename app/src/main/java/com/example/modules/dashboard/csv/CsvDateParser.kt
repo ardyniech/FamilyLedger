@@ -21,7 +21,10 @@ object CsvDateParser {
         "yyyy/MM/dd",
         "dd MMM yyyy HH:mm",
         "dd MMM yyyy",
-        "d MMMM yyyy"
+        "d MMMM yyyy",
+        "MMM dd, yyyy",
+        "MMMM dd, yyyy",
+        "dd MMMM yyyy"
     )
 
     private val locales = listOf(Locale.US, Locale("id", "ID"))

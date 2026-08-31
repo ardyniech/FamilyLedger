@@ -31,6 +31,7 @@ fun TransactionDetailDialog(
     wallet: WalletAccount?,
     category: Category?,
     member: Member?,
+    financialGoal: com.example.shared.models.FinancialGoal? = null,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onDismiss: () -> Unit
@@ -70,6 +71,7 @@ fun TransactionDetailDialog(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         DetailItemRow(label = "Catatan", value = transaction.note.ifBlank { "-" })
                         DetailItemRow(label = "Kategori", value = category?.name ?: "-")
+                        financialGoal?.let { DetailItemRow(label = "Target Impian", value = "${it.iconEmoji} ${it.title}") }
                         DetailItemRow(label = "Dompet / Akun", value = wallet?.name ?: "-")
                         DetailItemRow(label = "Dicatat Oleh", value = member?.name ?: "Suami")
                         DetailItemRow(label = "Waktu", value = dateFmt.format(Date(transaction.timestamp)))

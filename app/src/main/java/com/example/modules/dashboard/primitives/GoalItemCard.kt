@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.modules.dashboard.logic.GoalProgressCalculator
 import com.example.shared.models.FinancialGoal
+import com.example.shared.models.Transaction
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
@@ -20,21 +23,22 @@ import java.util.Locale
 @Composable
 fun GoalItemCard(
     goal: FinancialGoal,
-    onDepositClick: () -> Unit
+    transactions: List<Transaction> = emptyList(),
+    onClick: () -> Unit
 ) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val progress = if (goal.targetAmount > 0) (goal.currentAmount / goal.targetAmount).toFloat().coerceIn(0f, 1f) else 0f
+    val formatter = remember { NumberFormat.getCurrencyInstance(Locale("id", "ID")) }
+    val progress = remember(goal, transactions) { GoalProgressCalculator.calculate(goal, transactions) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
         border = BorderStroke(1.dp, DesignTokens.BorderGlass),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onDepositClick() }
+            .clickable { onClick() }
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -47,39 +51,50 @@ fun GoalItemCard(
                 ) {
                     Text(goal.iconEmoji, fontSize = 24.sp)
                     Column {
-                        Text(goal.title, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
-                        Text(goal.category, fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                        Text(goal.title, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 14.sp)
+                        Text(progress.deadlineStatusText, fontSize = 11.sp, color = DesignTokens.CobaltAccent)
                     }
                 }
 
-                Button(
-                    onClick = onDepositClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.SurfaceGlass),
-                    border = BorderStroke(1.dp, DesignTokens.BorderGlass),
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (progress.isCompleted) DesignTokens.EmeraldGlow.copy(alpha = 0.2f) else DesignTokens.AmberAccent.copy(alpha = 0.15f)
                 ) {
-                    Text("+ Nabung", fontSize = 11.sp, color = DesignTokens.TextPrimary, fontWeight = FontWeight.Bold)
+                    Text(
+                        "${progress.percentage}%",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (progress.isCompleted) DesignTokens.EmeraldGlow else DesignTokens.AmberAccent,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("${formatter.format(goal.currentAmount)} / ${formatter.format(goal.targetAmount)}", fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    Text("${(progress * 100).toInt()}%", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = DesignTokens.AmberAccent)
-                }
                 LinearProgressIndicator(
-                    progress = { progress },
+                    progress = { progress.progressFraction },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
-                    color = DesignTokens.AmberAccent,
+                    color = if (progress.isCompleted) DesignTokens.EmeraldGlow else DesignTokens.AmberAccent,
                     trackColor = DesignTokens.BorderLight,
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "${formatter.format(progress.totalAccumulated)} / ${formatter.format(goal.targetAmount)}",
+                        fontSize = 11.sp,
+                        color = DesignTokens.TextSecondary
+                    )
+                    Text(
+                        if (progress.taggedTransactions.isNotEmpty()) "${progress.taggedTransactions.size} transaksi" else "Detail →",
+                        fontSize = 11.sp,
+                        color = DesignTokens.TextSecondary
+                    )
+                }
             }
         }
     }

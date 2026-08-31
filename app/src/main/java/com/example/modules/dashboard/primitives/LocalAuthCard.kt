@@ -3,6 +3,7 @@ package com.example.modules.dashboard.primitives
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,8 +33,6 @@ fun LocalAuthCard(
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     var isCreateMode by remember { mutableStateOf(false) }
-    var userId by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceGlass),
@@ -66,7 +65,14 @@ fun LocalAuthCard(
                 }
                 else -> {
                     if (authState is AuthUiState.Error) {
-                        Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(DesignTokens.RoseAccent.copy(alpha = 0.15f)).padding(10.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(DesignTokens.RoseAccent.copy(alpha = 0.15f))
+                                .clickable { onClearError() }
+                                .padding(10.dp)
+                        ) {
                             Column {
                                 Text(authState.message, fontSize = 11.sp, color = DesignTokens.RoseAccent, fontWeight = FontWeight.SemiBold)
                                 Text("Ketuk untuk menutup", fontSize = 10.sp, color = DesignTokens.TextSecondary, modifier = Modifier.padding(top = 4.dp))
@@ -99,22 +105,12 @@ fun LocalAuthCard(
     }
 
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(if (isCreateMode) "Buat Akun Lokal" else "Masuk") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = userId, onValueChange = { userId = it }, label = { Text("ID Pengguna") }, singleLine = true)
-                    OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Kata Sandi") }, singleLine = true)
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (isCreateMode) onCreateAccount(userId, password, context) else onSignIn(userId, password, context)
-                    showDialog = false
-                }) { Text("Konfirmasi") }
-            },
-            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Batal") } }
+        LocalAuthInputDialog(
+            isCreateMode = isCreateMode,
+            context = context,
+            onDismiss = { showDialog = false },
+            onSignIn = onSignIn,
+            onCreateAccount = onCreateAccount
         )
     }
 }

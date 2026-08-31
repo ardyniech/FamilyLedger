@@ -11,15 +11,19 @@ import com.example.shared.models.AuthUiState
 
 class LocalAuthManager(private val context: Context) {
     
-    private val prefs by lazy {
-        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-        EncryptedSharedPreferences.create(
-            "family_ledger_auth_prefs",
-            masterKey,
-            context,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+    private val prefs: android.content.SharedPreferences by lazy {
+        try {
+            val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+            EncryptedSharedPreferences.create(
+                "family_ledger_auth_prefs",
+                masterKey,
+                context,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (_: Exception) {
+            context.getSharedPreferences("family_ledger_auth_prefs_plain", Context.MODE_PRIVATE)
+        }
     }
     
     private fun hashPassword(password: String): String {

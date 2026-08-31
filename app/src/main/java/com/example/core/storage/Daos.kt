@@ -150,5 +150,3 @@ interface HouseholdDao {
         clearMembers()
     }
 }
-
-

@@ -11,6 +11,7 @@ fun DashboardDialogsHost(
     wallets: List<WalletAccount>,
     categories: List<Category>,
     members: List<Member>,
+    financialGoals: List<FinancialGoal> = emptyList(),
     showAddModal: Boolean,
     onDismissAddModal: () -> Unit,
     selectedTxForDetail: Transaction?,
@@ -26,9 +27,11 @@ fun DashboardDialogsHost(
 ) {
     if (showAddModal) {
         AddTransactionModal(
-            wallets = wallets, categories = categories,
+            wallets = wallets,
+            categories = categories,
+            goals = financialGoals,
             onDismiss = onDismissAddModal,
-            onSubmit = { a, n, w, c, i, t -> viewModel.addTransaction(a, n, w, c, i, t) }
+            onSubmit = { a, n, w, c, i, t, gId -> viewModel.addTransaction(a, n, w, c, i, t, gId) }
         )
     }
     selectedTxForDetail?.let { tx ->
@@ -37,6 +40,7 @@ fun DashboardDialogsHost(
             wallet = wallets.find { it.id == tx.walletId },
             category = categories.find { it.id == tx.categoryId },
             member = members.find { it.id == tx.memberId },
+            financialGoal = financialGoals.find { it.id == tx.goalId },
             onEditClick = { onSelectEdit(tx); onDismissDetail() },
             onDeleteClick = { onSelectDelete(tx); onDismissDetail() },
             onDismiss = onDismissDetail
