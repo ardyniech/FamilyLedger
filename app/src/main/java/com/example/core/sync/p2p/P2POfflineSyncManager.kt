@@ -11,6 +11,7 @@ import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class P2POfflineSyncManager(
     private val dao: HouseholdDao,
@@ -57,14 +58,15 @@ class P2POfflineSyncManager(
                 if (!incomingCompressed.isNullOrEmpty()) {
                     val incomingPkg = P2PSyncPackage.fromCompressedBase64(incomingCompressed)
                     // Verifikasi pair code sebelum sinkronisasi
-                    if (incomingPkg.pairCode != pendingPairCode.get()) {
-                        Log.w("P2PSync", "[Module:P2POfflineSync] Pair code mismatch: expected ${pendingPairCode.get()}, got ${incomingPkg.pairCode}")
+                    val currentPairCode = pendingPairCode.get()
+                    if (incomingPkg.pairCode != currentPairCode) {
+                        Log.w("P2PSync", "[Module:P2POfflineSync] Pair code mismatch: expected $currentPairCode, got ${incomingPkg.pairCode}")
                         socket.close()
                         onClientSynced(P2PImportResult(false, 0, 0, 0, "Pair code tidak cocok"))
-                        return@launch
+                        return@Thread
                     }
                     val importRes = kotlinx.coroutines.runBlocking { importSyncPackage(incomingPkg) }
-                    val hostPkg = kotlinx.coroutines.runBlocking { createSyncPackage(pendingPairCode.get(), senderName, senderRole) }
+                    val hostPkg = kotlinx.coroutines.runBlocking { createSyncPackage(currentPairCode, senderName, senderRole) }
                     writer.println(hostPkg.toCompressedBase64())
                     onClientSynced(importRes)
                 }

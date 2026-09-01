@@ -28,15 +28,18 @@ fun TransactionSubmitButton(
     isLoading: Boolean = false,
     onValidatedSubmit: (Long) -> Unit
 ) {
+    val bgModifier = if (isLoading) {
+        Modifier.background(DesignTokens.BorderLight)
+    } else {
+        Modifier.background(Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow)))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .clip(RoundedCornerShape(DesignTokens.CornerRadius))
-            .background(
-                if (isLoading) DesignTokens.BorderLight
-                else Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow))
-            )
+            .then(bgModifier)
             .clickable(enabled = !isLoading) {
                 if (amount.isNotEmpty() && note.isNotEmpty()) {
                     MathUtils.evaluateMath(amount)?.let { result ->

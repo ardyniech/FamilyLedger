@@ -20,11 +20,21 @@ object HardwareSupportChecker {
         var isBtEnabled = false
         if (hasBt) {
             try {
-                val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
-                isBtEnabled = adapter?.isEnabled == true
-            } catch (e: SecurityException) {
-                isBtEnabled = false
-            } catch (e: Exception) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    val hasBtPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
+                    if (hasBtPermission) {
+                        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager
+                        isBtEnabled = btManager?.adapter?.isEnabled == true
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+                    isBtEnabled = adapter?.isEnabled == true
+                }
+            } catch (_: Exception) {
                 isBtEnabled = false
             }
         }
