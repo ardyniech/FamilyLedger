@@ -56,9 +56,11 @@ fun DashboardHomeContent(
         item { WalletStockTickerBanner(wallets = wallets, members = members, transactions = transactions, onWalletClick = onWalletClick) }
         item { TransferNotificationBanner(notification = transferNotification, activeMember = activeMember, onClickBanner = onClickTransferNotification, onDismiss = {}) }
         item { BudgetExceedancesBanner(exceedances = budgetExceedances) }
+        item { TopCategoryAnomalyCard(transactions = transactions, categories = categories) }
         item { HeroCard(totalBalance = totalBalance, wallets = wallets, members = members, onClick = onNetWorthClick) }
         item { QuickExpensePresetsRow(onSelectPreset = { onSelectQuickPreset?.invoke(it) ?: onQuickRecordClick() }) }
         item { FinancialRunwayCard(totalBalance = totalBalance, wallets = wallets, transactions = transactions, onClick = onNetWorthClick) }
+        item { DailyBurnRateCard(transactions = transactions) }
         item { DashboardActionRow(onTransferClick = onTransferClick, onWalletsClick = onWalletsClick, onCategoriesClick = onCategoriesClick, onPairingClick = onPairingClick) }
         item { CategoryGroupBanner(onClick = onCategoryGroupsClick) }
         item { SavingsRatioGaugeCard(summary = periodSummary, onClick = onAnalyticsClick) }

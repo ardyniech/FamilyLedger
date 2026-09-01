@@ -23,7 +23,7 @@ object DashboardSyncHelper {
     suspend fun initMockIfNeeded(repo: HouseholdRepository, pairCode: String) {
         val m = repo.members.firstOrNull()
         if (m.isNullOrEmpty() || m.none { it.name == "Ardy" }) {
-            SampleDataInitializer.populateDefaultFamilyData(repo, pairCode)
+            RealDataImporter.seedRealData(repo, pairCode)
         }
     }
 }
