@@ -41,40 +41,26 @@ fun GoalDetailDialog(
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text("Hapus Target?", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
-            text = { Text("Target \"${goal.title}\" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.", color = DesignTokens.TextSecondary) },
-            confirmButton = {
-                Button(
-                    onClick = { showDeleteConfirmation = false; onDelete() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252))
-                ) { Text("Hapus") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Batal", color = DesignTokens.TextSecondary) }
-            }
+            text = { Text("Target \"${goal.title}\" akan dihapus permanen.", color = DesignTokens.TextSecondary) },
+            confirmButton = { Button(onClick = { showDeleteConfirmation = false; onDelete() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252))) { Text("Hapus") } },
+            dismissButton = { TextButton(onClick = { showDeleteConfirmation = false }) { Text("Batal", color = DesignTokens.TextSecondary) } }
         )
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(goal.iconEmoji, fontSize = 24.sp)
-                    Column {
-                        Text(goal.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DesignTokens.TextPrimary)
-                        Text(progress.deadlineStatusText, fontSize = 12.sp, color = DesignTokens.CobaltAccent)
-                    }
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(goal.iconEmoji, fontSize = 24.sp)
+                Column {
+                    Text(goal.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DesignTokens.TextPrimary)
+                    Text(progress.deadlineStatusText, fontSize = 12.sp, color = DesignTokens.CobaltAccent)
                 }
             }
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                LinearProgressIndicator(
-                    progress = { progress.progressFraction },
-                    modifier = Modifier.fillMaxWidth().height(10.dp),
-                    color = DesignTokens.EmeraldGlow,
-                    trackColor = DesignTokens.BorderLight
-                )
+                LinearProgressIndicator(progress = { progress.progressFraction }, modifier = Modifier.fillMaxWidth().height(10.dp), color = DesignTokens.EmeraldGlow, trackColor = DesignTokens.BorderLight)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("${progress.percentage}% Tercapai", fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow, fontSize = 13.sp)
                     Text("Sisa: ${currencyFmt.format(progress.remainingAmount)}", color = DesignTokens.TextSecondary, fontSize = 12.sp)

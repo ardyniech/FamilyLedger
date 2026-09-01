@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.shared.models.Member
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -26,8 +27,10 @@ import com.example.shared.atoms.springClickable
 @Composable
 fun HeroCard(totalBalance: Long, wallets: List<WalletAccount>, members: List<Member>, onClick: () -> Unit) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val husbandTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Husband" }.sumOf { it.balance }
-    val wifeTotal = wallets.filter { w -> members.find { it.id == w.memberId }?.role == "Wife" }.sumOf { it.balance }
+    val partnerA = MemberRoleHelper.getPartnerA(members)
+    val partnerB = MemberRoleHelper.getPartnerB(members)
+    val partnerATotal = wallets.filter { it.memberId == (partnerA?.id ?: "") }.sumOf { it.balance }
+    val partnerBTotal = wallets.filter { it.memberId == (partnerB?.id ?: "") }.sumOf { it.balance }
 
     Card(
         modifier = Modifier
@@ -69,12 +72,12 @@ fun HeroCard(totalBalance: Long, wallets: List<WalletAccount>, members: List<Mem
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("Suami", color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-                        Text(formatter.format(husbandTotal), color = DesignTokens.TextOnDark)
+                        Text(MemberRoleHelper.getDisplayName(partnerA, "Pasangan 1"), color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                        Text(formatter.format(partnerATotal), color = DesignTokens.TextOnDark)
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("Istri", color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-                        Text(formatter.format(wifeTotal), color = DesignTokens.TextOnDark)
+                        Text(MemberRoleHelper.getDisplayName(partnerB, "Pasangan 2"), color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                        Text(formatter.format(partnerBTotal), color = DesignTokens.TextOnDark)
                     }
                 }
             }

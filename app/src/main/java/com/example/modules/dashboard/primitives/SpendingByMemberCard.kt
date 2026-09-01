@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.example.shared.models.Member
 import com.example.shared.models.Transaction
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -38,7 +39,7 @@ fun SpendingByMemberCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             members.forEach { member ->
-                val tint = if (member.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+                val tint = MemberRoleHelper.getRoleColor(member, members)
                 val memberExpenses = transactions
                     .filter { it.memberId == member.id && it.amount < 0 }
                     .sumOf { -it.amount }

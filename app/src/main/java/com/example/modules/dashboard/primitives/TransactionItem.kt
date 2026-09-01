@@ -19,6 +19,7 @@ import com.example.shared.models.Category
 import com.example.shared.models.Member
 import com.example.shared.models.Transaction
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 import androidx.compose.foundation.clickable
@@ -31,7 +32,7 @@ fun TransactionItem(
     onClick: (() -> Unit)? = null
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    val tint = if (member?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+    val tint = MemberRoleHelper.getRoleColor(member)
     
     Card(
         modifier = Modifier

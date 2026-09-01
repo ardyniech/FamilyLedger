@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -55,8 +56,8 @@ fun TopExpensesReportCard(
                 topExpenses.forEachIndexed { index, tx ->
                     val category = categories.find { it.id == tx.categoryId }
                     val member = members.find { it.id == tx.memberId }
-                    val memberTag = if (member?.role == "Husband") "Suami" else "Istri"
-                    val tagBg = if (member?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+                    val memberTag = MemberRoleHelper.getDisplayName(member, "Pasangan")
+                    val tagBg = MemberRoleHelper.getRoleColor(member, members)
 
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable { onTransactionClick?.invoke(tx) },

@@ -40,7 +40,7 @@ fun IncomingTransferNotificationDialog(
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Transfer Masuk dari Suami!", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = DesignTokens.TextPrimary)
+                    Text("Transfer Masuk dari ${notification.senderName}!", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = DesignTokens.TextPrimary)
                     Text("${notification.senderName} mengirimkan dana ke rekeningmu", fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = TextAlign.Center)
                 }
 
@@ -55,7 +55,7 @@ fun IncomingTransferNotificationDialog(
                 }
 
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Pilih Emoji Balasan untuk Suami:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
+                    Text("Pilih Emoji Balasan untuk ${notification.senderName}:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DesignTokens.TextPrimary)
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         emojiOptions.take(4).forEach { emoji ->

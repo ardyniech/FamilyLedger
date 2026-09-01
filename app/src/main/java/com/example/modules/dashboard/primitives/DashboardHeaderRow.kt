@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.core.sync.SyncState
 import com.example.shared.models.Member
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 
 import com.example.shared.atoms.springClickable
 
@@ -29,6 +30,9 @@ fun DashboardHeaderRow(
     onSyncBadgeClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
+    val roleColor = MemberRoleHelper.getRoleColor(activeMember)
+    val roleEmoji = MemberRoleHelper.getRoleEmoji(activeMember?.role ?: "")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,15 +96,12 @@ fun DashboardHeaderRow(
 
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = (if (activeMember?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent).copy(alpha = 0.2f),
-                border = BorderStroke(
-                    1.dp, 
-                    if (activeMember?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
-                ),
+                color = roleColor.copy(alpha = 0.2f),
+                border = BorderStroke(1.dp, roleColor),
                 modifier = Modifier.springClickable { onProfileClick() }
             ) {
                 Text(
-                    text = "${if (activeMember?.role == "Husband") "👨" else "👩"} ${activeMember?.name ?: "User"}",
+                    text = "$roleEmoji ${activeMember?.name ?: "User"}",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = DesignTokens.TextPrimary,

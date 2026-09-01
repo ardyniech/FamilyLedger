@@ -68,7 +68,7 @@ fun TransferNotificationBanner(
                         }
 
                         Column {
-                            val title = if (isPendingForActiveUser) "Transfer Masuk dari ${notification.senderName}" else "Konfirmasi Transfer dari Istri! ${notification.selectedEmoji}"
+                            val title = if (isPendingForActiveUser) "Transfer Masuk dari ${notification.senderName}" else "Konfirmasi Transfer dari ${notification.recipientName}! ${notification.selectedEmoji}"
                             val subtitle = if (isPendingForActiveUser) "Sebesar ${fmt.format(notification.amount)} • Klik untuk Konfirmasi" else "${notification.recipientName} telah menerima ${fmt.format(notification.amount)}"
                             Text(text = title, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = DesignTokens.TextPrimary)
                             Text(text = subtitle, fontSize = 11.sp, color = DesignTokens.TextSecondary)

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.core.sync.p2p.HardwareSupportChecker
 import com.example.core.sync.p2p.P2POfflineSyncManager
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,7 +42,7 @@ fun P2POfflineSyncCard(
     var isHostRunning by remember { mutableStateOf(false) }
     var syncResultMsg by remember { mutableStateOf<String?>(null) }
     var isSyncing by remember { mutableStateOf(false) }
-    val senderName = if (activeRole == "Husband") "Suami" else "Istri"
+    val senderName = MemberRoleHelper.getPartnerLabel(activeRole)
 
     Card(
         modifier = modifier.fillMaxWidth(),

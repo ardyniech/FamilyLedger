@@ -1,15 +1,10 @@
 package com.example.modules.updater.logic
 
-import android.util.Log
-
 object SemVerComparator {
-    private const val TAG = "SemVerComparator"
 
     fun isNewer(remoteTag: String, localVersion: String): Boolean {
         val cleanRemote = cleanVersion(remoteTag)
         val cleanLocal = cleanVersion(localVersion)
-        
-        println("Comparing Remote: $cleanRemote with Local: $cleanLocal")
         
         val remoteParts = cleanRemote.split(".").map { it.toIntOrNull() ?: 0 }
         val localParts = cleanLocal.split(".").map { it.toIntOrNull() ?: 0 }

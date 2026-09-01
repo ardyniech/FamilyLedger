@@ -19,6 +19,7 @@ import com.example.shared.models.Category
 import com.example.shared.models.Member
 import com.example.shared.models.Transaction
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -34,7 +35,8 @@ fun MemberTransactionsDialog(
     val memberTxs = transactions.filter { it.memberId == member.id }.sortedByDescending { it.timestamp }
     val totalExpense = memberTxs.filter { it.amount < 0 }.sumOf { -it.amount }
     val totalIncome = memberTxs.filter { it.amount > 0 }.sumOf { it.amount }
-    val roleColor = if (member.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+    val roleColor = MemberRoleHelper.getRoleColor(member)
+    val roleLabel = MemberRoleHelper.getPartnerLabel(member.role)
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = RoundedCornerShape(DesignTokens.CornerRadius), color = DesignTokens.Surface, tonalElevation = 8.dp, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
@@ -44,11 +46,11 @@ fun MemberTransactionsDialog(
                         Box(modifier = Modifier.size(14.dp).clip(RoundedCornerShape(7.dp)).background(roleColor))
                         Column {
                             Text("Riwayat ${member.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DesignTokens.TextPrimary)
-                            Text("${member.role} • ${memberTxs.size} Transaksi", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                            Text("$roleLabel • ${memberTxs.size} Transaksi", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                         }
                     }
                     Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(roleColor.copy(alpha = 0.15f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        Text(member.role, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = roleColor)
+                        Text(roleLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = roleColor)
                     }
                 }
 

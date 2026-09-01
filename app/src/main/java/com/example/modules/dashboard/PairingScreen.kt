@@ -47,7 +47,7 @@ fun PairingScreen(
     onBack: () -> Unit
 ) {
     val activeMember = members.find { it.id == activeMemberId }
-    val activeRole = activeMember?.role ?: "Husband"
+    val activeRole = activeMember?.role ?: members.firstOrNull()?.role ?: "Partner"
     val status by updaterManager.status.collectAsState()
     val scope = rememberCoroutineScope()
 

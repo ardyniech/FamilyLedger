@@ -55,7 +55,7 @@ fun TransferConfirmedNotificationDialog(
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Transfer Dikonfirmasi Istri! ${notification.selectedEmoji}",
+                        text = "Transfer Dikonfirmasi ${notification.recipientName}! ${notification.selectedEmoji}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
                         color = DesignTokens.TextPrimary
@@ -88,7 +88,7 @@ fun TransferConfirmedNotificationDialog(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("Reaction Istri:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                            Text("Reaksi ${notification.recipientName}:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
                             Text(notification.selectedEmoji, fontSize = 20.sp)
                         }
                     }

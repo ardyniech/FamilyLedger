@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.models.Member
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 
 @Composable
 fun PairingRoleSelector(
@@ -30,8 +31,9 @@ fun PairingRoleSelector(
         ) {
             members.forEach { member ->
                 val isSelected = member.id == activeMemberId
-                val isHusband = member.role == "Husband"
-                val accentColor = if (isHusband) DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+                val accentColor = MemberRoleHelper.getRoleColor(member, members)
+                val emoji = MemberRoleHelper.getRoleEmoji(member.role)
+                val roleLabel = MemberRoleHelper.getPartnerLabel(member.role)
 
                 Card(
                     modifier = Modifier
@@ -51,14 +53,14 @@ fun PairingRoleSelector(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(text = if (isHusband) "👨" else "👩", fontSize = 32.sp)
+                        Text(text = emoji, fontSize = 32.sp)
                         Text(text = member.name, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = if (isSelected) accentColor else DesignTokens.BorderLight
                         ) {
                             Text(
-                                text = if (isSelected) "Sedang Aktif ✓" else member.role,
+                                text = if (isSelected) "Sedang Aktif ✓" else roleLabel,
                                 fontSize = 11.sp,
                                 color = if (isSelected) Color.White else DesignTokens.TextSecondary,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

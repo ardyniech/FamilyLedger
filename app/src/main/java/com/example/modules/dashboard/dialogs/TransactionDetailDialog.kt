@@ -73,7 +73,7 @@ fun TransactionDetailDialog(
                         DetailItemRow(label = "Kategori", value = category?.name ?: "-")
                         financialGoal?.let { DetailItemRow(label = "Target Impian", value = "${it.iconEmoji} ${it.title}") }
                         DetailItemRow(label = "Dompet / Akun", value = wallet?.name ?: "-")
-                        DetailItemRow(label = "Dicatat Oleh", value = member?.name ?: "Suami")
+                        DetailItemRow(label = "Dicatat Oleh", value = member?.name ?: "Pasangan")
                         DetailItemRow(label = "Waktu", value = dateFmt.format(Date(transaction.timestamp)))
                     }
                 }

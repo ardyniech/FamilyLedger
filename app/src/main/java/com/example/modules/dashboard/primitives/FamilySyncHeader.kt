@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 
 @Composable
 fun FamilySyncHeader(
@@ -26,7 +27,8 @@ fun FamilySyncHeader(
     onSwitchProfile: () -> Unit,
     onPairClick: () -> Unit
 ) {
-    val roleColor = if (currentRole == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+    val roleColor = MemberRoleHelper.getRoleColor(currentRole)
+    val roleLabel = MemberRoleHelper.getPartnerLabel(currentRole)
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -70,7 +72,7 @@ fun FamilySyncHeader(
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "($currentRole)",
+                            text = "($roleLabel)",
                             style = MaterialTheme.typography.bodySmall,
                             color = roleColor,
                             fontWeight = FontWeight.SemiBold

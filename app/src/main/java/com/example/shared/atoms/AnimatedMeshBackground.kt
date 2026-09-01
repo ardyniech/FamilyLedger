@@ -10,10 +10,12 @@ import com.example.shared.theme.DesignTokens
 
 @Composable
 fun AnimatedMeshBackground(modifier: Modifier = Modifier) {
+    val bgTop = DesignTokens.BackgroundTop
+    val bgBottom = DesignTokens.BackgroundBottom
     Canvas(modifier = modifier.fillMaxSize()) {
         drawRect(
             brush = Brush.radialGradient(
-                colors = listOf(DesignTokens.BackgroundTop, DesignTokens.BackgroundBottom),
+                colors = listOf(bgTop, bgBottom),
                 center = Offset(size.width * 0.5f, size.height * 0.25f),
                 radius = size.width * 1.2f
             ),

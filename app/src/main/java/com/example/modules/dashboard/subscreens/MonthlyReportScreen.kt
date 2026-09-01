@@ -26,6 +26,7 @@ import com.example.modules.dashboard.logic.MonthFilterHelper
 import com.example.modules.dashboard.primitives.*
 import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -62,11 +63,13 @@ fun MonthlyReportScreen(
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = DesignTokens.TextPrimary) } },
                 actions = {
                     IconButton(onClick = {
-                        val husband = members.find { it.role == "Husband" }
-                        val wife = members.find { it.role == "Wife" }
-                        val hExp = monthData.transactions.filter { it.memberId == (husband?.id ?: "") && it.amount < 0 }.sumOf { -it.amount }
-                        val wExp = monthData.transactions.filter { it.memberId == (wife?.id ?: "") && it.amount < 0 }.sumOf { -it.amount }
-                        val summaryText = "📊 *LAPORAN KEUANGAN KELUARGA TRANSPARAN*\nPemasukan: ${formatter.format(totalIncome)}\nTotal Pengeluaran: ${formatter.format(totalExpenses)}\nSisa Anggaran: ${formatter.format(remainingBudget)}\n• ${husband?.name ?: "Suami"}: ${formatter.format(hExp)}\n• ${wife?.name ?: "Istri"}: ${formatter.format(wExp)}\n\n_Semua mutasi tercatat & transparan (Family Ledgers)_"
+                        val partnerA = MemberRoleHelper.getPartnerA(members)
+                        val partnerB = MemberRoleHelper.getPartnerB(members)
+                        val aExp = monthData.transactions.filter { it.memberId == (partnerA?.id ?: "") && it.amount < 0 }.sumOf { -it.amount }
+                        val bExp = monthData.transactions.filter { it.memberId == (partnerB?.id ?: "") && it.amount < 0 }.sumOf { -it.amount }
+                        val nameA = MemberRoleHelper.getDisplayName(partnerA, "Pasangan 1")
+                        val nameB = MemberRoleHelper.getDisplayName(partnerB, "Pasangan 2")
+                        val summaryText = "📊 *LAPORAN KEUANGAN KELUARGA TRANSPARAN*\nPemasukan: ${formatter.format(totalIncome)}\nTotal Pengeluaran: ${formatter.format(totalExpenses)}\nSisa Anggaran: ${formatter.format(remainingBudget)}\n• $nameA: ${formatter.format(aExp)}\n• $nameB: ${formatter.format(bExp)}\n\n_Semua mutasi tercatat & transparan (Family Ledgers)_"
                         val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         cb.setPrimaryClip(ClipData.newPlainText("Laporan Transparan", summaryText))
                         Toast.makeText(context, "Laporan lengkap disalin ke papan klip! 📋", Toast.LENGTH_SHORT).show()

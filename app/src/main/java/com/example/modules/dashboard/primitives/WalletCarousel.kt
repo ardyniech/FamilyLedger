@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.shared.models.Member
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
+import com.example.shared.utils.MemberRoleHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -33,7 +34,7 @@ fun WalletCarousel(wallets: List<WalletAccount>, members: List<Member>, onWallet
     ) {
         items(wallets) { wallet ->
             val member = members.find { it.id == wallet.memberId }
-            val tint = if (member?.role == "Husband") DesignTokens.CobaltAccent else DesignTokens.AmberAccent
+            val tint = MemberRoleHelper.getRoleColor(member, members)
             
             Card(
                 modifier = Modifier
