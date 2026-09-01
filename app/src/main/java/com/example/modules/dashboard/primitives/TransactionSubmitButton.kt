@@ -5,7 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ import com.example.shared.utils.MathUtils
 fun TransactionSubmitButton(
     amount: String,
     note: String,
+    isLoading: Boolean = false,
     onValidatedSubmit: (Long) -> Unit
 ) {
     Box(
@@ -30,8 +33,11 @@ fun TransactionSubmitButton(
             .fillMaxWidth()
             .height(56.dp)
             .clip(RoundedCornerShape(DesignTokens.CornerRadius))
-            .background(Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow)))
-            .clickable {
+            .background(
+                if (isLoading) DesignTokens.BorderLight
+                else Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow))
+            )
+            .clickable(enabled = !isLoading) {
                 if (amount.isNotEmpty() && note.isNotEmpty()) {
                     MathUtils.evaluateMath(amount)?.let { result ->
                         if (result.isFinite() && result > 0) {
@@ -42,6 +48,10 @@ fun TransactionSubmitButton(
             },
         contentAlignment = Alignment.Center
     ) {
-        Text("Konfirmasi & Simpan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        if (isLoading) {
+            CircularProgressIndicator(color = DesignTokens.CobaltAccent, modifier = Modifier.size(24.dp))
+        } else {
+            Text("Konfirmasi & Simpan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        }
     }
 }

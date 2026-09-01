@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -27,6 +29,8 @@ fun MonthlyOverviewCard(
     onClick: () -> Unit
 ) {
     val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+    val currentMonth = monthFormatter.format(Date())
     val progress = if (budget > 0L) (totalExpenses.toFloat() / budget.toFloat()).coerceIn(0f, 1f) else 0f
     val percentage = (progress * 100).toInt()
     
@@ -57,7 +61,7 @@ fun MonthlyOverviewCard(
                         color = DesignTokens.TextSecondary
                     )
                     Text(
-                        text = "August 2026 Overview",
+                        text = "$currentMonth Overview",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = DesignTokens.TextPrimary

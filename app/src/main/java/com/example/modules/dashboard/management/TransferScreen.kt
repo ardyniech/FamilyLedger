@@ -11,12 +11,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.modules.dashboard.TransferState
 import com.example.shared.models.Member
 import com.example.shared.models.WalletAccount
 import com.example.shared.theme.DesignTokens
@@ -29,7 +31,9 @@ fun TransferScreen(
     wallets: List<WalletAccount>,
     members: List<Member>,
     transactions: List<com.example.shared.models.Transaction> = emptyList(),
+    transferState: TransferState = TransferState.Idle,
     onTransfer: (amount: Long, note: String, fromWalletId: String, toWalletId: String) -> Unit,
+    onResetState: () -> Unit = {},
     onBack: () -> Unit
 ) {
     var amountStr by remember { mutableStateOf("") }
@@ -41,6 +45,13 @@ fun TransferScreen(
         if (toWalletId == fromWalletId) {
             val nextWallet = wallets.firstOrNull { it.id != fromWalletId }
             if (nextWallet != null) toWalletId = nextWallet.id
+        }
+    }
+    
+    LaunchedEffect(transferState) {
+        if (transferState is TransferState.Success || transferState is TransferState.Error) {
+            onResetState()
+            if (transferState is TransferState.Success) onBack()
         }
     }
 
@@ -102,18 +113,45 @@ fun TransferScreen(
 
             Spacer(modifier = Modifier.weight(1f))
             
+            if (transferState is TransferState.Error) {
+                Text(
+                    text = transferState.message,
+                    color = DesignTokens.RoseAccent,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+            }
+            
+            val isLoading = transferState is TransferState.Loading
+            val sameWallet = fromWalletId == toWalletId
+            val insufficientBalance = (amountStr.toLongOrNull() ?: 0L) > (wallets.find { it.id == fromWalletId }?.balance ?: 0L)
+            val isDisabled = isLoading || sameWallet || amountStr.isBlank() || amountStr.toLongOrNull() == 0L || insufficientBalance
+            
             Button(
                 onClick = {
                     val amount = amountStr.toLongOrNull() ?: amountStr.toDoubleOrNull()?.toLong() ?: 0L
                     if (amount > 0L && fromWalletId != toWalletId && fromWalletId.isNotBlank() && toWalletId.isNotBlank()) {
                         onTransfer(amount, if (note.isBlank()) "Transfer" else note, fromWalletId, toWalletId)
-                        onBack()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent),
-                shape = RoundedCornerShape(16.dp)
-            ) { Text("Confirm Transfer", fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (sameWallet) DesignTokens.RoseAccent else DesignTokens.CobaltAccent,
+                    disabledContainerColor = DesignTokens.BorderLight
+                ),
+                shape = RoundedCornerShape(16.dp),
+                enabled = !isDisabled
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(
+                        text = if (sameWallet) "Pilih Wallet Berbeda" else if (insufficientBalance) "Saldo Tidak Cukup" else "Confirm Transfer",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }

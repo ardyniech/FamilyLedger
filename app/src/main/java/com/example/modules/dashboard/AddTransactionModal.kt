@@ -25,8 +25,10 @@ fun AddTransactionModal(
     wallets: List<WalletAccount>,
     categories: List<Category>,
     goals: List<FinancialGoal> = emptyList(),
+    transactionState: TransactionState = TransactionState.Idle,
     onDismiss: () -> Unit,
-    onSubmit: (amount: Long, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long, goalId: String?) -> Unit
+    onSubmit: (amount: Long, note: String, walletId: String, categoryId: String, isIncome: Boolean, timestamp: Long, goalId: String?) -> Unit,
+    onResetState: () -> Unit = {}
 ) {
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
@@ -39,6 +41,13 @@ fun AddTransactionModal(
     }
     var selectedCategoryId by remember { mutableStateOf("") }
     LaunchedEffect(isIncome, filteredCategories) { selectedCategoryId = filteredCategories.firstOrNull()?.id ?: "" }
+    
+    LaunchedEffect(transactionState) {
+        if (transactionState is TransactionState.Success || transactionState is TransactionState.Error) {
+            onResetState()
+            if (transactionState is TransactionState.Success) onDismiss()
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -101,10 +110,14 @@ fun AddTransactionModal(
                 })
                 Spacer(modifier = Modifier.height(DesignTokens.PaddingLarge))
 
-                TransactionSubmitButton(amount = amount, note = note, onValidatedSubmit = { validAmt ->
-                    onSubmit(validAmt, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp, selectedGoalId)
-                    onDismiss()
-                })
+                TransactionSubmitButton(
+                    amount = amount,
+                    note = note,
+                    isLoading = transactionState is TransactionState.Loading,
+                    onValidatedSubmit = { validAmt ->
+                        onSubmit(validAmt, note, selectedWalletId, selectedCategoryId, isIncome, selectedTimestamp, selectedGoalId)
+                    }
+                )
             }
         }
     }

@@ -35,6 +35,24 @@ fun GoalDetailDialog(
     val progress = remember(goal, transactions) { GoalProgressCalculator.calculate(goal, transactions) }
     var depositAmount by remember { mutableStateOf("") }
     var showDepositInput by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Hapus Target?", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
+            text = { Text("Target \"${goal.title}\" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.", color = DesignTokens.TextSecondary) },
+            confirmButton = {
+                Button(
+                    onClick = { showDeleteConfirmation = false; onDelete() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252))
+                ) { Text("Hapus") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Batal", color = DesignTokens.TextSecondary) }
+            }
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -101,7 +119,7 @@ fun GoalDetailDialog(
         },
         dismissButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "Hapus Target", tint = Color(0xFFFF5252)) }
+                IconButton(onClick = { showDeleteConfirmation = true }) { Icon(Icons.Default.Delete, contentDescription = "Hapus Target", tint = Color(0xFFFF5252)) }
                 TextButton(onClick = onDismiss) { Text("Tutup", color = DesignTokens.TextSecondary) }
             }
         }

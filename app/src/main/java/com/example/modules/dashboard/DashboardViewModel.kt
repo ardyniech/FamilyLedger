@@ -1,6 +1,7 @@
 package com.example.modules.dashboard
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.auth.AuthManager
@@ -12,6 +13,20 @@ import com.example.shared.models.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+sealed class TransferState {
+    object Idle : TransferState()
+    object Loading : TransferState()
+    object Success : TransferState()
+    data class Error(val message: String) : TransferState()
+}
+
+sealed class TransactionState {
+    object Idle : TransactionState()
+    object Loading : TransactionState()
+    object Success : TransactionState()
+    data class Error(val message: String) : TransactionState()
+}
+
 class DashboardViewModel(
     private val repository: HouseholdRepository,
     private val authManager: AuthManager,
@@ -22,6 +37,12 @@ class DashboardViewModel(
     val transferNotificationManager = TransferNotificationManager()
     private val actionDelegate = DashboardActionDelegate(repository, viewModelScope, transferNotificationManager)
     private val recurringAutoScheduler = RecurringBillAutoScheduler(viewModelScope, billsManager, actionDelegate)
+
+    private val _transferState = MutableStateFlow<TransferState>(TransferState.Idle)
+    val transferState: StateFlow<TransferState> = _transferState.asStateFlow()
+    
+    private val _transactionState = MutableStateFlow<TransactionState>(TransactionState.Idle)
+    val transactionState: StateFlow<TransactionState> = _transactionState.asStateFlow()
 
     val syncState: StateFlow<SyncState> = repository.syncEngine.syncState
     val authState: StateFlow<AuthUiState> = authManager.authState
@@ -92,10 +113,53 @@ class DashboardViewModel(
     fun deleteCategory(cat: Category) = actionDelegate.deleteCategory(cat)
     fun saveCategory(id: String?, name: String, type: String, parentId: String? = null, budgetLimit: Long = 0L) = actionDelegate.saveCategory(id, name, type, parentId, budgetLimit)
     fun saveWalletAccount(id: String?, mId: String, type: String, name: String, bal: Long, monthlyTransferCap: Long = 0L) = actionDelegate.saveWalletAccount(id, mId, type, name, bal, monthlyTransferCap)
-    fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis(), goalId: String? = null) = actionDelegate.addTransaction(amt, note, wId, cId, isIncome, ts, wallets.value, goalId)
+    fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis(), goalId: String? = null) = viewModelScope.launch {
+        _transactionState.value = TransactionState.Loading
+        try {
+            actionDelegate.addTransaction(amt, note, wId, cId, isIncome, ts, wallets.value, goalId)
+            _transactionState.value = TransactionState.Success
+        } catch (e: Exception) {
+            _transactionState.value = TransactionState.Error(e.message ?: "Gagal menyimpan transaksi")
+        }
+    }
+    
+    fun resetTransactionState() { _transactionState.value = TransactionState.Idle }
     fun deleteTransaction(tx: Transaction) = actionDelegate.deleteTransaction(tx)
     fun updateTransaction(oldTx: Transaction, newTx: Transaction) = actionDelegate.updateTransaction(oldTx, newTx)
-    fun transferFunds(amount: Long, note: String, fWId: String, tWId: String) = actionDelegate.transferFunds(amount, note, fWId, tWId, wallets.value, categories.value, members.value)
+    fun transferFunds(amount: Long, note: String, fWId: String, tWId: String) = viewModelScope.launch {
+        _transferState.value = TransferState.Loading
+        val fromWallet = wallets.value.find { it.id == fWId }
+        val toWallet = wallets.value.find { it.id == tWId }
+        
+        if (fromWallet == null || toWallet == null) {
+            _transferState.value = TransferState.Error("Wallet tidak ditemukan")
+            Toast.makeText(context, "Wallet tidak ditemukan", Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        
+        if (fWId == tWId) {
+            _transferState.value = TransferState.Error("Tidak bisa transfer ke wallet yang sama")
+            Toast.makeText(context, "Tidak bisa transfer ke wallet yang sama", Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        
+        if (fromWallet.balance < amount) {
+            _transferState.value = TransferState.Error("Saldo tidak mencukupi")
+            Toast.makeText(context, "Saldo ${fromWallet.name} tidak mencukupi", Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        
+        try {
+            actionDelegate.transferFunds(amount, note, fWId, tWId, wallets.value, categories.value, members.value)
+            _transferState.value = TransferState.Success
+            Toast.makeText(context, "Transfer berhasil!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            _transferState.value = TransferState.Error(e.message ?: "Transfer gagal")
+            Toast.makeText(context, "Transfer gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    fun resetTransferState() { _transferState.value = TransferState.Idle }
     fun confirmTransferNotification(nId: String, emoji: String) = transferNotificationManager.confirmTransfer(nId, emoji)
     fun dismissTransferBanner() = transferNotificationManager.dismissBanner()
     fun payRecurringBill(billId: String, walletId: String) = recurringAutoScheduler.payRecurringBill(billId, walletId, wallets.value, recurringBills.value)

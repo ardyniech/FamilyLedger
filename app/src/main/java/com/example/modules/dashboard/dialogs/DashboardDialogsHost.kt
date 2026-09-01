@@ -1,6 +1,8 @@
 package com.example.modules.dashboard.dialogs
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.modules.dashboard.AddTransactionModal
 import com.example.modules.dashboard.DashboardViewModel
 import com.example.shared.models.*
@@ -30,8 +32,10 @@ fun DashboardDialogsHost(
             wallets = wallets,
             categories = categories,
             goals = financialGoals,
+            transactionState = viewModel.transactionState.collectAsState().value,
             onDismiss = onDismissAddModal,
-            onSubmit = { a, n, w, c, i, t, gId -> viewModel.addTransaction(a, n, w, c, i, t, gId) }
+            onSubmit = { a, n, w, c, i, t, gId -> viewModel.addTransaction(a, n, w, c, i, t, gId) },
+            onResetState = { viewModel.resetTransactionState() }
         )
     }
     selectedTxForDetail?.let { tx ->

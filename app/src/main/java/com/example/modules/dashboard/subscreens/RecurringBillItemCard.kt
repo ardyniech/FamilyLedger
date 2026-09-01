@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +28,25 @@ fun RecurringBillItemCard(
     onDeleteBill: (String) -> Unit,
     onPayClick: (String) -> Unit
 ) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Hapus Tagihan?", fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary) },
+            text = { Text("\"${bill.name}\" akan dihapus permanen.", color = DesignTokens.TextSecondary) },
+            confirmButton = {
+                Button(
+                    onClick = { showDeleteConfirmation = false; onDeleteBill(bill.id) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) { Text("Hapus") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Batal", color = DesignTokens.TextSecondary) }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -47,7 +66,7 @@ fun RecurringBillItemCard(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(text = formatter.format(bill.amount), fontWeight = FontWeight.Bold, color = if (bill.isPaid) DesignTokens.TextSecondary else Color.Red, fontSize = 14.sp)
-                    IconButton(onClick = { onDeleteBill(bill.id) }, modifier = Modifier.size(28.dp)) {
+                    IconButton(onClick = { showDeleteConfirmation = true }, modifier = Modifier.size(28.dp)) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
                     }
                 }

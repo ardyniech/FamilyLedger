@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,6 +19,7 @@ import com.example.shared.theme.DesignTokens
 
 @Composable
 fun CustomKeypad(onKeyPress: (String) -> Unit) {
+    val haptic = LocalHapticFeedback.current
     val keys = listOf(
         listOf("C", "Del", "/", "*"),
         listOf("7", "8", "9", "-"),
@@ -44,7 +47,10 @@ fun CustomKeypad(onKeyPress: (String) -> Unit) {
                                 .aspectRatio(1.5f)
                                 .clip(RoundedCornerShape(DesignTokens.PaddingMedium))
                                 .background(if (isOperator) DesignTokens.CobaltAccent.copy(alpha = 0.15f) else DesignTokens.Surface)
-                                .clickable { onKeyPress(key) },
+                                .clickable {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    onKeyPress(key)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
