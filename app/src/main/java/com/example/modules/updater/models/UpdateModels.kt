@@ -26,5 +26,6 @@ sealed class UpdateStatus {
     ) : UpdateStatus()
     data class Verifying(val message: String) : UpdateStatus()
     data class ReadyToInstall(val apkPath: String) : UpdateStatus()
+    data class MandatoryUpdate(val info: ReleaseInfo) : UpdateStatus()
     data class Failed(val errorMsg: String) : UpdateStatus()
 }

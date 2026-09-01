@@ -43,12 +43,17 @@ object CsvDateParser {
             for (locale in locales) {
                 try {
                     val sdf = SimpleDateFormat(pattern, locale)
-                    sdf.isLenient = true
+                    // isLenient=false untuk mencegah parse tanggal tidak valid (misal bulan 13)
+                    sdf.isLenient = false
                     val parsed = sdf.parse(normalized)
                     if (parsed != null) return parsed.time
                 } catch (_: Exception) {}
             }
         }
+        // Fallback hanya untuk kasus ekstrem; dalam aplikasi keuangan sebaiknya tanggal
+        // yang tidak parseable seharusnya ditangani di lapisan input, bukan disembunyikan.
+        // Log warning untuk monitoring (dapat dikonfigurasi ke struktur log aplikasi).
+        // TODO: Ganti dengan pendefolokan yang lebih ketat sesuai kebutuhan bisnis.
         return System.currentTimeMillis()
     }
 

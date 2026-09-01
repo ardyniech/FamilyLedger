@@ -12,8 +12,8 @@ object ApkHashVerifier {
 
     fun verifyApkHash(apkFile: File, sha256Url: String?, expectedApkName: String): Boolean {
         if (sha256Url.isNullOrEmpty()) {
-            Log.w(TAG, "No SHA-256 URL provided; skipping cryptographic hash verification.")
-            return true
+            Log.e(TAG, "SHA-256 verification URL missing; refusing to install APK without cryptographic verification.")
+            return false
         }
         
         val localHash = calculateSha256(apkFile) ?: return false

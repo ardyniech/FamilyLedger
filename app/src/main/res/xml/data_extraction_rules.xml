@@ -1,19 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
--->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FamilyLedger data extraction rules - API 31+ (dataExtractionRules)
+     Sensitive financial data must NEVER be included in cloud backup or device transfer. -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- Exclude all SharedPreferences (auth tokens, encryption keys) -->
+        <exclude domain="sharedpref" path="." />
+        <!-- Exclude all databases (financial transactions, ledgers) -->
+        <exclude domain="database" path="." />
+        <!-- Exclude internal files (session data, cached credentials) -->
+        <exclude domain="root" path="." />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <!-- Exclude all SharedPreferences on device transfer -->
+        <exclude domain="sharedpref" path="." />
+        <!-- Exclude all databases on device transfer -->
+        <exclude domain="database" path="." />
+        <!-- Exclude internal files on device transfer -->
+        <exclude domain="root" path="." />
     </device-transfer>
-    -->
 </data-extraction-rules>

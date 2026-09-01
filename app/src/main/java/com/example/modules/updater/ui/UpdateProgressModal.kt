@@ -27,7 +27,9 @@ fun UpdateProgressModal(updaterManager: UpdaterManager, onDismiss: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    Dialog(onDismissRequest = { if (status !is UpdateStatus.Downloading) onDismiss() }) {
+    val isMandatory = status is UpdateStatus.MandatoryUpdate
+
+    Dialog(onDismissRequest = { if (!isMandatory && status !is UpdateStatus.Downloading) onDismiss() }) {
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface),
@@ -77,6 +79,16 @@ fun UpdateProgressModal(updaterManager: UpdaterManager, onDismiss: () -> Unit) {
                             onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); updaterManager.installUpdate(context) },
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.EmeraldGlow)
                         ) { Text("Pasang Pembaruan") }
+                    }
+                    is UpdateStatus.MandatoryUpdate -> {
+                        val info = currentStatus.info
+                        Text("Pembaruan Keamanan Wajib", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.RoseAccent)
+                        Text(info.body.ifEmpty { "Pembaruan keamanan ini wajib dipasang untuk menjaga keamanan data Anda." }, fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Text("Pembaruan ini tidak dapat ditunda.", fontSize = 12.sp, color = DesignTokens.RoseAccent, fontWeight = FontWeight.Medium)
+                        Button(
+                            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); updaterManager.installUpdate(context) },
+                            colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.RoseAccent)
+                        ) { Text("Pasang Sekarang (Wajib)") }
                     }
                     is UpdateStatus.UpToDate -> {
                         Text("Aplikasi Sudah Terbaru", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow)

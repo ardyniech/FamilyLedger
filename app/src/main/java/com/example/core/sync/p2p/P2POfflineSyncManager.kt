@@ -19,6 +19,7 @@ class P2POfflineSyncManager(
     private val isServerRunning = AtomicBoolean(false)
     private var serverSocket: ServerSocket? = null
     private val syncProtocol = com.example.core.sync.SyncProtocol(dao, auditDao)
+    private val pendingPairCode = AtomicReference<String>("")
 
     suspend fun createSyncPackage(pairCode: String, senderName: String, senderRole: String): P2PSyncPackage = withContext(Dispatchers.IO) {
         val txs = dao.getAllTransactions().first()
@@ -37,6 +38,7 @@ class P2POfflineSyncManager(
         try {
             serverSocket = ServerSocket(port)
             isServerRunning.set(true)
+            pendingPairCode.set(pairCode)
             while (isServerRunning.get()) {
                 val clientSocket = serverSocket?.accept() ?: break
                 launchClientHandler(clientSocket, pairCode, senderName, senderRole, onClientSynced)
@@ -54,8 +56,15 @@ class P2POfflineSyncManager(
                 val incomingCompressed = reader.readLine()
                 if (!incomingCompressed.isNullOrEmpty()) {
                     val incomingPkg = P2PSyncPackage.fromCompressedBase64(incomingCompressed)
+                    // Verifikasi pair code sebelum sinkronisasi
+                    if (incomingPkg.pairCode != pendingPairCode.get()) {
+                        Log.w("P2PSync", "[Module:P2POfflineSync] Pair code mismatch: expected ${pendingPairCode.get()}, got ${incomingPkg.pairCode}")
+                        socket.close()
+                        onClientSynced(P2PImportResult(false, 0, 0, 0, "Pair code tidak cocok"))
+                        return@launch
+                    }
                     val importRes = kotlinx.coroutines.runBlocking { importSyncPackage(incomingPkg) }
-                    val hostPkg = kotlinx.coroutines.runBlocking { createSyncPackage(pairCode, senderName, senderRole) }
+                    val hostPkg = kotlinx.coroutines.runBlocking { createSyncPackage(pendingPairCode.get(), senderName, senderRole) }
                     writer.println(hostPkg.toCompressedBase64())
                     onClientSynced(importRes)
                 }

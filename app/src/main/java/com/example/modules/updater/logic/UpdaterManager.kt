@@ -52,7 +52,11 @@ class UpdaterManager(
                 val verified = ApkHashVerifier.verifyApkHash(apkFile, info.sha256Url, info.apkName)
                 if (verified) {
                     downloadedApkFile = apkFile
-                    _status.value = UpdateStatus.ReadyToInstall(apkFile.absolutePath)
+                    if (info.isMandatory) {
+                        _status.value = UpdateStatus.MandatoryUpdate(info)
+                    } else {
+                        _status.value = UpdateStatus.ReadyToInstall(apkFile.absolutePath)
+                    }
                 } else {
                     apkFile.delete()
                     _status.value = UpdateStatus.Failed("Security Verification Failed: SHA-256 mismatch!")

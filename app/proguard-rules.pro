@@ -1,21 +1,58 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# FamilyLedger ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line numbers for crash reporting
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Retrofit
+-keepattributes Signature
+-keepattributes Exceptions
+-keepattributes *Annotation*
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+-dontwarn retrofit2.**
+-dontwarn okhttp3.**
+-dontwarn okio.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Moshi (JSON serialization)
+-keep class com.squareup.moshi.** { *; }
+-keep @com.squareup.moshi.JsonClass class * { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.Json <fields>;
+}
+-dontwarn javax.annotation.**
+
+# Room
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class *
+-dontwarn androidx.room.paging.**
+
+# Kotlin Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembers class kotlinx.coroutines.** {
+    volatile <fields>;
+}
+
+# FamilyLedger data models (keep for serialization)
+-keep class com.example.core.storage.models.** { *; }
+-keep class com.example.modules.updater.models.** { *; }
+-keep class com.example.core.sync.models.** { *; }
+-keep class com.example.modules.dashboard.csv.** { *; }
+
+# Keep DataStore preferences
+-keep class * extends androidx.datastore.preferences.protobuf.GeneratedMessageLite {
+    <fields>;
+}
+
+# Keep EncryptedSharedPreferences
+-keep class androidx.security.crypto.** { *; }
+
+# Keep Compose classes
+-dontwarn androidx.compose.**
+
+# Suppress warnings for missing Firebase (used in dev without google-services.json)
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
