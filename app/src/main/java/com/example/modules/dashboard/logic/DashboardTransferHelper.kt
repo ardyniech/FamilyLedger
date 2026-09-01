@@ -17,6 +17,11 @@ object DashboardTransferHelper {
         repository: HouseholdRepository,
         notifManager: TransferNotificationManager
     ) {
+        if (fromWallet.balance - amount < 0L) {
+            android.util.Log.w("DashboardTransferHelper", "Insufficient balance for transfer: wallet=${fromWallet.id}, balance=${fromWallet.balance}, amount=$amount")
+            return
+        }
+
         val isCross = fromWallet.memberId != toWallet.memberId
         val outType = if (isCross) "Expense" else "Transfer"
         val inType = if (isCross) "Income" else "Transfer"

@@ -28,8 +28,13 @@ class DashboardActionDelegate(
     }
 
     fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean, ts: Long, wallets: List<WalletAccount>, goalId: String? = null) = scope.launch {
-        wallets.find { it.id == wId }?.let {
-            repository.addTransaction(Transaction(UUID.randomUUID().toString(), it.id, it.memberId, cId, if (isIncome) amt else -amt, note, ts, goalId = goalId))
+        wallets.find { it.id == wId }?.let { wallet ->
+            val finalAmount = if (isIncome) amt else -amt
+            if (!isIncome && wallet.balance + finalAmount < 0L) {
+                android.util.Log.w("DashboardActionDelegate", "Insufficient balance: wallet=${wallet.id}, balance=${wallet.balance}, amount=$finalAmount")
+                return@launch
+            }
+            repository.addTransaction(Transaction(UUID.randomUUID().toString(), wallet.id, wallet.memberId, cId, finalAmount, note, ts, goalId = goalId))
         }
     }
 

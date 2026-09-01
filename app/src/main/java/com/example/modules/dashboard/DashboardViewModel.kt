@@ -17,7 +17,7 @@ class DashboardViewModel(
     private val authManager: AuthManager,
     private val context: Context
 ) : ViewModel() {
-    private val goalsManager = GoalsAndBudgetManager()
+    private val goalsManager = GoalsAndBudgetManager(context)
     private val billsManager = RecurringBillsManager()
     val transferNotificationManager = TransferNotificationManager()
     private val actionDelegate = DashboardActionDelegate(repository, viewModelScope, transferNotificationManager)

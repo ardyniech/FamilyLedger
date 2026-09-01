@@ -13,10 +13,10 @@ import java.util.UUID
 class RecurringBillsManager {
     private val _recurringBills = MutableStateFlow<List<RecurringBill>>(
         listOf(
-            RecurringBill("rb1", "Netflix Subscription", 186000L, "Aug 28, 2026", "c3", isPaid = false, autoPay = true, targetWalletId = "w1", frequency = "Monthly"),
+            RecurringBill("rb1", "Netflix Subscription", 186000L, "Aug 28, 2026", "c3", isPaid = false, autoPay = true, targetWalletId = "w_bca", frequency = "Monthly"),
             RecurringBill("rb2", "Indihome Home Wifi", 385000L, "Sep 01, 2026", "c3", isPaid = false, autoPay = false, targetWalletId = null, frequency = "Monthly"),
             RecurringBill("rb3", "PDAM Clean Water", 120000L, "Sep 05, 2026", "c3", isPaid = false, autoPay = false, targetWalletId = null, frequency = "Monthly"),
-            RecurringBill("rb4", "Home Rent Payment", 2500000L, "Sep 10, 2026", "c3", isPaid = false, autoPay = true, targetWalletId = "w2", frequency = "Monthly")
+            RecurringBill("rb4", "Home Rent Payment", 2500000L, "Sep 10, 2026", "c3", isPaid = false, autoPay = true, targetWalletId = "w_cash", frequency = "Monthly")
         )
     )
     val recurringBills: StateFlow<List<RecurringBill>> = _recurringBills.asStateFlow()

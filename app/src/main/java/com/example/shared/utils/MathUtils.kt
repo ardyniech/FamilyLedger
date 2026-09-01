@@ -35,7 +35,11 @@ object MathUtils {
                     var x = parseFactor()
                     while (true) {
                         if (eat('*'.code)) x *= parseFactor()
-                        else if (eat('/'.code)) x /= parseFactor()
+                        else if (eat('/'.code)) {
+                            val divisor = parseFactor()
+                            if (divisor == 0.0) throw RuntimeException("Division by zero")
+                            x /= divisor
+                        }
                         else return x
                     }
                 }

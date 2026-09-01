@@ -34,7 +34,7 @@ fun TransactionSubmitButton(
             .clickable {
                 if (amount.isNotEmpty() && note.isNotEmpty()) {
                     MathUtils.evaluateMath(amount)?.let { result ->
-                        if (result > 0) {
+                        if (result.isFinite() && result > 0) {
                             onValidatedSubmit(result.toLong())
                         }
                     }

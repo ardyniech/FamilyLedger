@@ -42,8 +42,12 @@ fun CsvExportDialog(
             val categoryName = category?.name ?: "Umum"
             val type = category?.type ?: if (tx.amount < 0) "Expense" else "Income"
             val walletName = wallets.find { it.id == tx.walletId }?.name ?: "Kas"
-            val cleanNote = tx.note.replace(",", ";").replace("\n", " ")
-            sb.append("$dateStr,$memberName,$categoryName,$type,${tx.amount},$cleanNote,$walletName\n")
+                val cleanNote = tx.note.replace(",", ";").replace("\n", " ")
+                val safeNote = when {
+                    cleanNote.startsWith("=") || cleanNote.startsWith("+") || cleanNote.startsWith("-") || cleanNote.startsWith("@") -> "'$cleanNote"
+                    else -> cleanNote
+                }
+                sb.append("$dateStr,$memberName,$categoryName,$type,${tx.amount},$safeNote,$walletName\n")
         }
         sb.toString()
     }
