@@ -26,8 +26,13 @@ fun SmartCsvImportScreen(
     onBack: () -> Unit
 ) {
     var rawText by remember { mutableStateOf("") }
-    var parseResult by remember { mutableStateOf<CsvParseResult?>(null) }
     var skipDuplicates by remember { mutableStateOf(true) }
+
+    val parseResult = remember(rawText, wallets, categories, transactions) {
+        if (rawText.isNotBlank()) {
+            SmartCsvParser.parse(rawText, wallets, categories, transactions)
+        } else null
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -36,11 +41,8 @@ fun SmartCsvImportScreen(
         item {
             CsvHeaderActionBar(
                 onBack = onBack,
-                onReset = {
-                    rawText = ""
-                    parseResult = null
-                },
-                canReset = rawText.isNotBlank() || parseResult != null
+                onReset = { rawText = "" },
+                canReset = rawText.isNotBlank()
             )
         }
 
@@ -48,13 +50,7 @@ fun SmartCsvImportScreen(
             CsvInputSection(
                 rawText = rawText,
                 onTextChange = { rawText = it },
-                onAnalyze = {
-                    parseResult = SmartCsvParser.parse(rawText, wallets, categories, transactions)
-                },
-                onSelectTemplate = { tpl ->
-                    rawText = tpl
-                    parseResult = SmartCsvParser.parse(tpl, wallets, categories, transactions)
-                }
+                onSelectTemplate = { tpl -> rawText = tpl }
             )
         }
 
@@ -62,6 +58,25 @@ fun SmartCsvImportScreen(
             item { CsvPreviewCard(result = result) }
 
             if (result.records.isNotEmpty()) {
+                val importableCount = if (skipDuplicates) result.newCount else result.records.size
+
+                item {
+                    Button(
+                        onClick = { onExecuteImport(result.records, skipDuplicates) },
+                        enabled = importableCount > 0,
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.EmeraldGlow)
+                    ) {
+                        Text(
+                            "📥 IMPOR $importableCount TRANSAKSI SEKARANG",
+                            color = DesignTokens.TextPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
+
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -85,15 +100,19 @@ fun SmartCsvImportScreen(
                 }
 
                 item {
-                    val importableCount = if (skipDuplicates) result.newCount else result.records.size
                     Button(
                         onClick = { onExecuteImport(result.records, skipDuplicates) },
                         enabled = importableCount > 0,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.EmeraldGlow)
                     ) {
-                        Text("📥 Impor $importableCount Transaksi Sekarang", color = DesignTokens.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            "📥 IMPOR $importableCount TRANSAKSI SEKARANG",
+                            color = DesignTokens.TextPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
+                        )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }

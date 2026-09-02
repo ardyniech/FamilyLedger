@@ -1,7 +1,10 @@
 package com.example.modules.dashboard.csv
 
 import com.example.core.storage.HouseholdRepository
+import com.example.shared.models.Category
 import com.example.shared.models.Transaction
+import com.example.shared.models.WalletAccount
+import kotlinx.coroutines.flow.first
 import java.util.UUID
 
 object SmartCsvImportEngine {
@@ -19,40 +22,23 @@ object SmartCsvImportEngine {
         var totalInflow = 0L
         var totalOutflow = 0L
 
+        val existingWallets = repository.wallets.first().associateBy { it.id }.toMutableMap()
+        val existingCategories = repository.categories.first().associateBy { it.id }.toMutableMap()
+
         for (item in targets) {
+            val walletId = ensureWalletExists(repository, existingWallets, item.walletId, item.rawAccount)
+            val categoryId = if (!item.isTransfer) ensureCategoryExists(repository, existingCategories, item.categoryId, item.rawCategory, item.amount > 0) else item.categoryId
+
             if (item.isTransfer && item.targetWalletId != null) {
+                val targetWalletId = ensureWalletExists(repository, existingWallets, item.targetWalletId, item.rawAccount)
                 val transferAmount = kotlin.math.abs(item.amount)
-                val outTx = Transaction(
-                    id = UUID.randomUUID().toString(),
-                    walletId = item.walletId,
-                    memberId = item.memberId,
-                    categoryId = "c_tf_out",
-                    amount = -transferAmount,
-                    note = if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer ke ${item.rawAccount}",
-                    timestamp = item.timestamp
-                )
-                val inTx = Transaction(
-                    id = UUID.randomUUID().toString(),
-                    walletId = item.targetWalletId,
-                    memberId = item.targetMemberId ?: "m1",
-                    categoryId = "c_tf_in",
-                    amount = transferAmount,
-                    note = if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer dari ${item.rawAccount}",
-                    timestamp = item.timestamp + 1
-                )
+                val outTx = Transaction(UUID.randomUUID().toString(), walletId, item.memberId, "c_tf_out", -transferAmount, if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer ke ${item.rawAccount}", timestamp = item.timestamp)
+                val inTx = Transaction(UUID.randomUUID().toString(), targetWalletId, item.targetMemberId ?: "m1", "c_tf_in", transferAmount, if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer dari ${item.rawAccount}", timestamp = item.timestamp + 1)
                 repository.addTransaction(outTx)
                 repository.addTransaction(inTx)
                 insertedCount += 2
             } else {
-                val tx = Transaction(
-                    id = UUID.randomUUID().toString(),
-                    walletId = item.walletId,
-                    memberId = item.memberId,
-                    categoryId = item.categoryId,
-                    amount = item.amount,
-                    note = if (item.note.isNotBlank()) "${item.rawCategory}: ${item.note}" else item.rawCategory.ifBlank { "Transaksi CSV" },
-                    timestamp = item.timestamp
-                )
+                val tx = Transaction(UUID.randomUUID().toString(), walletId, item.memberId, categoryId, item.amount, if (item.note.isNotBlank()) "${item.rawCategory}: ${item.note}".trimEnd(':', ' ') else item.rawCategory.ifBlank { "Transaksi CSV" }, timestamp = item.timestamp)
                 repository.addTransaction(tx)
                 insertedCount++
 
@@ -60,13 +46,26 @@ object SmartCsvImportEngine {
             }
         }
 
-        return ImportExecutionResult(
-            insertedCount = insertedCount,
-            skippedDuplicates = parsedTransactions.size - targets.size,
-            totalInflow = totalInflow,
-            totalOutflow = totalOutflow,
-            isSuccess = true,
-            message = "Berhasil mengimpor $insertedCount transaksi!"
-        )
+        return ImportExecutionResult(insertedCount, parsedTransactions.size - targets.size, totalInflow, totalOutflow, true, "Berhasil mengimpor $insertedCount transaksi ke database!")
+    }
+
+    private suspend fun ensureWalletExists(repo: HouseholdRepository, wallets: MutableMap<String, WalletAccount>, walletId: String, rawName: String): String {
+        if (wallets.containsKey(walletId)) return walletId
+        val cleanName = rawName.replace("->", " ").trim().ifBlank { walletId }
+        val memberId = if (walletId == "w_deina") "m2" else "m1"
+        val walletType = if (cleanName.lowercase().contains("bca") || cleanName.lowercase().contains("bank")) "Bank" else if (cleanName.lowercase().contains("gopay") || cleanName.lowercase().contains("ovo") || cleanName.lowercase().contains("dana")) "E-Wallet" else "Cash"
+        val newWallet = WalletAccount(walletId, memberId, walletType, cleanName, 0L)
+        repo.addWallet(newWallet)
+        wallets[walletId] = newWallet
+        return walletId
+    }
+
+    private suspend fun ensureCategoryExists(repo: HouseholdRepository, categories: MutableMap<String, Category>, catId: String, rawName: String, isIncome: Boolean): String {
+        if (categories.containsKey(catId)) return catId
+        val cleanName = rawName.trim().ifBlank { if (isIncome) "Pemasukan CSV" else "Pengeluaran CSV" }
+        val newCat = Category(catId, cleanName, if (isIncome) "Income" else "Expense", if (isIncome) "payments" else "shopping_bag")
+        repo.addCategory(newCat)
+        categories[catId] = newCat
+        return catId
     }
 }
