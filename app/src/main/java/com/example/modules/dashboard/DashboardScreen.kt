@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import com.example.modules.dashboard.csv.SmartCsvImportScreen
 import com.example.modules.dashboard.dialogs.*
 import com.example.modules.dashboard.logic.*
@@ -37,6 +39,9 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     val activeTransferNotification by viewModel.transferActiveBanner.collectAsState()
     val budgetExceedances by viewModel.budgetExceedances.collectAsState()
     val categoryGroups by viewModel.categoryGroups.collectAsState()
+    val cardOrder by viewModel.cardOrder.collectAsState()
+    val hiddenCards by viewModel.hiddenCards.collectAsState()
+    val selectedCurrency by viewModel.selectedCurrency.collectAsState()
     
     val activeMember = remember(members, activeMemberId) { members.find { it.id == activeMemberId } ?: members.firstOrNull() }
     val periodTransactions = remember(transactions, selectedPeriod) { PeriodFilterHelper.filterTransactions(transactions, selectedPeriod) }
@@ -45,6 +50,10 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     
     var currentDestination by remember { mutableStateOf<DashboardDestination>(DashboardDestination.Dashboard) }
     var showAddModal by remember { mutableStateOf(false) }
+    var showQuickNav by remember { mutableStateOf(false) }
+    var showPersonalizeDialog by remember { mutableStateOf(false) }
+    var showAppReferenceDialog by remember { mutableStateOf(false) }
+    var showCsvBottomSheet by remember { mutableStateOf(false) }
     var selectedTxForDetail by remember { mutableStateOf<Transaction?>(null) }
     var selectedTxForEdit by remember { mutableStateOf<Transaction?>(null) }
     var selectedTxForDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -54,6 +63,12 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     val updaterManager = remember { com.example.modules.updater.logic.UpdaterManager("ardyniech", "FamilyLedger", "1.0") }
     val updaterStatus by updaterManager.status.collectAsState()
     var showUpdateModal by remember { mutableStateOf(false) }
+
+    val debts by viewModel.debts.collectAsState()
+    val lastDeletedTx by viewModel.lastDeletedTx.collectAsState()
+    val fabPosition by viewModel.fabPosition.collectAsState()
+    var isAppLocked by remember { mutableStateOf(viewModel.appLockManager.isLockEnabled()) }
+    var showFabSettingsDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(updaterStatus) {
         if (updaterStatus !is com.example.modules.updater.models.UpdateStatus.Idle && updaterStatus !is com.example.modules.updater.models.UpdateStatus.Checking) showUpdateModal = true
@@ -73,32 +88,44 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             },
             label = "dashboard_nav"
         ) { dest ->
-            when (dest) {
-                is DashboardDestination.Dashboard -> DashboardHomeContent(
-                    activeMember = activeMember, syncState = syncState, totalBalance = totalBalance, wallets = wallets, members = members, financialGoals = financialGoals, recurringBills = recurringBills, transactions = transactions, groupedTransactions = groupedTransactions, categories = categories, selectedPeriod = selectedPeriod, periodSummary = periodSummary, transferNotification = activeTransferNotification, budgetExceedances = budgetExceedances,
-                    onPeriodSelected = { viewModel.setSelectedPeriod(it) }, onTransactionClick = { selectedTxForDetail = it }, onSyncBadgeClick = { currentDestination = DashboardDestination.Pairing }, onProfileClick = { showEditMemberDialog = activeMember }, onNetWorthClick = { currentDestination = DashboardDestination.NetWorthDetail }, onTransferClick = { currentDestination = DashboardDestination.Transfer }, onWalletsClick = { currentDestination = DashboardDestination.WalletManagement }, onCategoriesClick = { currentDestination = DashboardDestination.CategoryManagement }, onPairingClick = { currentDestination = DashboardDestination.Pairing }, onWalletClick = { currentDestination = DashboardDestination.WalletDetail(it) }, onMonthlyReportClick = { currentDestination = DashboardDestination.MonthlyReport }, onAnalyticsClick = { currentDestination = DashboardDestination.Analytics }, onCategoryGroupsClick = { currentDestination = DashboardDestination.CategoryGroupDashboard }, onGoalsClick = { currentDestination = DashboardDestination.GoalsAndBudget }, onRecurringBillsClick = { currentDestination = DashboardDestination.RecurringBills }, onQuickRecordClick = { showAddModal = true },
-                    onSelectQuickPreset = { p ->
-                        val cat = categories.find { it.name.contains(p.categoryName, ignoreCase = true) } ?: categories.firstOrNull { it.type == "Expense" }
-                        val wal = wallets.firstOrNull()
-                        if (wal != null && cat != null) viewModel.addTransaction(p.amount, p.note, wal.id, cat.id, false, System.currentTimeMillis()) else showAddModal = true
-                    },
-                    onViewAllExpensesClick = { currentDestination = DashboardDestination.MonthlyTransactionHistory }, onImportCsvClick = { currentDestination = DashboardDestination.SmartCsvImport }, onClickTransferNotification = { transferNotifForDialog = it }
-                )
-                is DashboardDestination.CategoryGroupDashboard -> CategoryGroupDashboardScreen(transactions = transactions, categories = categories, groups = categoryGroups, onBackClick = { currentDestination = DashboardDestination.Dashboard }, onManageGroupsClick = { showAddCategoryGroupDialog = true })
-                is DashboardDestination.MonthlyTransactionHistory -> MonthlyTransactionHistoryScreen(transactions = transactions, wallets = wallets, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onAddExpense = { a, n, w, c, t -> viewModel.addTransaction(a, n, w, c, false, t) }, onImportCsvClick = { currentDestination = DashboardDestination.SmartCsvImport }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.SmartCsvImport -> SmartCsvImportScreen(wallets = wallets, categories = categories, transactions = transactions, onExecuteImport = { l, s -> viewModel.importCsvTransactions(l, s) { currentDestination = DashboardDestination.Dashboard } }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.NetWorthDetail -> NetWorthDetailScreen(totalBalance = totalBalance, wallets = wallets, members = members, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.WalletDetail -> WalletDetailScreen(walletId = dest.walletId, wallets = wallets, members = members, transactions = transactions, categories = categories, onTransactionClick = { selectedTxForDetail = it }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.Analytics -> AnalyticsScreen(transactions = transactions, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.MonthlyReport -> MonthlyReportScreen(transactions = transactions, categories = categories, members = members, wallets = wallets, budget = monthlyBudget, onUpdateBudget = { viewModel.updateMonthlyBudget(it) }, onTransactionClick = { selectedTxForDetail = it }, onWalletClick = { currentDestination = DashboardDestination.WalletDetail(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.RecurringBills -> RecurringBillsManagementScreen(bills = recurringBills, wallets = wallets, categories = categories, onPayBill = { b, w -> viewModel.payRecurringBill(b, w) }, onAddBill = { n, a, d, c, ap, w, f -> viewModel.addRecurringBill(n, a, d, c, ap, w, f) }, onDeleteBill = { b -> viewModel.deleteRecurringBill(b) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.ExpenseList -> ExpenseListScreen(transactions = transactions, wallets = wallets, categories = categories, members = members, onTransactionClick = { selectedTxForDetail = it }, onAddExpense = { a, n, w, c, t -> viewModel.addTransaction(a, n, w, c, false, t) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.CategoryManagement -> CategoryManagementScreen(categories = categories, onSaveCategory = { id, n, t, b -> viewModel.saveCategory(id, n, t, budgetLimit = b) }, onDeleteCategory = { viewModel.deleteCategory(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.WalletManagement -> WalletManagementScreen(wallets = wallets, members = members, transactions = transactions, onSaveWallet = { id, m, t, n, b, cap -> viewModel.saveWalletAccount(id, m, t, n, b, cap) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.Transfer -> TransferScreen(wallets = wallets, members = members, transactions = transactions, transferState = viewModel.transferState.collectAsState().value, onTransfer = { a, n, f, t -> viewModel.transferFunds(a, n, f, t) }, onResetState = { viewModel.resetTransferState() }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.Pairing -> PairingScreen(members = members, activeMemberId = activeMemberId, pairCode = householdPairCode, syncState = syncState, authState = authState, p2pManager = viewModel.p2pSyncManager, updaterManager = updaterManager, onSelectActiveMember = { viewModel.setActiveMember(it) }, onJoinHousehold = { viewModel.joinHousehold(it) }, onSignInLocal = { id, pass, ctx -> viewModel.signInLocal(id, pass, ctx) }, onCreateLocalAccount = { id, pass, ctx -> viewModel.createLocalAccount(id, pass, ctx) }, onSignOut = { viewModel.signOut(it) }, onClearAuthError = { viewModel.clearAuthError() }, onBack = { currentDestination = DashboardDestination.Dashboard })
-                is DashboardDestination.GoalsAndBudget -> GoalsAndBudgetScreen(monthlyBudget = monthlyBudget, financialGoals = financialGoals, transactions = transactions, categories = categories, members = members, wallets = wallets, onUpdateBudget = { viewModel.updateMonthlyBudget(it) }, onAddGoal = { t, tgt, init, c, i, d, ts, hex -> viewModel.addFinancialGoal(t, tgt, init, c, i, d, ts, hex) }, onDepositToGoal = { g, a -> viewModel.depositToGoal(g, a) }, onDeleteGoal = { viewModel.deleteFinancialGoal(it) }, onBack = { currentDestination = DashboardDestination.Dashboard })
-            }
+            DashboardDestinationsHost(
+                destination = dest,
+                viewModel = viewModel,
+                activeMember = activeMember,
+                syncState = syncState,
+                totalBalance = totalBalance,
+                wallets = wallets,
+                members = members,
+                financialGoals = financialGoals,
+                recurringBills = recurringBills,
+                transactions = transactions,
+                groupedTransactions = groupedTransactions,
+                categories = categories,
+                selectedPeriod = selectedPeriod,
+                periodSummary = periodSummary,
+                activeTransferNotification = activeTransferNotification,
+                budgetExceedances = budgetExceedances,
+                cardOrder = cardOrder,
+                hiddenCards = hiddenCards,
+                updaterManager = updaterManager,
+                onNavigate = { currentDestination = it },
+                onShowAddModal = { showAddModal = it },
+                onShowCsvBottomSheet = { showCsvBottomSheet = it },
+                onShowQuickNav = { showQuickNav = it },
+                onShowPersonalizeDialog = { showPersonalizeDialog = it },
+                onShowAppReferenceDialog = { showAppReferenceDialog = it },
+                onShowAddCategoryGroupDialog = { showAddCategoryGroupDialog = it },
+                onSelectedTxForDetail = { selectedTxForDetail = it },
+                onTransferNotifForDialog = { transferNotifForDialog = it },
+                onShowEditMemberDialog = { showEditMemberDialog = it }
+            )
+        }
+
+        if (currentDestination == DashboardDestination.Dashboard) {
+            com.example.modules.dashboard.primitives.FloatingAddTransactionButton(
+                fabPosition = fabPosition,
+                onClick = { showAddModal = true }
+            )
         }
     }
 
@@ -112,13 +139,92 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
         transferNotif = transferNotifForDialog, onDismissTransferNotif = { transferNotifForDialog = null }
     )
 
+    if (showQuickNav) {
+        com.example.modules.dashboard.primitives.QuickNavSideDrawer(
+            onDismiss = { showQuickNav = false },
+            onNavigateDashboard = { currentDestination = DashboardDestination.Dashboard },
+            onNavigateWallets = { currentDestination = DashboardDestination.WalletManagement },
+            onNavigateCategories = { currentDestination = DashboardDestination.CategoryManagement },
+            onNavigateTransfer = { currentDestination = DashboardDestination.Transfer },
+            onNavigateAnalytics = { currentDestination = DashboardDestination.Analytics },
+            onNavigateGoals = { currentDestination = DashboardDestination.GoalsAndBudget },
+            onNavigateRecurring = { currentDestination = DashboardDestination.RecurringBills },
+            onNavigateFamily = { currentDestination = DashboardDestination.FamilyDashboard },
+            onNavigateDebt = { currentDestination = DashboardDestination.DebtLoanTracker },
+            onNavigateCsv = { showCsvBottomSheet = true },
+            onNavigateSettings = { showAppReferenceDialog = true }
+        )
+    }
+
+    if (showCsvBottomSheet) {
+        com.example.modules.dashboard.dialogs.CsvImportBottomSheetDialog(
+            wallets = wallets,
+            categories = categories,
+            transactions = transactions,
+            onExecuteImport = { list, skip ->
+                viewModel.importCsvTransactions(list, skip) {}
+                showCsvBottomSheet = false
+            },
+            onDismiss = { showCsvBottomSheet = false }
+        )
+    }
+
+    if (showPersonalizeDialog) {
+        DashboardPersonalizationDialog(
+            cardOrder = cardOrder,
+            hiddenCards = hiddenCards,
+            onMoveUp = { viewModel.dashboardLayoutManager.moveUp(it) },
+            onMoveDown = { viewModel.dashboardLayoutManager.moveDown(it) },
+            onToggleVisibility = { viewModel.dashboardLayoutManager.toggleVisibility(it) },
+            onResetDefault = { viewModel.dashboardLayoutManager.resetToDefault() },
+            onDismiss = { showPersonalizeDialog = false }
+        )
+    }
+
+    if (showAppReferenceDialog) {
+        AppSettingsAndReferenceDialog(
+            selectedCurrency = selectedCurrency,
+            onSelectCurrency = { viewModel.setSelectedCurrency(it) },
+            onDismiss = { showAppReferenceDialog = false }
+        )
+    }
+
     if (showAddCategoryGroupDialog) {
         AddEditCategoryGroupDialog(onDismiss = { showAddCategoryGroupDialog = false }, onSave = { viewModel.saveCategoryGroup(it); showAddCategoryGroupDialog = false })
     }
     showEditMemberDialog?.let { m ->
-        EditMemberRoleDialog(member = m, allMembers = members, onDismiss = { showEditMemberDialog = null }, onSave = { viewModel.updateMemberRole(it); showEditMemberDialog = null })
+        EditMemberRoleDialog(
+            member = m,
+            allMembers = members,
+            onDismiss = { showEditMemberDialog = null },
+            onSave = { viewModel.updateMemberRole(it); showEditMemberDialog = null },
+            onOpenFabSettings = { showFabSettingsDialog = true }
+        )
+    }
+    if (showFabSettingsDialog) {
+        com.example.modules.dashboard.dialogs.FabPersonalizationDialog(
+            currentPosition = fabPosition,
+            onSelectPosition = { viewModel.fabPositionManager.setFabPosition(it) },
+            onDismiss = { showFabSettingsDialog = false }
+        )
     }
     if (showUpdateModal) {
         com.example.modules.updater.ui.UpdateProgressModal(updaterManager = updaterManager, onDismiss = { showUpdateModal = false; updaterManager.resetToIdle() })
+    }
+
+    if (isAppLocked) {
+        LockScreenOverlay(
+            onVerifyPin = { viewModel.appLockManager.verifyPin(it) },
+            onSuccess = { isAppLocked = false }
+        )
+    }
+
+    lastDeletedTx?.let { tx ->
+        Snackbar(
+            modifier = Modifier.padding(16.dp),
+            action = { TextButton(onClick = { viewModel.undoDeleteTransaction() }) { Text("BATALKAN", color = DesignTokens.CobaltAccent, fontWeight = FontWeight.Bold) } }
+        ) {
+            Text("Transaksi '${tx.note.ifBlank { "Baru" }}' telah dihapus.")
+        }
     }
 }

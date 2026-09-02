@@ -2,6 +2,7 @@ package com.example.modules.dashboard.primitives
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,8 @@ fun DashboardHomeContent(
     periodSummary: PeriodSummary,
     transferNotification: TransferNotification? = null,
     budgetExceedances: List<CategoryExceedance> = emptyList(),
+    cardOrder: List<DashboardCardType> = DashboardCardType.getDefaultList(),
+    hiddenCards: Set<DashboardCardType> = emptySet(),
     onPeriodSelected: (DashboardPeriod) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onSyncBadgeClick: () -> Unit,
@@ -45,44 +48,72 @@ fun DashboardHomeContent(
     onSelectQuickPreset: ((QuickExpensePreset) -> Unit)? = null,
     onViewAllExpensesClick: () -> Unit,
     onImportCsvClick: () -> Unit,
-    onClickTransferNotification: (TransferNotification) -> Unit = {}
+    onFamilyDashboardClick: () -> Unit = {},
+    onDebtTrackerClick: () -> Unit = {},
+    onClickTransferNotification: (TransferNotification) -> Unit = {},
+    onOpenQuickNav: () -> Unit = {},
+    onOpenPersonalize: () -> Unit = {},
+    onOpenAppReference: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(DesignTokens.PaddingMedium),
         verticalArrangement = Arrangement.spacedBy(DesignTokens.PaddingMedium)
     ) {
-        item { DashboardHeaderRow(activeMember = activeMember, syncState = syncState, onSyncBadgeClick = onSyncBadgeClick, onProfileClick = onProfileClick) }
-        item { ActivePeriodStatusBanner(selectedPeriod = selectedPeriod, transactionCount = transactions.size, onPeriodClick = { onAnalyticsClick() }) }
-        item { WalletStockTickerBanner(wallets = wallets, members = members, transactions = transactions, onWalletClick = onWalletClick) }
-        item { TransferNotificationBanner(notification = transferNotification, activeMember = activeMember, onClickBanner = onClickTransferNotification, onDismiss = {}) }
-        item { BudgetExceedancesBanner(exceedances = budgetExceedances) }
-        item { TopCategoryAnomalyCard(transactions = transactions, categories = categories) }
-        item { HeroCard(totalBalance = totalBalance, wallets = wallets, members = members, onClick = onNetWorthClick) }
-        item { QuickExpensePresetsRow(onSelectPreset = { onSelectQuickPreset?.invoke(it) ?: onQuickRecordClick() }) }
-        item { FinancialRunwayCard(totalBalance = totalBalance, wallets = wallets, transactions = transactions, onClick = onNetWorthClick) }
-        item { DailyBurnRateCard(transactions = transactions) }
-        item { DashboardActionRow(onTransferClick = onTransferClick, onWalletsClick = onWalletsClick, onCategoriesClick = onCategoriesClick, onPairingClick = onPairingClick) }
-        item { CategoryGroupBanner(onClick = onCategoryGroupsClick) }
-        item { SavingsRatioGaugeCard(summary = periodSummary, onClick = onAnalyticsClick) }
-        item { CashflowHealthWidget(filteredTransactions = transactions, allTransactions = transactions) }
-        item { SavingsIntegrityCard(transactions = transactions, categories = categories) }
-        item { WalletDebtLedgerCard(wallets = wallets, members = members, transactions = transactions) }
-        item { SmartCsvImportBanner(onClick = onImportCsvClick) }
         item {
-            Spacer(modifier = Modifier.height(DesignTokens.PaddingSmall))
-            PeriodSelectorRow(selectedPeriod = selectedPeriod, onPeriodSelected = onPeriodSelected)
+            SmartHeaderWithQuickNav(
+                activeMember = activeMember,
+                syncState = syncState,
+                onOpenQuickNav = onOpenQuickNav,
+                onSyncBadgeClick = onSyncBadgeClick,
+                onProfileClick = onProfileClick,
+                onOpenPersonalize = onOpenPersonalize,
+                onOpenAppReference = onOpenAppReference
+            )
         }
-        item { PeriodOverviewCard(summary = periodSummary, onClick = onMonthlyReportClick) }
-        item { TransparencyHealthCard(totalIncome = periodSummary.totalInflow, totalExpense = periodSummary.totalOutflow, transactionCount = transactions.size, onClick = onAnalyticsClick) }
-        item { WalletCarousel(wallets = wallets, members = members, onWalletClick = onWalletClick) }
-        item { ExpenseBreakdownCard(transactions = transactions, categories = categories, onClick = onAnalyticsClick) }
-        item { GoalsBannerCard(goals = financialGoals, transactions = transactions, onClick = onGoalsClick) }
-        item { UpcomingRecurringBillsCard(bills = recurringBills, onClick = onRecurringBillsClick) }
-        item { QuickRecordButton(onClick = onQuickRecordClick) }
-        item {
-            Spacer(modifier = Modifier.height(DesignTokens.PaddingSmall))
-            RecentTransactionsHeader(onClick = onViewAllExpensesClick)
+
+        items(cardOrder.filter { !hiddenCards.contains(it) }, key = { it.name }) { cardType ->
+            when (cardType) {
+                DashboardCardType.HERO_BALANCE -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        ActivePeriodStatusBanner(selectedPeriod = selectedPeriod, transactionCount = transactions.size, onPeriodClick = { onAnalyticsClick() })
+                        HeroCard(totalBalance = totalBalance, wallets = wallets, members = members, onClick = onNetWorthClick)
+                    }
+                }
+                DashboardCardType.QUICK_ACTIONS -> {
+                    DashboardActionRow(onTransferClick = onTransferClick, onWalletsClick = onWalletsClick, onCategoriesClick = onCategoriesClick, onPairingClick = onPairingClick)
+                }
+                DashboardCardType.FINANCIAL_HEALTH -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        PeriodSelectorRow(selectedPeriod = selectedPeriod, onPeriodSelected = onPeriodSelected)
+                        PeriodOverviewCard(summary = periodSummary, onClick = onMonthlyReportClick)
+                        FinancialCriticismActionCard(
+                            summary = periodSummary,
+                            transactions = transactions,
+                            categories = categories,
+                            onAnalyticsClick = onAnalyticsClick,
+                            onGoalsClick = onGoalsClick,
+                            onViewAllExpensesClick = onViewAllExpensesClick
+                        )
+                    }
+                }
+                DashboardCardType.WALLETS_CAROUSEL -> {
+                    WalletCarousel(wallets = wallets, members = members, onWalletClick = onWalletClick)
+                }
+                DashboardCardType.ACTIVE_BANNERS -> {
+                    if (transferNotification != null || budgetExceedances.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            TransferNotificationBanner(notification = transferNotification, activeMember = activeMember, onClickBanner = onClickTransferNotification, onDismiss = {})
+                            BudgetExceedancesBanner(exceedances = budgetExceedances)
+                        }
+                    }
+                }
+                DashboardCardType.RECENT_TRANSACTIONS -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RecentTransactionsHeader(onClick = onViewAllExpensesClick)
+                        GroupedTransactionsSection(groups = groupedTransactions, members = members, categories = categories, onTransactionClick = onTransactionClick, maxGroups = 5)
+                    }
+                }
+            }
         }
-        item { GroupedTransactionsSection(groups = groupedTransactions, members = members, categories = categories, onTransactionClick = onTransactionClick, maxGroups = 5) }
     }
 }

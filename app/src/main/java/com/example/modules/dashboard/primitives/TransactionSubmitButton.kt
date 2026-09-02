@@ -1,23 +1,22 @@
 package com.example.modules.dashboard.primitives
 
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.shared.atoms.springClickable
 import com.example.shared.theme.DesignTokens
 import com.example.shared.utils.MathUtils
 
@@ -25,36 +24,72 @@ import com.example.shared.utils.MathUtils
 fun TransactionSubmitButton(
     amount: String,
     note: String,
+    isIncome: Boolean = false,
     isLoading: Boolean = false,
     onValidatedSubmit: (Long) -> Unit
 ) {
-    val bgModifier = if (isLoading) {
-        Modifier.background(DesignTokens.BorderLight)
-    } else {
-        Modifier.background(Brush.linearGradient(listOf(DesignTokens.CobaltDark, DesignTokens.EmeraldGlow)))
+    val context = LocalContext.current
+
+    fun cleanExpression(str: String): String {
+        var cleaned = str.trim()
+        while (cleaned.endsWith("+") || cleaned.endsWith("-") || cleaned.endsWith("*") || cleaned.endsWith("/")) {
+            cleaned = cleaned.dropLast(1).trim()
+        }
+        return cleaned
     }
 
-    Box(
+    val cleanedAmount = cleanExpression(amount)
+    val evaluatedValue = if (cleanedAmount.isNotEmpty()) MathUtils.evaluateMath(cleanedAmount) else null
+    val isValidAmount = evaluatedValue != null && evaluatedValue.isFinite() && evaluatedValue > 0
+
+    val btnGradient = if (isLoading) {
+        listOf(DesignTokens.BorderLight, DesignTokens.BorderLight)
+    } else if (isValidAmount) {
+        if (isIncome) listOf(DesignTokens.EmeraldGlow, DesignTokens.CobaltDark)
+        else listOf(DesignTokens.CobaltDark, DesignTokens.CobaltAccent)
+    } else {
+        listOf(DesignTokens.SurfaceElevated, DesignTokens.SurfaceCard)
+    }
+
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = Color.Transparent,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .clip(RoundedCornerShape(DesignTokens.CornerRadius))
-            .then(bgModifier)
-            .clickable(enabled = !isLoading) {
-                if (amount.isNotEmpty() && note.isNotEmpty()) {
-                    MathUtils.evaluateMath(amount)?.let { result ->
-                        if (result.isFinite() && result > 0) {
-                            onValidatedSubmit(result.toLong())
-                        }
-                    }
+            .height(52.dp)
+            .background(Brush.horizontalGradient(btnGradient), RoundedCornerShape(14.dp))
+            .springClickable {
+                if (isLoading) return@springClickable
+                if (cleanedAmount.isEmpty()) {
+                    Toast.makeText(context, "Harap masukkan nominal transaksi terlebih dahulu", Toast.LENGTH_SHORT).show()
+                    return@springClickable
                 }
-            },
-        contentAlignment = Alignment.Center
+                if (evaluatedValue == null || !evaluatedValue.isFinite() || evaluatedValue <= 0) {
+                    Toast.makeText(context, "Nominal transaksi tidak valid (harus > 0)", Toast.LENGTH_SHORT).show()
+                    return@springClickable
+                }
+                onValidatedSubmit(evaluatedValue.toLong())
+            }
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(color = DesignTokens.CobaltAccent, modifier = Modifier.size(24.dp))
-        } else {
-            Text("Konfirmasi & Simpan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            if (isLoading) {
+                CircularProgressIndicator(color = DesignTokens.CobaltAccent, modifier = Modifier.size(22.dp), strokeWidth = 2.5.dp)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Filled.Check, contentDescription = "Save", tint = if (isValidAmount) Color.White else DesignTokens.TextSecondary, modifier = Modifier.size(20.dp))
+                    Text(
+                        text = if (isValidAmount) {
+                            val formatted = MathUtils.formatRupiah(evaluatedValue!!.toLong())
+                            "SIMPAN TRANSAKSI • $formatted"
+                        } else {
+                            "KONFIRMASI & SIMPAN"
+                        },
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (isValidAmount) Color.White else DesignTokens.TextSecondary
+                    )
+                }
+            }
         }
     }
 }

@@ -25,7 +25,8 @@ fun EditMemberRoleDialog(
     member: Member,
     allMembers: List<Member>,
     onDismiss: () -> Unit,
-    onSave: (Member) -> Unit
+    onSave: (Member) -> Unit,
+    onOpenFabSettings: () -> Unit = {}
 ) {
     var name by remember { mutableStateOf(member.name) }
     var role by remember { mutableStateOf(member.role) }
@@ -37,7 +38,7 @@ fun EditMemberRoleDialog(
             colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceCard)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("Ubah Profil & Hubungan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
+                Text("Ubah Profil & Personalisi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
                 
                 OutlinedTextField(
                     value = name,
@@ -64,13 +65,16 @@ fun EditMemberRoleDialog(
                     }
                 }
 
-                OutlinedTextField(
-                    value = role,
-                    onValueChange = { role = it },
-                    label = { Text("Label Peran Custom") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                OutlinedButton(
+                    onClick = {
+                        onDismiss()
+                        onOpenFabSettings()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("⚙️ Setting Posisi Tombol Floating (One-Hand)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) }

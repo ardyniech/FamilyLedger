@@ -34,6 +34,14 @@ class DashboardViewModel(
 ) : ViewModel() {
     private val goalsManager = GoalsAndBudgetManager(context)
     private val billsManager = RecurringBillsManager()
+    val debtManager = DebtManager(context)
+    val undoManager = UndoTransactionManager()
+    val appLockManager = com.example.core.auth.AppLockManager(context)
+    val fabPositionManager = FabPositionManager(context)
+    val fabPosition: StateFlow<FabPosition> = fabPositionManager.fabPosition
+    val dashboardLayoutManager = DashboardLayoutManager(context)
+    val cardOrder: StateFlow<List<DashboardCardType>> = dashboardLayoutManager.cardOrder
+    val hiddenCards: StateFlow<Set<DashboardCardType>> = dashboardLayoutManager.hiddenCards
     val transferNotificationManager = TransferNotificationManager()
     private val actionDelegate = DashboardActionDelegate(repository, viewModelScope, transferNotificationManager)
     private val recurringAutoScheduler = RecurringBillAutoScheduler(viewModelScope, billsManager, actionDelegate)
@@ -44,10 +52,15 @@ class DashboardViewModel(
     private val _transactionState = MutableStateFlow<TransactionState>(TransactionState.Idle)
     val transactionState: StateFlow<TransactionState> = _transactionState.asStateFlow()
 
+    private val _selectedCurrency = MutableStateFlow(com.example.shared.utils.MultiCurrencyHelper.Currency.IDR)
+    val selectedCurrency: StateFlow<com.example.shared.utils.MultiCurrencyHelper.Currency> = _selectedCurrency.asStateFlow()
+
     val syncState: StateFlow<SyncState> = repository.syncEngine.syncState
     val authState: StateFlow<AuthUiState> = authManager.authState
     val p2pSyncManager = repository.p2pSyncManager
     val transferActiveBanner: StateFlow<TransferNotification?> = transferNotificationManager.activeBanner
+    val debts: StateFlow<List<DebtRecord>> = debtManager.debts
+    val lastDeletedTx: StateFlow<Transaction?> = undoManager.lastDeletedTx
 
     private val _activeMemberId = MutableStateFlow("m1")
     val activeMemberId: StateFlow<String> = _activeMemberId.asStateFlow()
@@ -116,15 +129,40 @@ class DashboardViewModel(
     fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean = false, ts: Long = System.currentTimeMillis(), goalId: String? = null) = viewModelScope.launch {
         _transactionState.value = TransactionState.Loading
         try {
+            val wallet = wallets.value.find { it.id == wId }
+            val balanceWillBeNegative = wallet != null && !isIncome && (wallet.balance - amt < 0L)
+            
             actionDelegate.addTransaction(amt, note, wId, cId, isIncome, ts, wallets.value, goalId)
             _transactionState.value = TransactionState.Success
+            
+            if (balanceWillBeNegative) {
+                Toast.makeText(context, "Transaksi dicatat! Peringatan: Saldo ${wallet?.name} menjadi negatif.", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Transaksi berhasil disimpan!", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: Exception) {
             _transactionState.value = TransactionState.Error(e.message ?: "Gagal menyimpan transaksi")
+            Toast.makeText(context, "Gagal menyimpan transaksi: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
     
     fun resetTransactionState() { _transactionState.value = TransactionState.Idle }
-    fun deleteTransaction(tx: Transaction) = actionDelegate.deleteTransaction(tx)
+    fun deleteTransaction(tx: Transaction) {
+        undoManager.setDeletedTransaction(tx)
+        actionDelegate.deleteTransaction(tx)
+    }
+    fun undoDeleteTransaction() {
+        lastDeletedTx.value?.let { tx ->
+            viewModelScope.launch {
+                repository.addTransaction(tx)
+                undoManager.clearLastDeleted()
+            }
+        }
+    }
+    fun setSelectedCurrency(c: com.example.shared.utils.MultiCurrencyHelper.Currency) { _selectedCurrency.value = c }
+    fun addDebt(debt: DebtRecord) = debtManager.addDebt(debt)
+    fun payDebt(debtId: String, amount: Long) = debtManager.payDebt(debtId, amount)
+    fun deleteDebt(debtId: String) = debtManager.deleteDebt(debtId)
     fun updateTransaction(oldTx: Transaction, newTx: Transaction) = actionDelegate.updateTransaction(oldTx, newTx)
     fun transferFunds(amount: Long, note: String, fWId: String, tWId: String) = viewModelScope.launch {
         _transferState.value = TransferState.Loading

@@ -27,14 +27,13 @@ class DashboardActionDelegate(
         repository.addWallet(WalletAccount(id ?: UUID.randomUUID().toString(), mId, type, name, bal, monthlyTransferCap = monthlyTransferCap))
     }
 
-    fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean, ts: Long, wallets: List<WalletAccount>, goalId: String? = null) = scope.launch {
-        wallets.find { it.id == wId }?.let { wallet ->
+    suspend fun addTransaction(amt: Long, note: String, wId: String, cId: String, isIncome: Boolean, ts: Long, wallets: List<WalletAccount>, goalId: String? = null) {
+        val wallet = wallets.find { it.id == wId } ?: wallets.firstOrNull()
+        if (wallet != null) {
             val finalAmount = if (isIncome) amt else -amt
-            if (!isIncome && wallet.balance + finalAmount < 0L) {
-                android.util.Log.w("DashboardActionDelegate", "Insufficient balance: wallet=${wallet.id}, balance=${wallet.balance}, amount=$finalAmount")
-                return@launch
-            }
             repository.addTransaction(Transaction(UUID.randomUUID().toString(), wallet.id, wallet.memberId, cId, finalAmount, note, ts, goalId = goalId))
+        } else {
+            android.util.Log.e("DashboardActionDelegate", "Cannot add transaction: No wallets available in system.")
         }
     }
 

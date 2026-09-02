@@ -20,6 +20,10 @@ import com.example.shared.theme.DesignTokens
 import java.text.NumberFormat
 import java.util.Locale
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+
 @Composable
 fun GroupedTransactionsSection(
     groups: List<DailyTransactionGroup>,
@@ -31,8 +35,37 @@ fun GroupedTransactionsSection(
 ) {
     val currencyFmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        groups.take(maxGroups).forEach { group ->
+    if (groups.isEmpty()) {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = DesignTokens.SurfaceCard),
+            border = BorderStroke(1.dp, DesignTokens.BorderGlass)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(text = "💸", fontSize = 28.sp)
+                Text(
+                    text = "Belum Ada Transaksi",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = DesignTokens.TextPrimary
+                )
+                Text(
+                    text = "Catat pengeluaran atau pemasukan pertama Anda untuk melihat riwayat.",
+                    fontSize = 12.sp,
+                    color = DesignTokens.TextSecondary
+                )
+            }
+        }
+    } else {
+        Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            groups.take(maxGroups).forEach { group ->
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -77,4 +110,5 @@ fun GroupedTransactionsSection(
             }
         }
     }
+}
 }

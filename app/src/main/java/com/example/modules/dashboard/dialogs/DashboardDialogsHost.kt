@@ -1,5 +1,8 @@
 package com.example.modules.dashboard.dialogs
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,7 +30,17 @@ fun DashboardDialogsHost(
     transferNotif: TransferNotification?,
     onDismissTransferNotif: () -> Unit
 ) {
-    if (showAddModal) {
+    AnimatedVisibility(
+        visible = showAddModal,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioNoBouncy)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
+    ) {
         AddTransactionModal(
             wallets = wallets,
             categories = categories,

@@ -1,6 +1,14 @@
 package com.example.shared.utils
 
+import java.text.NumberFormat
+import java.util.Locale
+
 object MathUtils {
+    fun formatRupiah(amount: Long): String {
+        val formatter = NumberFormat.getInstance(Locale("id", "ID"))
+        return "Rp ${formatter.format(amount)}"
+    }
+
     fun evaluateMath(str: String): Double? {
         return try {
             object : Any() {

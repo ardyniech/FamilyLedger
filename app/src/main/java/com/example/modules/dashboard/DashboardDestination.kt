@@ -16,4 +16,6 @@ sealed class DashboardDestination {
     object GoalsAndBudget : DashboardDestination()
     object CategoryGroupDashboard : DashboardDestination()
     object SmartCsvImport : DashboardDestination()
+    object FamilyDashboard : DashboardDestination()
+    object DebtLoanTracker : DashboardDestination()
 }

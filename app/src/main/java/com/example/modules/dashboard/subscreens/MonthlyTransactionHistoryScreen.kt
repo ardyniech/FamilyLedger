@@ -22,9 +22,7 @@ import com.example.modules.dashboard.dialogs.AddExpenseDialog
 import com.example.modules.dashboard.dialogs.CsvExportDialog
 import com.example.modules.dashboard.logic.MonthFilterHelper
 import com.example.modules.dashboard.logic.TransactionGroupingHelper
-import com.example.modules.dashboard.primitives.GroupedTransactionsSection
-import com.example.modules.dashboard.primitives.MonthNavigationBar
-import com.example.modules.dashboard.primitives.MonthlyStatsBanner
+import com.example.modules.dashboard.primitives.*
 import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
 
@@ -41,11 +39,21 @@ fun MonthlyTransactionHistoryScreen(
     onBack: () -> Unit
 ) {
     var monthOffset by remember { mutableIntStateOf(0) }
+    var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
     var showCsvExportDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+
     val monthData = remember(transactions, monthOffset) { MonthFilterHelper.filterForMonth(transactions, monthOffset) }
-    val groupedByDay = remember(monthData.transactions) { TransactionGroupingHelper.groupByDay(monthData.transactions) }
+    val filteredTransactions = remember(monthData.transactions, searchQuery) {
+        if (searchQuery.isBlank()) monthData.transactions
+        else monthData.transactions.filter { tx ->
+            tx.note.contains(searchQuery, ignoreCase = true) ||
+            categories.find { it.id == tx.categoryId }?.name?.contains(searchQuery, ignoreCase = true) == true ||
+            wallets.find { it.id == tx.walletId }?.name?.contains(searchQuery, ignoreCase = true) == true
+        }
+    }
+    val groupedByDay = remember(filteredTransactions) { TransactionGroupingHelper.groupByDay(filteredTransactions) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
 
     Scaffold(
@@ -84,6 +92,7 @@ fun MonthlyTransactionHistoryScreen(
         ) {
             MonthNavigationBar(currentMonthOffset = monthOffset, onPreviousMonth = { monthOffset-- }, onNextMonth = { if (monthOffset < 12) monthOffset++ }, onResetToCurrent = { monthOffset = 0 })
             MonthlyStatsBanner(totalIncome = monthData.totalIncome, totalExpense = monthData.totalExpense, netBalance = monthData.netBalance)
+            TransactionSearchFilterBar(searchQuery = searchQuery, onQueryChange = { searchQuery = it }, selectedCategoryFilter = null, onCategoryFilterChange = {}, onOpenFilterSheet = {})
 
             if (groupedByDay.isEmpty()) {
                 Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
