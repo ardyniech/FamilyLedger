@@ -121,7 +121,11 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             )
         }
 
-        if (currentDestination == DashboardDestination.Dashboard) {
+        AnimatedVisibility(
+            visible = currentDestination == DashboardDestination.Dashboard,
+            enter = scaleIn() + fadeIn(),
+            exit = scaleOut() + fadeOut()
+        ) {
             com.example.modules.dashboard.primitives.FloatingAddTransactionButton(
                 fabPosition = fabPosition,
                 onClick = { showAddModal = true }

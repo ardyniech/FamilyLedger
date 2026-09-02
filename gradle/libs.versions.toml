@@ -36,6 +36,8 @@ moshiKotlinCodegen = "1.15.2"
 datastorePreferences = "1.1.7"
 robolectric = "4.16.1"
 roborazzi = "1.59.0"
+mockitoCore = "5.11.0"
+mockitoKotlin = "5.2.1"
 firebaseBom = "34.17.0"
 secretsGradlePlugin = "2.0.1"
 googleServices = "4.5.0"
@@ -90,6 +92,8 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
 roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockitoCore" }
+mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-recaptcha = { group = "com.google.firebase", name = "firebase-appcheck-recaptcha" }

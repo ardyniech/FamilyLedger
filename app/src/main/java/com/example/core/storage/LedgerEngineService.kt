@@ -4,8 +4,16 @@ import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+
+private class HouseholdLockContextElement(val householdId: String) : CoroutineContext.Element {
+    companion object Key : CoroutineContext.Key<HouseholdLockContextElement>
+    override val key: CoroutineContext.Key<*> = Key
+}
 
 class LedgerEngineService(
     private val auditDao: LedgerAuditDao,
@@ -17,7 +25,16 @@ class LedgerEngineService(
         householdLocks.getOrPut(householdId) { Mutex() }
 
     suspend fun <T> withHouseholdLock(householdId: String, block: suspend () -> T): T {
-        return getHouseholdMutex(householdId).withLock { block() }
+        val holdingLock = coroutineContext[HouseholdLockContextElement.Key]?.householdId == householdId
+        return if (holdingLock) {
+            block()
+        } else {
+            getHouseholdMutex(householdId).withLock {
+                withContext(HouseholdLockContextElement(householdId)) {
+                    block()
+                }
+            }
+        }
     }
 
     private suspend fun executeReadModifyWrite(householdId: String, specs: List<EventSpec>): List<LedgerEventEntity> {

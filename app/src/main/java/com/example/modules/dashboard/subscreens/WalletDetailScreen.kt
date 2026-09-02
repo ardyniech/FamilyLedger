@@ -97,8 +97,10 @@ fun WalletDetailScreen(
             if (walletTransactions.isEmpty()) {
                 item {
                     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(DesignTokens.CornerRadius), colors = CardDefaults.cardColors(containerColor = DesignTokens.Surface), border = androidx.compose.foundation.BorderStroke(1.dp, DesignTokens.BorderGlass)) {
-                        Box(modifier = Modifier.padding(DesignTokens.PaddingLarge).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("No transactions logged for this wallet yet.", color = DesignTokens.TextSecondary)
+                        Column(modifier = Modifier.padding(32.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("🪹", fontSize = 32.sp)
+                            Text("Belum Ada Transaksi", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DesignTokens.TextPrimary)
+                            Text("Transaksi dari dompet ini akan muncul di sini.", color = DesignTokens.TextSecondary, fontSize = 12.sp)
                         }
                     }
                 }

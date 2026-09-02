@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
 import com.example.shared.atoms.springClickable
 import com.example.shared.theme.DesignTokens
 
@@ -56,6 +57,7 @@ fun CustomKeypad(
                                 .aspectRatio(2.2f)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (isOperator) DesignTokens.CobaltAccent.copy(alpha = 0.15f) else DesignTokens.Surface)
+                                .semantics(mergeDescendants = true) {}
                                 .springClickable {
                                     try {
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +56,7 @@ fun TransactionSubmitButton(
         shape = RoundedCornerShape(14.dp),
         color = Color.Transparent,
         modifier = Modifier
+            .testTag("transaction_submit_button")
             .fillMaxWidth()
             .height(52.dp)
             .background(Brush.horizontalGradient(btnGradient), RoundedCornerShape(14.dp))
