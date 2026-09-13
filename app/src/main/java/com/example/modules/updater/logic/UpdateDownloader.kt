@@ -22,7 +22,8 @@ object UpdateDownloader {
         onProgress: (UpdateStatus) -> Unit
     ): File? {
         val updatesDir = File(context.cacheDir, "updates").apply { mkdirs() }
-        val targetFile = File(updatesDir, apkName)
+        val safeApkName = File(apkName).name.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+        val targetFile = File(updatesDir, safeApkName)
         
         var attempt = 0
         var backoffMs = 1000L

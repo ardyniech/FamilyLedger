@@ -27,10 +27,14 @@ object HouseholdExpenseCsvExporter {
     }
 
     private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
+        var cleanValue = value
+        if (cleanValue.startsWith("=") || cleanValue.startsWith("+") || cleanValue.startsWith("-") || cleanValue.startsWith("@")) {
+            cleanValue = "'$cleanValue"
+        }
+        return if (cleanValue.contains(",") || cleanValue.contains("\"") || cleanValue.contains("\n")) {
+            "\"${cleanValue.replace("\"", "\"\"")}\""
         } else {
-            value
+            cleanValue
         }
     }
 }

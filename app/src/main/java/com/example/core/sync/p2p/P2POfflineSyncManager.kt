@@ -90,7 +90,11 @@ class P2POfflineSyncManager(
 
             if (!responseCompressed.isNullOrEmpty()) {
                 val hostPkg = P2PSyncPackage.fromCompressedBase64(responseCompressed)
-                importSyncPackage(hostPkg)
+                if (hostPkg.pairCode != pairCode) {
+                    P2PImportResult(false, 0, 0, 0, "Pair code host tidak cocok (Expected $pairCode, got ${hostPkg.pairCode})")
+                } else {
+                    importSyncPackage(hostPkg)
+                }
             } else {
                 P2PImportResult(false, 0, 0, 0, "Host tidak memberikan balasan data")
             }

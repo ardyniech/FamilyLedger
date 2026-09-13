@@ -37,9 +37,10 @@
 }
 
 # FamilyLedger data models (keep for serialization)
--keep class com.example.core.storage.models.** { *; }
+-keep class com.example.shared.models.** { *; }
+-keep class com.example.core.storage.** { *; }
 -keep class com.example.modules.updater.models.** { *; }
--keep class com.example.core.sync.models.** { *; }
+-keep class com.example.core.sync.** { *; }
 -keep class com.example.modules.dashboard.csv.** { *; }
 
 # Keep DataStore preferences

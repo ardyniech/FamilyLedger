@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Household collection - only authenticated users belonging to the pairCode/household can access
+    match /households/{pairCode} {
+      allow read, write: if request.auth != null && request.auth.uid != null;
+      
+      match /{allSubcollections=**} {
+        allow read, write: if request.auth != null && request.auth.uid != null;
+      }
+    }
+  }
+}

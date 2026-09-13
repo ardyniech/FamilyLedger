@@ -67,7 +67,7 @@ data class P2PSyncPackage(
                 val o = mArr.getJSONObject(i)
                 Member(o.getString("id"), o.optString("householdId", "h1"), o.getString("role"), o.getString("name"), o.optString("avatarUrl", ""))
             }
-            return P2PSyncPackage(root.optString("pairCode", "FAM-8821"), root.optString("senderName", "Pasangan"), root.optString("senderRole", "Husband"), root.optLong("timestamp", System.currentTimeMillis()), txList, walletList, catList, memList)
+            return P2PSyncPackage(root.optString("pairCode", ""), root.optString("senderName", "Pasangan"), root.optString("senderRole", "Husband"), root.optLong("timestamp", System.currentTimeMillis()), txList, walletList, catList, memList)
         }
 
         fun fromCompressedBase64(base64Str: String): P2PSyncPackage {

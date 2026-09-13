@@ -19,10 +19,10 @@ class SyncEngine(
     private val _pendingCount = MutableStateFlow(0)
     val pendingCount: StateFlow<Int> = _pendingCount.asStateFlow()
 
-    private var currentPairCode: String = "FAM-8821"
+    private var currentPairCode: String = ""
     private var syncJob: Job? = null
 
-    fun startBackgroundSync(scope: CoroutineScope, initialPairCode: String = "FAM-8821") {
+    fun startBackgroundSync(scope: CoroutineScope, initialPairCode: String = "") {
         currentPairCode = initialPairCode
         syncJob?.cancel()
         syncJob = scope.launch(Dispatchers.IO) {
@@ -69,22 +69,34 @@ class SyncEngine(
 
     suspend fun markSynchronizedAfterHandshake() = withContext(Dispatchers.IO) {
         val pendingTxs = dao.getPendingTransactions()
-        if (pendingTxs.isNotEmpty()) dao.markTransactionsSynced(pendingTxs.map { it.id })
+        if (pendingTxs.isNotEmpty()) {
+            pendingTxs.map { it.id }.chunked(500).forEach { dao.markTransactionsSynced(it) }
+        }
 
         val pendingWallets = dao.getPendingWallets()
-        if (pendingWallets.isNotEmpty()) dao.markWalletsSynced(pendingWallets.map { it.id })
+        if (pendingWallets.isNotEmpty()) {
+            pendingWallets.map { it.id }.chunked(500).forEach { dao.markWalletsSynced(it) }
+        }
 
         val pendingCats = dao.getPendingCategories()
-        if (pendingCats.isNotEmpty()) dao.markCategoriesSynced(pendingCats.map { it.id })
+        if (pendingCats.isNotEmpty()) {
+            pendingCats.map { it.id }.chunked(500).forEach { dao.markCategoriesSynced(it) }
+        }
 
         val pendingMembers = dao.getPendingMembers()
-        if (pendingMembers.isNotEmpty()) dao.markMembersSynced(pendingMembers.map { it.id })
+        if (pendingMembers.isNotEmpty()) {
+            pendingMembers.map { it.id }.chunked(500).forEach { dao.markMembersSynced(it) }
+        }
 
         val pendingLedgers = auditDao.getPendingLedgerEvents()
-        if (pendingLedgers.isNotEmpty()) auditDao.markLedgerEventsSynced(pendingLedgers.map { it.eventId })
+        if (pendingLedgers.isNotEmpty()) {
+            pendingLedgers.map { it.eventId }.chunked(500).forEach { auditDao.markLedgerEventsSynced(it) }
+        }
 
         val pendingGroups = categoryGroupDao?.getPendingCategoryGroups() ?: emptyList()
-        if (pendingGroups.isNotEmpty()) categoryGroupDao?.markCategoryGroupsSynced(pendingGroups.map { it.id })
+        if (pendingGroups.isNotEmpty()) {
+            pendingGroups.map { it.id }.chunked(500).forEach { categoryGroupDao?.markCategoryGroupsSynced(it) }
+        }
 
         _pendingCount.value = 0
         _syncState.value = SyncState.SYNCED

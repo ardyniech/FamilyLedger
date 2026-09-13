@@ -1,6 +1,7 @@
 package com.example.modules.dashboard.csv
 
 import com.example.core.storage.HouseholdRepository
+import com.example.core.storage.TransferEventEntity
 import com.example.shared.models.Category
 import com.example.shared.models.Transaction
 import com.example.shared.models.WalletAccount
@@ -34,8 +35,16 @@ object SmartCsvImportEngine {
                 val transferAmount = kotlin.math.abs(item.amount)
                 val outTx = Transaction(UUID.randomUUID().toString(), walletId, item.memberId, "c_tf_out", -transferAmount, if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer ke ${item.rawAccount}", timestamp = item.timestamp)
                 val inTx = Transaction(UUID.randomUUID().toString(), targetWalletId, item.targetMemberId ?: "m1", "c_tf_in", transferAmount, if (item.note.isNotBlank()) "${item.note} (Transfer)" else "Transfer dari ${item.rawAccount}", timestamp = item.timestamp + 1)
-                repository.addTransaction(outTx)
-                repository.addTransaction(inTx)
+                val transferEvent = TransferEventEntity(
+                    id = UUID.randomUUID().toString(),
+                    sourceWalletId = walletId,
+                    destinationWalletId = targetWalletId,
+                    amount = transferAmount,
+                    initiatedBy = item.memberId,
+                    confirmedBy = item.targetMemberId ?: item.memberId,
+                    timestamp = item.timestamp
+                )
+                repository.executeTransfer(outTx, inTx, transferEvent)
                 insertedCount += 2
             } else {
                 val tx = Transaction(UUID.randomUUID().toString(), walletId, item.memberId, categoryId, item.amount, if (item.note.isNotBlank()) "${item.rawCategory}: ${item.note}".trimEnd(':', ' ') else item.rawCategory.ifBlank { "Transaksi CSV" }, timestamp = item.timestamp)

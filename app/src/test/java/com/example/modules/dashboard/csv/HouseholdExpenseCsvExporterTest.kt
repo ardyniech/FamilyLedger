@@ -34,6 +34,32 @@ class HouseholdExpenseCsvExporterTest {
     }
 
     @Test
+    fun testToCsv_escapesFormulaInjectionChars() {
+        val expenses = listOf(
+            HouseholdExpense(
+                id = "exp-formula",
+                title = "=SUM(A1:A100)",
+                amount = 50_000L,
+                categoryId = "cat-1",
+                categoryName = "+FormulaCat",
+                walletId = "wal-1",
+                walletName = "@WalletName",
+                memberId = "mem-1",
+                memberName = "-MemberName",
+                isNeed = true,
+                notes = "=cmd|' /C calc'!A0"
+            )
+        )
+
+        val csv = HouseholdExpenseCsvExporter.toCsv(expenses)
+        assertTrue(csv.contains("'=SUM(A1:A100)"))
+        assertTrue(csv.contains("'+FormulaCat"))
+        assertTrue(csv.contains("'@WalletName"))
+        assertTrue(csv.contains("'-MemberName"))
+        assertTrue(csv.contains("'=cmd|' /C calc'!A0"))
+    }
+
+    @Test
     fun testToCsv_emptyList_returnsHeaderOnly() {
         val csv = HouseholdExpenseCsvExporter.toCsv(emptyList())
         assertEquals("ID,Tanggal,Judul,Kategori,Tipe,Anggota,Dompet,Nominal,Catatan\n", csv)
