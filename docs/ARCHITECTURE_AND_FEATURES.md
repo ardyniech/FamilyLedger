@@ -62,7 +62,15 @@ This document provides a detailed specification of all modules, components, data
 
 ---
 
-## 4. Audit & Quality Assurance Scenarios
+## 4. Design System & Pure Luminous Light Theme Policy
+
+- **Strict Pure Luminous Light Palette**: Dark theme is completely prohibited across the entire design system and application architecture. The UI is built exclusively on high-contrast, clean, luminous, and warm palettes with dynamic role accents (Cobalt Royal Blue for Suami and Blossom Rose Pink for Istri).
+- **Glassmorphism & Depth Elevation**: Visual richness is achieved through frosted glass surfaces (`SurfaceGlass`), soft role-tinted card borders (`BorderLight`), and spring-animated micro-interactions without ever relying on dark canvases.
+- **Zero Dark-Mode Dependencies**: All `isSystemInDarkTheme()` branches, `DarkColorScheme`, and dark-mode tokens are completely eliminated to guarantee aesthetic consistency.
+
+---
+
+## 5. Audit & Quality Assurance Scenarios
 
 When performing code reviews or adding new features, audit against these 3 negative scenarios:
 1. **Malformed/Null Data Input:** Verify that empty notes, 0 or negative transfer amounts, and missing category references fail gracefully without crashing.

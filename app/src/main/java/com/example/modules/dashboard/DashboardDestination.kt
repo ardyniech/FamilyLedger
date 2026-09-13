@@ -18,4 +18,8 @@ sealed class DashboardDestination {
     object SmartCsvImport : DashboardDestination()
     object FamilyDashboard : DashboardDestination()
     object DebtLoanTracker : DashboardDestination()
+    data class EarlyPayoffSimulator(val initialDebtId: String? = null) : DashboardDestination()
+    object HouseholdExpenses : DashboardDestination()
+    data class KprSimulator(val debtId: String? = null) : DashboardDestination()
+    object WifeHouseholdExpenseHub : DashboardDestination()
 }

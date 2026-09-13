@@ -89,7 +89,9 @@ data class RecurringBill(
     val autoPay: Boolean = false,
     val targetWalletId: String? = null,
     val frequency: String = "Monthly", // "One-Time", "Daily", "Weekly", "Monthly", "Yearly"
-    val lastProcessedTime: Long = 0L
+    val lastProcessedTime: Long = 0L,
+    val dueDayOfMonth: Int = 0,
+    val autoPopulateInLedger: Boolean = true
 )
 
 data class FinancialGoal(

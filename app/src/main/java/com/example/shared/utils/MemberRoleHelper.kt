@@ -1,74 +1,93 @@
 package com.example.shared.utils
 
 import androidx.compose.ui.graphics.Color
+import com.example.shared.models.HouseholdRole
 import com.example.shared.models.Member
 import com.example.shared.theme.DesignTokens
+import com.example.shared.theme.RoleThemePalette
 
 object MemberRoleHelper {
-    val ROLE_PRESETS = listOf(
-        Pair("Suami", "Istri"),
-        Pair("Partner A", "Partner B"),
-        Pair("Pasangan 1", "Pasangan 2"),
-        Pair("Spouse 1", "Spouse 2")
-    )
+    val ROLE_PRESETS = listOf(HouseholdRole.SUAMI.code, HouseholdRole.ISTRI.code)
 
-    fun isPrimaryRole(member: Member?, allMembers: List<Member> = emptyList()): Boolean {
+    fun isHusband(member: Member?): Boolean {
+        if (member == null) return true
+        return HouseholdRole.fromString(member.role) == HouseholdRole.SUAMI
+    }
+
+    fun isWife(member: Member?): Boolean {
         if (member == null) return false
-        val idx = if (allMembers.isNotEmpty()) allMembers.indexOfFirst { it.id == member.id } else -1
-        if (idx == 0) return true
-        val r = member.role.trim().lowercase()
-        return r in listOf("suami", "husband", "partner a", "pasangan 1", "spouse 1", "ayah", "bapak")
+        return HouseholdRole.fromString(member.role) == HouseholdRole.ISTRI
     }
 
     fun getPartnerA(members: List<Member>): Member? {
-        return members.find { isPrimaryRole(it, members) } ?: members.getOrNull(0)
+        return members.find { isHusband(it) } ?: members.firstOrNull()
     }
 
     fun getPartnerB(members: List<Member>): Member? {
-        val partnerA = getPartnerA(members)
-        return members.find { it.id != partnerA?.id } ?: members.getOrNull(1)
-    }
-
-    fun getRoleColor(member: Member?, allMembers: List<Member> = emptyList()): Color {
-        if (member == null) return DesignTokens.CobaltAccent
-        val idx = if (allMembers.isNotEmpty()) allMembers.indexOfFirst { it.id == member.id } else -1
-        return when {
-            idx == 0 || isPrimaryRole(member, allMembers) -> DesignTokens.CobaltAccent
-            idx == 1 || member.role.equals("Istri", ignoreCase = true) || member.role.equals("Wife", ignoreCase = true) || member.role.equals("Partner B", ignoreCase = true) || member.role.equals("Pasangan 2", ignoreCase = true) || member.role.equals("Ibu", ignoreCase = true) -> DesignTokens.AmberAccent
-            idx == 2 -> DesignTokens.EmeraldAccent
-            else -> DesignTokens.PurpleAccent
-        }
+        return members.find { isWife(it) } ?: members.getOrNull(1)
     }
 
     fun getRoleColor(role: String): Color {
-        val r = role.trim().lowercase()
-        return when {
-            r in listOf("suami", "husband", "partner a", "pasangan 1", "spouse 1", "ayah", "bapak") -> DesignTokens.CobaltAccent
-            r in listOf("istri", "wife", "partner b", "pasangan 2", "spouse 2", "ibu", "mama") -> DesignTokens.AmberAccent
-            else -> DesignTokens.EmeraldAccent
-        }
+        val hRole = HouseholdRole.fromString(role)
+        return RoleThemePalette.forRole(hRole).primaryAccent
+    }
+
+    fun getRoleColor(member: Member?, defaultColor: Color = DesignTokens.CobaltAccent): Color {
+        if (member == null) return defaultColor
+        return getRoleColor(member.role)
+    }
+
+    fun getRoleColor(ownerId: String?, members: List<Member>): Color {
+        val member = members.find { it.id == ownerId }
+        return getRoleColor(member)
+    }
+
+    fun getRoleColor(member: Member?, members: List<Member>): Color {
+        return getRoleColor(member)
     }
 
     fun getRoleEmoji(role: String): String {
-        return when (role.trim().lowercase()) {
-            "suami", "husband", "ayah", "bapak" -> "👨"
-            "istri", "wife", "ibu", "mama" -> "👩"
-            "partner a", "pasangan 1", "spouse 1" -> "🧑"
-            "partner b", "pasangan 2", "spouse 2" -> "🌸"
-            else -> "✨"
-        }
+        return HouseholdRole.fromString(role).emoji
+    }
+
+    fun getRoleEmoji(member: Member?): String {
+        if (member == null) return HouseholdRole.SUAMI.emoji
+        return getRoleEmoji(member.role)
+    }
+
+    fun getRoleEmoji(ownerId: String?, members: List<Member>): String {
+        val member = members.find { it.id == ownerId }
+        return getRoleEmoji(member)
+    }
+
+    fun getRoleEmoji(member: Member?, members: List<Member>): String {
+        return getRoleEmoji(member)
     }
 
     fun getPartnerLabel(role: String): String {
-        return when (role.trim().lowercase()) {
-            "husband" -> "Suami"
-            "wife" -> "Istri"
-            else -> role
-        }
+        return HouseholdRole.fromString(role).code
+    }
+
+    fun getPartnerLabel(member: Member?): String {
+        if (member == null) return HouseholdRole.SUAMI.code
+        return getPartnerLabel(member.role)
+    }
+
+    fun getPartnerLabel(ownerId: String?, members: List<Member>): String {
+        val member = members.find { it.id == ownerId }
+        return getPartnerLabel(member)
+    }
+
+    fun getPartnerLabel(member: Member?, members: List<Member>): String {
+        return getPartnerLabel(member)
     }
 
     fun getDisplayName(member: Member?, default: String = "Pasangan"): String {
         return member?.name?.ifBlank { getPartnerLabel(member.role) } ?: default
     }
-}
 
+    fun getDisplayName(memberId: String?, members: List<Member>, default: String = "Pasangan"): String {
+        val member = members.find { it.id == memberId }
+        return getDisplayName(member, default)
+    }
+}

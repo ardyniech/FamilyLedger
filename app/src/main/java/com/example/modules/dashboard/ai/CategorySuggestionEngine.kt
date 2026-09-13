@@ -12,8 +12,15 @@ object CategorySuggestionEngine {
         "shopee" to listOf("Belanja", "E-Commerce"),
         "tokopedia" to listOf("Belanja", "E-Commerce"),
         "saham" to listOf("Investasi", "Tabungan"),
-        "obat" to listOf("Kesehatan", "Apotek"),
-        "pulsa" to listOf("Tagihan & Utilitas", "Pulsa & Paket Data")
+        "obat" to listOf("Kesehatan", "Apotek", "Health"),
+        "pulsa" to listOf("Tagihan & Utilitas", "Pulsa & Paket Data", "Phone"),
+        "sayur" to listOf("Sayur Mayur & Lauk Pasar", "Dapur", "Makan"),
+        "beras" to listOf("Beras & Sembako Bulanan", "Sembako", "Dapur"),
+        "gas" to listOf("Gas Elpiji & Bumbu Dapur", "Dapur", "PLN"),
+        "susu" to listOf("Susu & Keperluan Anak", "Anak", "Personal Care"),
+        "sabun" to listOf("Kebersihan & Sabun Cuci", "Kebutuhan Rumah", "Laundry"),
+        "arisan" to listOf("Sosial & Komunitas", "Arisan"),
+        "skincare" to listOf("Skincare", "Personal Care")
     )
 
     fun suggestCategory(note: String, categories: List<Category>): List<Category> {

@@ -10,7 +10,17 @@ data class DebtRecord(
     val paidAmount: Long = 0L,
     val dueDate: Long,
     val note: String = "",
-    val isSettled: Boolean = false
+    val isSettled: Boolean = false,
+    val loanType: LoanType = LoanType.PERSONAL_DEBT,
+    val monthlyInstallment: Long = 0L,
+    val dueDayOfMonth: Int = 0,
+    val tenorRemainingMonths: Int = 0,
+    val totalTenorMonths: Int = 0,
+    val institutionName: String = "",
+    val autoDebitWalletId: String? = null,
+    val annualInterestRate: Double = 0.0
 ) {
     val remainingAmount: Long get() = (amount - paidAmount).coerceAtLeast(0L)
+    val isBankLoanOrInstallment: Boolean get() = loanType != LoanType.PERSONAL_DEBT
 }
+

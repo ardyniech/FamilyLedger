@@ -57,12 +57,12 @@ fun HeroCard(totalBalance: Long, wallets: List<WalletAccount>, members: List<Mem
             ) {
                 Text(
                     text = "Total Household Net Worth",
-                    color = DesignTokens.TextOnDark.copy(alpha = 0.8f),
+                    color = DesignTokens.TextOnGradient.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = formatter.format(totalBalance),
-                    color = DesignTokens.TextOnDark,
+                    color = DesignTokens.TextOnGradient,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -72,12 +72,12 @@ fun HeroCard(totalBalance: Long, wallets: List<WalletAccount>, members: List<Mem
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(MemberRoleHelper.getDisplayName(partnerA, "Pasangan 1"), color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-                        Text(formatter.format(partnerATotal), color = DesignTokens.TextOnDark)
+                        Text(MemberRoleHelper.getDisplayName(partnerA, "Pasangan 1"), color = DesignTokens.TextOnGradient.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                        Text(formatter.format(partnerATotal), color = DesignTokens.TextOnGradient)
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(MemberRoleHelper.getDisplayName(partnerB, "Pasangan 2"), color = DesignTokens.TextOnDark.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-                        Text(formatter.format(partnerBTotal), color = DesignTokens.TextOnDark)
+                        Text(MemberRoleHelper.getDisplayName(partnerB, "Pasangan 2"), color = DesignTokens.TextOnGradient.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                        Text(formatter.format(partnerBTotal), color = DesignTokens.TextOnGradient)
                     }
                 }
             }

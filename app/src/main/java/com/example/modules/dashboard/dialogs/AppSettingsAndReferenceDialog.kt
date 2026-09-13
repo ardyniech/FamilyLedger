@@ -1,7 +1,9 @@
 package com.example.modules.dashboard.dialogs
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -11,15 +13,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.core.auth.AppLockManager
+import com.example.modules.dashboard.primitives.AppSecuritySettingsSection
+import com.example.modules.dashboard.primitives.QuickNavDatabaseResetSection
 import com.example.shared.theme.DesignTokens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSettingsAndReferenceDialog(
     selectedCurrency: com.example.shared.utils.MultiCurrencyHelper.Currency,
+    appLockManager: AppLockManager? = null,
     onSelectCurrency: (com.example.shared.utils.MultiCurrencyHelper.Currency) -> Unit,
+    onClearDatabase: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    var showSetPinDialog by remember { mutableStateOf(false) }
+
+    if (showSetPinDialog && appLockManager != null) {
+        SetNewPinDialog(
+            onDismiss = { showSetPinDialog = false },
+            onSavePin = { newPin ->
+                appLockManager.setPin(newPin)
+                showSetPinDialog = false
+            }
+        )
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = DesignTokens.BackgroundBottom,
@@ -30,7 +49,11 @@ fun AppSettingsAndReferenceDialog(
         }
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 28.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 28.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -46,11 +69,21 @@ fun AppSettingsAndReferenceDialog(
                 }
             }
 
+            appLockManager?.let { mgr ->
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Keamanan Data Ledger:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
+                Spacer(modifier = Modifier.height(4.dp))
+                AppSecuritySettingsSection(
+                    appLockManager = mgr,
+                    onRequirePinSetup = { showSetPinDialog = true }
+                )
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             Text("Pilihan Mata Uang Acuan:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                com.example.shared.utils.MultiCurrencyHelper.Currency.values().forEach { curr ->
+                com.example.shared.utils.MultiCurrencyHelper.Currency.entries.forEach { curr ->
                     val isSel = curr == selectedCurrency
                     FilterChip(
                         selected = isSel,
@@ -84,10 +117,19 @@ fun AppSettingsAndReferenceDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(imageVector = Icons.Default.Lock, contentDescription = "Lock", tint = DesignTokens.AmberAccent, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Keamanan: Hardware Enclave PIN App Lock", fontSize = 11.sp, color = DesignTokens.TextPrimary)
+                        Text("Keamanan: EncryptedSharedPreferences (AES-256) + Biometrik", fontSize = 11.sp, color = DesignTokens.TextPrimary)
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            QuickNavDatabaseResetSection(
+                onConfirmClearDatabase = {
+                    onClearDatabase()
+                    onDismiss()
+                }
+            )
         }
     }
 }

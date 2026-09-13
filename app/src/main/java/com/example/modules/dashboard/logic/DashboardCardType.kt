@@ -9,6 +9,18 @@ enum class DashboardCardType(
         title = "Ringkasan Saldo & Runway",
         description = "Total Saldo, Net Worth, dan Proyeksi Runway Keuangan"
     ),
+    SAFE_TO_SPEND(
+        title = "Batas Belanja Harian (Safe-to-Spend)",
+        description = "Estimasi Pengeluaran Aman per Hari & Cadangan Keuangan"
+    ),
+    NAFKAH_ALLOCATION(
+        title = "Alokasi Uang Belanja / Nafkah",
+        description = "Pelacak Transfer Suami ➔ Istri & Belanja Pos Kebutuhan Rumah Tangga"
+    ),
+    FINANCIAL_INTEGRITY(
+        title = "Integritas & Kredit Bank",
+        description = "Analisis KPR, Tagihan Berdekatan & Target Income Harian/Bulanan"
+    ),
     QUICK_ACTIONS(
         title = "Tombol Aksi Cepat",
         description = "Akses Pindah Buku / Transfer, Dompet & Kategori"

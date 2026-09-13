@@ -164,6 +164,8 @@ class FamilyLedgerFeaturesTest {
             override suspend fun insertTransfer(transfer: TransferEventEntity) {}
             override suspend fun updateTransferStatus(transferId: String, status: String, confirmedBy: String) {}
             override suspend fun updateTransferAcknowledgment(transferId: String, ack: String) {}
+            override suspend fun clearLedgerEvents() { synchronized(storedEvents) { storedEvents.clear() } }
+            override suspend fun clearTransfers() {}
         }
 
         val ledgerEngine = com.example.core.storage.LedgerEngineService(mockDao)

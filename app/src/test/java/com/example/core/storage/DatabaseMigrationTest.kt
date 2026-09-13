@@ -17,7 +17,7 @@ class DatabaseMigrationTest {
     @Test
     fun testAllMigrationsArray_hasContinuousMigrationChain() {
         val migrations = DatabaseMigrations.ALL_MIGRATIONS
-        assertEquals(6, migrations.size)
+        assertEquals(7, migrations.size)
         assertEquals(1, migrations[0].startVersion)
         assertEquals(2, migrations[0].endVersion)
         assertEquals(2, migrations[1].startVersion)
@@ -30,6 +30,8 @@ class DatabaseMigrationTest {
         assertEquals(6, migrations[4].endVersion)
         assertEquals(6, migrations[5].startVersion)
         assertEquals(7, migrations[5].endVersion)
+        assertEquals(7, migrations[6].startVersion)
+        assertEquals(8, migrations[6].endVersion)
     }
 
     @Test
@@ -43,6 +45,7 @@ class DatabaseMigrationTest {
         assertNotNull(db.householdDao())
         assertNotNull(db.categoryGroupDao())
         assertNotNull(db.ledgerAuditDao())
+        assertNotNull(db.householdExpenseDao())
         db.close()
     }
 }

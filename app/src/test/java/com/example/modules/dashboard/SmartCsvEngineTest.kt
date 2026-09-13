@@ -59,12 +59,22 @@ class SmartCsvEngineTest {
             "Aug 20, 2026 8:00 AM","(-) Expense","12000","rokok","Cash","surya"
         """.trimIndent()
 
+        val parsedTimestamp = com.example.modules.dashboard.csv.CsvDateParser.parseTimestamp("Aug 20, 2026 8:00 AM")
+
         val existing = listOf(
-            Transaction("tx1", "w_cash", "m1", "c_rokok", -12000L, "surya", timestamp = 1787216400000L)
+            Transaction("tx1", "w_cash", "m1", "c_rokok", -12000L, "surya", timestamp = parsedTimestamp)
         )
 
         val result = SmartCsvParser.parse(raw, sampleWallets, sampleCategories, existing)
         assertEquals(1, result.records.size)
+        assertTrue("Should detect duplicate with exact note", result.records[0].isDuplicate)
+
+        val existingPrefixed = listOf(
+            Transaction("tx2", "w_cash", "m1", "c_rokok", -12000L, "Rokok: Surya", timestamp = parsedTimestamp)
+        )
+        val resultPrefixed = SmartCsvParser.parse(raw, sampleWallets, sampleCategories, existingPrefixed)
+        assertEquals(1, resultPrefixed.records.size)
+        assertTrue("Should detect duplicate with prefixed note", resultPrefixed.records[0].isDuplicate)
     }
 
     @Test

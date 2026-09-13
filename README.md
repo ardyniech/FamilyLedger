@@ -101,4 +101,4 @@ compile_applet
 
 This project is configured for seamless GitHub synchronization under the **FamilyLedger** repository name.
 - **Package Namespace:** `com.example`
-- **Application ID:** `com.aistudio.familyledger.app`
+- **Application ID:** `com.aistudio.familyledger.abcdxy`

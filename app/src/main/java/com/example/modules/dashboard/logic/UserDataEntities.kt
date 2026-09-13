@@ -32,7 +32,10 @@ object UserDataEntities {
             WalletAccount("w_dana", "m1", "E-Wallet", "Dana", 0L),
             WalletAccount("w_ovo", "m1", "E-Wallet", "OVO", 0L),
             WalletAccount("w_kasbon", "m1", "Vault", "Kasbon", 0L),
-            WalletAccount("w_deina", "m2", "Bank", "Deina", 0L, monthlyTransferCap = 3000000L)
+            WalletAccount("w_deina_dapur", "m2", "Cash", "Kas Dapur (Tunai / Amplop)", 0L, monthlyTransferCap = 3000000L),
+            WalletAccount("w_deina", "m2", "Bank", "BCA (Rekening Deina / Nafkah)", 0L, monthlyTransferCap = 5000000L),
+            WalletAccount("w_deina_spay", "m2", "E-Wallet", "ShopeePay / E-Wallet Belanja", 0L, monthlyTransferCap = 2000000L),
+            WalletAccount("w_deina_cadangan", "m2", "Vault", "Dana Cadangan & Tabungan Dapur", 0L)
         )
     }
 
@@ -42,6 +45,9 @@ object UserDataEntities {
             Category("c_maxim", "Maxim", "Income", groupId = "cg_op"),
             Category("c_grab", "Grab", "Income", groupId = "cg_op"),
             Category("c_offline", "Offline", "Income", groupId = "cg_op"),
+            Category("c_sayur_lauk", "Sayur Mayur & Lauk Pasar", "Expense", groupId = "cg_op"),
+            Category("c_sembako_beras", "Beras & Sembako Bulanan", "Expense", groupId = "cg_op"),
+            Category("c_gas_bumbu", "Gas Elpiji & Bumbu Dapur", "Expense", groupId = "cg_op"),
             Category("c_makan", "Makan", "Expense", groupId = "cg_rel"),
             Category("c_jajan", "Jajan", "Expense", groupId = "cg_rel"),
             Category("c_jajan_bareng", "Jajan Bareng (Kita)", "Expense", groupId = "cg_rel"),
@@ -55,6 +61,8 @@ object UserDataEntities {
             Category("c_maxim_saldo", "Maxim Saldo", "Expense", groupId = "cg_op"),
             Category("c_phone", "Phone / Pulsa", "Expense", groupId = "cg_per"),
             Category("c_skincare", "Skincare", "Expense", groupId = "cg_per"),
+            Category("c_anak_susu", "Susu & Keperluan Anak", "Expense", groupId = "cg_per"),
+            Category("c_kebersihan_rumah", "Kebersihan & Sabun Cuci", "Expense", groupId = "cg_op"),
             Category("c_save1", "Save#1 (Awal Pacaran)", "Expense", groupId = "cg_sav", isSavings = true),
             Category("c_save2", "Save#2 (Komitmen)", "Expense", groupId = "cg_sav", isSavings = true),
             Category("c_pandawa", "Pandawa (Akad)", "Expense", groupId = "cg_sav", isSavings = true),

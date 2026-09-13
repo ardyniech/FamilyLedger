@@ -20,7 +20,11 @@ object DashboardSyncHelper {
         }
     }
 
-    suspend fun initMockIfNeeded(repo: HouseholdRepository, pairCode: String) {
+    suspend fun initMockIfNeeded(repo: HouseholdRepository, pairCode: String, context: android.content.Context) {
+        val prefs = context.getSharedPreferences("family_ledger_prefs", android.content.Context.MODE_PRIVATE)
+        if (prefs.getBoolean("is_clean_state", false)) {
+            return
+        }
         val m = repo.members.firstOrNull()
         if (m.isNullOrEmpty() || m.none { it.name == "Ardy" }) {
             RealDataImporter.seedRealData(repo, pairCode)

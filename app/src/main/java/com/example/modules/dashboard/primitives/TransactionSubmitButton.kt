@@ -46,8 +46,8 @@ fun TransactionSubmitButton(
     val btnGradient = if (isLoading) {
         listOf(DesignTokens.BorderLight, DesignTokens.BorderLight)
     } else if (isValidAmount) {
-        if (isIncome) listOf(DesignTokens.EmeraldGlow, DesignTokens.CobaltDark)
-        else listOf(DesignTokens.CobaltDark, DesignTokens.CobaltAccent)
+        if (isIncome) listOf(DesignTokens.EmeraldGlow, DesignTokens.CobaltMedium)
+        else listOf(DesignTokens.CobaltMedium, DesignTokens.CobaltAccent)
     } else {
         listOf(DesignTokens.SurfaceElevated, DesignTokens.SurfaceCard)
     }

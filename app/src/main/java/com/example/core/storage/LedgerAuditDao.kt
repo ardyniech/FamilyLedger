@@ -43,5 +43,11 @@ interface LedgerAuditDao {
 
     @Query("UPDATE internal_transfers SET relationshipAcknowledgment = :ack WHERE id = :transferId")
     suspend fun updateTransferAcknowledgment(transferId: String, ack: String)
+
+    @Query("DELETE FROM ledger_events")
+    suspend fun clearLedgerEvents()
+
+    @Query("DELETE FROM internal_transfers")
+    suspend fun clearTransfers()
 }
 

@@ -27,33 +27,49 @@ fun PayBillDialog(
     onConfirm: (billId: String, walletId: String) -> Unit
 ) {
     var selectedWalletId by remember { mutableStateOf(wallets.firstOrNull()?.id ?: "") }
+    val selectedWallet = wallets.find { it.id == selectedWalletId }
+    val billAmount = targetBill?.amount ?: 0L
+    val isInsufficient = (selectedWallet?.balance ?: 0L) < billAmount
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Bayar Tagihan Rutin", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+        title = { Text("Bayar Tagihan Rutin", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DesignTokens.TextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Pilih dompet untuk mendebit ${formatter.format(targetBill?.amount ?: 0L)}:", fontSize = 12.sp, color = DesignTokens.TextSecondary)
+                Text(
+                    "Pilih dompet untuk mendebit ${formatter.format(billAmount)}:",
+                    fontSize = 12.sp,
+                    color = DesignTokens.TextSecondary
+                )
                 wallets.forEach { wallet ->
                     val isSelected = wallet.id == selectedWalletId
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.1f) else Color.Transparent)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.12f) else DesignTokens.SurfaceGlass)
                             .clickable { selectedWalletId = wallet.id }
-                            .padding(10.dp),
+                            .padding(12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(wallet.name, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 13.sp)
-                        Text(formatter.format(wallet.balance), fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                        Column {
+                            Text(wallet.name, fontWeight = FontWeight.Bold, color = if (isSelected) DesignTokens.CobaltAccent else DesignTokens.TextPrimary, fontSize = 13.sp)
+                            Text("Saldo: ${formatter.format(wallet.balance)}", fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                        }
+                        if (wallet.balance < billAmount) {
+                            Text("Saldo Kurang", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DesignTokens.RoseAccent)
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = { if (targetBill != null && selectedWalletId.isNotEmpty()) onConfirm(targetBill.id, selectedWalletId) }) {
-                Text("Konfirmasi Pembayaran", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
+            TextButton(
+                onClick = { if (targetBill != null && selectedWalletId.isNotEmpty() && !isInsufficient) onConfirm(targetBill.id, selectedWalletId) },
+                enabled = selectedWalletId.isNotEmpty() && !isInsufficient
+            ) {
+                Text("Konfirmasi Pembayaran", fontWeight = FontWeight.Bold, color = if (isInsufficient) DesignTokens.TextMuted else DesignTokens.CobaltAccent)
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) } }

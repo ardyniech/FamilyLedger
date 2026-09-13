@@ -1,8 +1,6 @@
 package com.example.modules.dashboard
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -12,11 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.modules.dashboard.primitives.*
+import com.example.shared.atoms.UniversalAmountDisplay
 import com.example.shared.models.*
 import com.example.shared.theme.DesignTokens
 import com.example.shared.utils.MathUtils
@@ -52,13 +50,6 @@ fun AddTransactionModal(
         }
     }
 
-    val parsedEval = remember(amount) { if (amount.isBlank()) null else MathUtils.evaluateMath(amount) }
-    val displayAmountText = remember(amount, parsedEval) {
-        if (amount.isEmpty()) "Rp 0"
-        else if (parsedEval != null && parsedEval.isFinite() && parsedEval > 0) MathUtils.formatRupiah(parsedEval.toLong())
-        else "Rp $amount"
-    }
-
     val onKeyPressHandler: (String) -> Unit = remember {
         { key ->
             when (key) {
@@ -88,11 +79,7 @@ fun AddTransactionModal(
                 Spacer(modifier = Modifier.height(4.dp))
                 CategorySelectorRow(categories = filteredCategories, selectedCategoryId = selectedCategoryId, isIncome = isIncome, onSelectCategory = { selectedCategoryId = it }, onOpenDrawer = { showCategoryDrawer = true })
                 Spacer(modifier = Modifier.height(6.dp))
-                AnimatedContent(
-                    targetState = displayAmountText,
-                    transitionSpec = { (fadeIn(animationSpec = tween(90)) + scaleIn(initialScale = 0.96f, animationSpec = tween(90))).togetherWith(fadeOut(animationSpec = tween(70))) },
-                    label = "AmountTypingAnimation"
-                ) { targetText -> Text(text = targetText, fontSize = 28.sp, color = if (isIncome) DesignTokens.EmeraldGlow else Color.Red, fontWeight = FontWeight.ExtraBold) }
+                UniversalAmountDisplay(rawAmount = amount, isIncome = isIncome, fontSize = 28.sp)
                 OutlinedTextField(
                     value = note, onValueChange = { note = it },
                     placeholder = { Text("Catatan / Untuk kebutuhan apa? (Opsional)", color = DesignTokens.TextSecondary, fontSize = 12.sp) },

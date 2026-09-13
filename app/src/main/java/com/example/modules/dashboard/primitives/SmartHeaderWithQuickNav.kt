@@ -32,6 +32,7 @@ fun SmartHeaderWithQuickNav(
     onOpenQuickNav: () -> Unit,
     onSyncBadgeClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onOpenRolePersonalize: () -> Unit = {},
     onOpenPersonalize: () -> Unit,
     onOpenAppReference: () -> Unit
 ) {
@@ -102,6 +103,10 @@ fun SmartHeaderWithQuickNav(
             }
         }
 
-        SmartHeaderActionSubBar(onOpenPersonalize = onOpenPersonalize, onOpenAppReference = onOpenAppReference)
+        SmartHeaderActionSubBar(
+            onOpenRolePersonalize = onOpenRolePersonalize,
+            onOpenPersonalize = onOpenPersonalize,
+            onOpenAppReference = onOpenAppReference
+        )
     }
 }

@@ -94,7 +94,20 @@ object SmartCsvParser {
         )
     }
 
+    private fun normalizeNote(note: String): String {
+        val clean = if (note.contains(": ")) {
+            note.substringAfter(": ")
+        } else {
+            note
+        }
+        return clean.replace(" (Transfer)", "")
+            .replace("Transfer ke ", "")
+            .replace("Transfer dari ", "")
+            .trim()
+            .lowercase()
+    }
+
     private fun generateSignature(ts: Long, amount: Long, wId: String, note: String): String {
-        return "${ts / 60000}_${amount}_${wId}_${note.trim().lowercase()}"
+        return "${ts / 60000}_${amount}_${wId}_${normalizeNote(note)}"
     }
 }

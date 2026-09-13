@@ -30,44 +30,45 @@ fun AddRecurringBillDialog(
 ) {
     var billName by remember { mutableStateOf("") }
     var billAmount by remember { mutableStateOf("") }
-    var billDueDate by remember { mutableStateOf("") }
+    var billDueDate by remember { mutableStateOf("10") }
     var selectedCategoryId by remember { mutableStateOf(categories.firstOrNull()?.id ?: "") }
-    var autoPay by remember { mutableStateOf(false) }
+    var autoPay by remember { mutableStateOf(true) }
     var targetWalletId by remember { mutableStateOf(wallets.firstOrNull()?.id ?: "") }
     var frequency by remember { mutableStateOf("Monthly") }
-    val frequencies = listOf("Monthly", "Weekly", "Daily", "One-Time")
+
+    val presets = listOf("Sewa Rumah" to 2500000L, "Netflix" to 186000L, "Internet Wifi" to 385000L, "Listrik PLN" to 450000L)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Jadwalkan Tagihan / Langganan", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+        title = { Text("Jadwal Pengeluaran Bulanan Rutin", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = billName, onValueChange = { billName = it }, label = { Text("Nama Tagihan / Layanan") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = billAmount, onValueChange = { billAmount = it.filter { c -> c.isDigit() } }, label = { Text("Nominal (Rp)") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = billDueDate, onValueChange = { billDueDate = it }, label = { Text("Jatuh Tempo (misal: 01 Setiap Bulan)") }, modifier = Modifier.fillMaxWidth())
-                Text("Frekuensi Tagihan", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    frequencies.forEach { freq ->
-                        val isSel = freq == frequency
-                        Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(6.dp)).background(if (isSel) DesignTokens.CobaltAccent else DesignTokens.BorderGlass.copy(alpha = 0.1f)).clickable { frequency = freq }.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
-                            Text(text = freq, color = if (isSel) Color.White else DesignTokens.TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("Template Cepat:", fontSize = 11.sp, color = DesignTokens.TextSecondary, fontWeight = FontWeight.Bold)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    presets.forEach { (name, amt) ->
+                        Box(modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(DesignTokens.BorderGlass.copy(alpha = 0.15f)).clickable { billName = name; billAmount = amt.toString() }.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Text(name, fontSize = 10.sp, color = DesignTokens.TextPrimary)
                         }
                     }
                 }
+                OutlinedTextField(value = billName, onValueChange = { billName = it }, label = { Text("Nama Pengeluaran (misal Sewa Rumah)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = billAmount, onValueChange = { billAmount = it.filter { c -> c.isDigit() } }, label = { Text("Nominal (Rp)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = billDueDate, onValueChange = { billDueDate = it }, label = { Text("Tanggal Jatuh Tempo (1-31 setiap bulan)") }, modifier = Modifier.fillMaxWidth())
+
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Auto-Debet Otomatis", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text("Catat transaksi otomatis saat jatuh tempo", fontSize = 10.sp, color = DesignTokens.TextSecondary)
+                        Text("Auto-Populate ke Buku Kas", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Otomatis catat pengeluaran saat jatuh tempo", fontSize = 10.sp, color = DesignTokens.TextSecondary)
                     }
                     Switch(checked = autoPay, onCheckedChange = { autoPay = it })
                 }
                 if (autoPay) {
-                    Text("Pilih Dompet Sumber", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
-                    wallets.forEach { wallet ->
+                    Text("Pilih Rekening / Dompet Sumber", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = DesignTokens.TextSecondary)
+                    wallets.take(3).forEach { wallet ->
                         val isSelected = wallet.id == targetWalletId
-                        Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.1f) else Color.Transparent).clickable { targetWalletId = wallet.id }.padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(if (isSelected) DesignTokens.CobaltAccent.copy(alpha = 0.15f) else Color.Transparent).clickable { targetWalletId = wallet.id }.padding(6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(wallet.name, fontWeight = FontWeight.Bold, color = DesignTokens.TextPrimary, fontSize = 12.sp)
-                            Text(formatter.format(wallet.balance), fontSize = 10.sp, color = DesignTokens.TextSecondary)
+                            Text(formatter.format(wallet.balance), fontSize = 11.sp, color = DesignTokens.TextSecondary)
                         }
                     }
                 }
@@ -76,11 +77,12 @@ fun AddRecurringBillDialog(
         confirmButton = {
             TextButton(onClick = {
                 val parsed = billAmount.toLongOrNull() ?: 0L
-                if (billName.isNotEmpty() && parsed > 0L && billDueDate.isNotEmpty()) {
-                    onAdd(billName, parsed, billDueDate, selectedCategoryId, autoPay, if (autoPay) targetWalletId else null, frequency)
+                val formattedDueDate = if (billDueDate.all { it.isDigit() }) "Tgl $billDueDate Setiap Bulan" else billDueDate
+                if (billName.isNotEmpty() && parsed > 0L) {
+                    onAdd(billName, parsed, formattedDueDate, selectedCategoryId, autoPay, if (autoPay) targetWalletId else null, frequency)
                 }
                 onDismiss()
-            }) { Text("Simpan Jadwal", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent) }
+            }) { Text("Simpan", fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = DesignTokens.TextSecondary) } }
     )
