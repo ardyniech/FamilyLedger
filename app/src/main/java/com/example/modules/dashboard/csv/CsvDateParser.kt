@@ -27,7 +27,7 @@ object CsvDateParser {
         "dd MMMM yyyy"
     )
 
-    private val locales = listOf(Locale.US, Locale("id", "ID"))
+    private val locales = listOf(Locale.US, Locale.forLanguageTag("id-ID"))
 
     fun parseTimestamp(dateStr: String): Long {
         val clean = dateStr.trim().removeSurrounding("\"").trim()

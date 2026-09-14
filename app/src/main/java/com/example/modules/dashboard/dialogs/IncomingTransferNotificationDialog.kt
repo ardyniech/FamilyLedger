@@ -28,7 +28,7 @@ fun IncomingTransferNotificationDialog(
     onConfirm: (notificationId: String, selectedEmoji: String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val fmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    val fmt = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID"))
     val emojiOptions = listOf("❤️", "😘", "🤲", "🙏", "🥰", "💸", "🎁", "💖")
     var selectedEmoji by remember { mutableStateOf("❤️") }
 

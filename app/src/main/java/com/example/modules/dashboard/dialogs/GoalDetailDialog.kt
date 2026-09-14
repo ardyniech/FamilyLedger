@@ -31,7 +31,7 @@ fun GoalDetailDialog(
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val currencyFmt = remember { NumberFormat.getCurrencyInstance(Locale("id", "ID")) }
+    val currencyFmt = remember { NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")) }
     val progress = remember(goal, transactions) { GoalProgressCalculator.calculate(goal, transactions) }
     var depositAmount by remember { mutableStateOf("") }
     var showDepositInput by remember { mutableStateOf(false) }

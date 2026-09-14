@@ -51,6 +51,11 @@
 # Keep EncryptedSharedPreferences
 -keep class androidx.security.crypto.** { *; }
 
+# SQLCipher
+-keep class net.sqlcipher.** { *; }
+-keep class net.sqlcipher.database.** { *; }
+-dontwarn net.sqlcipher.**
+
 # Keep Compose classes
 -dontwarn androidx.compose.**
 

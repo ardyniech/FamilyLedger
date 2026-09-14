@@ -23,8 +23,8 @@ import java.util.Locale
 
 @Composable
 fun CsvPreviewItemRow(item: ParsedTransaction) {
-    val currencyFmt = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
-    val dateFmt = SimpleDateFormat("dd MMM yyyy HH:mm", Locale("id", "ID"))
+    val currencyFmt = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply { maximumFractionDigits = 0 }
+    val dateFmt = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.forLanguageTag("id-ID"))
     val typeColor = when (item.rawType) {
         "Income" -> DesignTokens.EmeraldGlow
         "Transfer" -> DesignTokens.CobaltAccent

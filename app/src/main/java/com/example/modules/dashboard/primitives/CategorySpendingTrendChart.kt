@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,8 +34,8 @@ fun CategorySpendingTrendChart(
     categories: List<Category>,
     modifier: Modifier = Modifier
 ) {
-    val currencyFmt = remember { NumberFormat.getCurrencyInstance(Locale("id", "ID")) }
-    val monthFmt = remember { SimpleDateFormat("MMM yyyy", Locale("id", "ID")) }
+    val currencyFmt = remember { NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")) }
+    val monthFmt = remember { SimpleDateFormat("MMM yyyy", Locale.forLanguageTag("id-ID")) }
     val expenseCategories = remember(categories) { categories.filter { it.type == "Expense" } }
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
     var isBarChart by remember { mutableStateOf(false) }
@@ -71,7 +71,7 @@ fun CategorySpendingTrendChart(
                     Text("Visualisasi Interaktif (Tekan & Geser Grafik)", fontSize = 11.sp, color = DesignTokens.TextSecondary)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { isBarChart = false }, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.ShowChart, "Line", tint = if (!isBarChart) DesignTokens.CobaltAccent else DesignTokens.TextSecondary, modifier = Modifier.size(20.dp)) }
+                    IconButton(onClick = { isBarChart = false }, modifier = Modifier.size(32.dp)) { Icon(Icons.AutoMirrored.Filled.ShowChart, "Line", tint = if (!isBarChart) DesignTokens.CobaltAccent else DesignTokens.TextSecondary, modifier = Modifier.size(20.dp)) }
                     IconButton(onClick = { isBarChart = true }, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.BarChart, "Bar", tint = if (isBarChart) DesignTokens.CobaltAccent else DesignTokens.TextSecondary, modifier = Modifier.size(20.dp)) }
                 }
             }

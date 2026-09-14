@@ -64,7 +64,7 @@ fun EarlyPayoffInputCard(
                 )
             }
 
-            Divider(color = DesignTokens.BorderGlass, thickness = 1.dp)
+            HorizontalDivider(color = DesignTokens.BorderGlass, thickness = 1.dp)
 
             Text("Opsi Pembayaran Ekstra", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DesignTokens.CobaltAccent)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

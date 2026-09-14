@@ -33,13 +33,20 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+                val builder = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "household_database"
-                )
-                .addMigrations(*DatabaseMigrations.ALL_MIGRATIONS)
-                .build()
+                ).addMigrations(*DatabaseMigrations.ALL_MIGRATIONS)
+
+                if (!DatabasePassphraseHelper.isRobolectricOrTest()) {
+                    val passphrase = DatabasePassphraseHelper.getOrCreatePassphrase(context.applicationContext)
+                    DatabasePassphraseHelper.prepareDatabase(context.applicationContext, "household_database", passphrase)
+                    val factory = net.sqlcipher.database.SupportFactory(passphrase)
+                    builder.openHelperFactory(factory)
+                }
+
+                val instance = builder.build()
                 INSTANCE = instance
                 instance
             }

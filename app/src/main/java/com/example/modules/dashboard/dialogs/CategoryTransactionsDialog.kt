@@ -30,7 +30,7 @@ fun CategoryTransactionsDialog(
     onTransactionClick: (Transaction) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val fmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    val fmt = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID"))
     val catTxs = transactions.filter { it.categoryId == category.id }.sortedByDescending { it.timestamp }
     val totalAmount = catTxs.sumOf { if (it.amount < 0) -it.amount else it.amount }
 

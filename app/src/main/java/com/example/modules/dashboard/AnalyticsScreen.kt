@@ -34,7 +34,7 @@ fun AnalyticsScreen(
     onTransactionClick: (Transaction) -> Unit = {},
     onBack: () -> Unit
 ) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID"))
     var selectedCategoryForDetail by remember { mutableStateOf<Category?>(null) }
     var selectedMemberForDetail by remember { mutableStateOf<Member?>(null) }
     val memberExpenses = remember(transactions, members, categories) {

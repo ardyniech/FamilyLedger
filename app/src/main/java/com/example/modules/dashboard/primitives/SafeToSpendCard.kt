@@ -32,7 +32,7 @@ fun SafeToSpendCard(
     report: SafeToSpendReport,
     onClickDetails: () -> Unit
 ) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply { maximumFractionDigits = 0 }
+    val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply { maximumFractionDigits = 0 }
     val progressAnim by animateFloatAsState(targetValue = report.dailyBurnRatio.coerceIn(0f, 1f), label = "burn_progress")
 
     val statusColor = when (report.burnStatus) {

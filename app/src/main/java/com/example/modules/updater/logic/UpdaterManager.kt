@@ -30,7 +30,11 @@ class UpdaterManager(
                 val latest = GithubUpdateService.fetchLatestRelease(owner, repo)
                 if (latest != null && SemVerComparator.isNewer(latest.tagName, currentVersionName)) {
                     currentReleaseInfo = latest
-                    _status.value = UpdateStatus.UpdateAvailable(latest)
+                    if (latest.isMandatory) {
+                        _status.value = UpdateStatus.MandatoryUpdate(latest)
+                    } else {
+                        _status.value = UpdateStatus.UpdateAvailable(latest)
+                    }
                 } else {
                     _status.value = UpdateStatus.UpToDate
                 }
@@ -74,6 +78,8 @@ class UpdaterManager(
         }
         PackageInstallerManager.triggerInstallation(context, apkFile)
     }
+
+    fun isApkDownloaded(): Boolean = downloadedApkFile?.exists() == true
 
     fun resetToIdle() {
         _status.value = UpdateStatus.Idle

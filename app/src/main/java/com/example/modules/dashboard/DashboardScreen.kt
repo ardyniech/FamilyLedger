@@ -55,7 +55,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
     var transferNotifForDialog by remember { mutableStateOf<com.example.shared.models.TransferNotification?>(null) }
     var showAddCategoryGroupDialog by remember { mutableStateOf(false) }
     var showEditMemberDialog by remember { mutableStateOf<com.example.shared.models.Member?>(null) }
-    val updaterManager = remember { com.example.modules.updater.logic.UpdaterManager("ardyniech", "FamilyLedger", "1.0") }
+    val updaterManager = remember { com.example.modules.updater.logic.UpdaterManager("ardyniech", "FamilyLedger", com.example.BuildConfig.VERSION_NAME) }
     val updaterStatus by updaterManager.status.collectAsState()
     var showUpdateModal by remember { mutableStateOf(false) }
 

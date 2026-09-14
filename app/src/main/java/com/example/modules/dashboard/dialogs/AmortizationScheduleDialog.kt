@@ -24,7 +24,7 @@ fun AmortizationScheduleDialog(
     schedule: List<AmortizationScheduleRow>,
     onDismiss: () -> Unit
 ) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply { maximumFractionDigits = 0 }
+    val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply { maximumFractionDigits = 0 }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(

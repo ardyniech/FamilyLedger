@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -101,7 +101,7 @@ fun FinancialCriticismActionCard(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ActionBtn(label = "Analitik", icon = Icons.Default.Analytics, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
                 ActionBtn(label = "Target", icon = Icons.Default.Savings, onClick = onGoalsClick, modifier = Modifier.weight(1f))
-                ActionBtn(label = "Riwayat", icon = Icons.Default.ReceiptLong, onClick = onViewAllExpensesClick, modifier = Modifier.weight(1f))
+                ActionBtn(label = "Riwayat", icon = Icons.AutoMirrored.Filled.ReceiptLong, onClick = onViewAllExpensesClick, modifier = Modifier.weight(1f))
             }
         }
     }

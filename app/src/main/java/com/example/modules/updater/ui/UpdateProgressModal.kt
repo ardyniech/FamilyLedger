@@ -86,13 +86,20 @@ fun UpdateProgressModal(updaterManager: UpdaterManager, onDismiss: () -> Unit) {
                         Text(info.body.ifEmpty { "Pembaruan keamanan ini wajib dipasang untuk menjaga keamanan data Anda." }, fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         Text("Pembaruan ini tidak dapat ditunda.", fontSize = 12.sp, color = DesignTokens.RoseAccent, fontWeight = FontWeight.Medium)
                         Button(
-                            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); updaterManager.installUpdate(context) },
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                if (updaterManager.isApkDownloaded()) {
+                                    updaterManager.installUpdate(context)
+                                } else {
+                                    updaterManager.startDownload(context, scope)
+                                }
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.RoseAccent)
-                        ) { Text("Pasang Sekarang (Wajib)") }
+                        ) { Text(if (updaterManager.isApkDownloaded()) "Pasang Sekarang (Wajib)" else "Unduh & Pasang Sekarang (Wajib)") }
                     }
                     is UpdateStatus.UpToDate -> {
                         Text("Aplikasi Sudah Terbaru", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DesignTokens.EmeraldGlow)
-                        Text("FamilyLedger sudah versi terbaru (v1.0).", fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Text("FamilyLedger sudah versi terbaru (v${com.example.BuildConfig.VERSION_NAME}).", fontSize = 12.sp, color = DesignTokens.TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         Button(onClick = { updaterManager.resetToIdle(); onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = DesignTokens.CobaltAccent)) { Text("Selesai") }
                     }
                     is UpdateStatus.Failed -> {

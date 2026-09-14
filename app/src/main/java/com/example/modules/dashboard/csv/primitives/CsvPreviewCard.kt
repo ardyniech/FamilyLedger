@@ -21,7 +21,7 @@ import java.util.Locale
 
 @Composable
 fun CsvPreviewCard(result: CsvParseResult) {
-    val currencyFmt = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
+    val currencyFmt = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply { maximumFractionDigits = 0 }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

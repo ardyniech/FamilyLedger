@@ -9,6 +9,20 @@ object MathUtils {
         return "Rp ${formatter.format(amount)}"
     }
 
+    fun safePercentage(numerator: Long, denominator: Long): Float {
+        if (denominator <= 0L) return 0f
+        val ratio = numerator.toFloat() / denominator.toFloat()
+        if (ratio.isNaN() || ratio.isInfinite()) return 0f
+        return ratio.coerceIn(0f, 1f)
+    }
+
+    fun safeRatio(numerator: Long, denominator: Long): Float {
+        if (denominator <= 0L) return 0f
+        val ratio = numerator.toFloat() / denominator.toFloat()
+        if (ratio.isNaN() || ratio.isInfinite()) return 0f
+        return ratio
+    }
+
     fun evaluateMath(str: String): Double? {
         return try {
             object : Any() {

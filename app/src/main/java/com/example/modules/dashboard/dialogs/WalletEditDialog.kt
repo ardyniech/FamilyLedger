@@ -29,8 +29,8 @@ fun WalletEditDialog(
     var name by remember { mutableStateOf(wallet?.name ?: "") }
     var type by remember { mutableStateOf(wallet?.type ?: "E-Wallet") }
     var memberId by remember { mutableStateOf(wallet?.memberId ?: members.firstOrNull()?.id ?: "") }
-    var balanceStr by remember { mutableStateOf(if (isEdit) wallet?.balance?.toLong().toString() else "") }
-    var capStr by remember { mutableStateOf(if (isEdit && wallet != null && wallet.monthlyTransferCap > 0L) wallet.monthlyTransferCap.toString() else "") }
+    var balanceStr by remember { mutableStateOf(if (wallet != null) wallet.balance.toLong().toString() else "") }
+    var capStr by remember { mutableStateOf(if (wallet != null && wallet.monthlyTransferCap > 0L) wallet.monthlyTransferCap.toString() else "") }
 
     AlertDialog(
         onDismissRequest = onDismiss,

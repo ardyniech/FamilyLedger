@@ -113,11 +113,12 @@ dependencies {
   // implementation(libs.googleid)
   // implementation(libs.firebase.appcheck.recaptcha)
   implementation(libs.androidx.security.crypto) // EncryptedSharedPreferences
+  implementation("net.zetetic:android-database-sqlcipher:4.5.4")
   implementation("com.google.dagger:hilt-android:2.51.1")
   implementation(libs.androidx.work.runtime.ktx)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.logging.interceptor)
+  debugImplementation(libs.logging.interceptor)
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
