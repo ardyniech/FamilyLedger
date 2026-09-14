@@ -22,32 +22,35 @@ class SyncEngine(
     private var currentPairCode: String = ""
     private var syncJob: Job? = null
 
+    fun getAuthenticatedUserId(): String? {
+        return try {
+            val authClass = Class.forName("com.google.firebase.auth.FirebaseAuth")
+            val authInstance = authClass.getMethod("getInstance").invoke(null)
+            val currentUser = authClass.getMethod("getCurrentUser").invoke(authInstance)
+            currentUser?.javaClass?.getMethod("getUid")?.invoke(currentUser) as? String
+        } catch (_: Throwable) { null }
+    }
+
     fun startBackgroundSync(scope: CoroutineScope, initialPairCode: String = "") {
-        currentPairCode = initialPairCode
+        currentPairCode = initialPairCode.trim().uppercase()
         syncJob?.cancel()
         syncJob = scope.launch(Dispatchers.IO) {
+            val authUid = getAuthenticatedUserId()
+            if (authUid == null && currentPairCode.isBlank()) {
+                _syncState.value = SyncState.OFFLINE
+            }
             refreshPendingStatus()
         }
     }
 
     fun updateHouseholdPairCode(scope: CoroutineScope, newPairCode: String) {
         currentPairCode = newPairCode.trim().uppercase()
-        scope.launch(Dispatchers.IO) {
-            refreshPendingStatus()
-        }
+        scope.launch(Dispatchers.IO) { refreshPendingStatus() }
     }
 
-    fun setSyncing() {
-        _syncState.value = SyncState.SYNCING
-    }
-
-    fun setOffline() {
-        _syncState.value = SyncState.OFFLINE
-    }
-
-    fun setError() {
-        _syncState.value = SyncState.ERROR
-    }
+    fun setSyncing() { _syncState.value = SyncState.SYNCING }
+    fun setOffline() { _syncState.value = SyncState.OFFLINE }
+    fun setError() { _syncState.value = SyncState.ERROR }
 
     suspend fun refreshPendingStatus() = withContext(Dispatchers.IO) {
         val pendingTxs = dao.getPendingTransactions()
@@ -59,53 +62,23 @@ class SyncEngine(
 
         val totalPending = pendingTxs.size + pendingWallets.size + pendingCats.size + pendingMembers.size + pendingLedgers.size + pendingGroups.size
         _pendingCount.value = totalPending
-
-        if (totalPending > 0) {
-            _syncState.value = SyncState.LOCAL_PENDING
-        } else {
-            _syncState.value = SyncState.IDLE
-        }
+        _syncState.value = if (totalPending > 0) SyncState.LOCAL_PENDING else SyncState.IDLE
     }
 
     suspend fun markSynchronizedAfterHandshake() = withContext(Dispatchers.IO) {
-        val pendingTxs = dao.getPendingTransactions()
-        if (pendingTxs.isNotEmpty()) {
-            pendingTxs.map { it.id }.chunked(500).forEach { dao.markTransactionsSynced(it) }
-        }
-
-        val pendingWallets = dao.getPendingWallets()
-        if (pendingWallets.isNotEmpty()) {
-            pendingWallets.map { it.id }.chunked(500).forEach { dao.markWalletsSynced(it) }
-        }
-
-        val pendingCats = dao.getPendingCategories()
-        if (pendingCats.isNotEmpty()) {
-            pendingCats.map { it.id }.chunked(500).forEach { dao.markCategoriesSynced(it) }
-        }
-
-        val pendingMembers = dao.getPendingMembers()
-        if (pendingMembers.isNotEmpty()) {
-            pendingMembers.map { it.id }.chunked(500).forEach { dao.markMembersSynced(it) }
-        }
-
-        val pendingLedgers = auditDao.getPendingLedgerEvents()
-        if (pendingLedgers.isNotEmpty()) {
-            pendingLedgers.map { it.eventId }.chunked(500).forEach { auditDao.markLedgerEventsSynced(it) }
-        }
-
-        val pendingGroups = categoryGroupDao?.getPendingCategoryGroups() ?: emptyList()
-        if (pendingGroups.isNotEmpty()) {
-            pendingGroups.map { it.id }.chunked(500).forEach { categoryGroupDao?.markCategoryGroupsSynced(it) }
-        }
+        dao.getPendingTransactions().takeIf { it.isNotEmpty() }?.let { dao.markTransactionsSynced(it.map { tx -> tx.id }) }
+        dao.getPendingWallets().takeIf { it.isNotEmpty() }?.let { dao.markWalletsSynced(it.map { w -> w.id }) }
+        dao.getPendingCategories().takeIf { it.isNotEmpty() }?.let { dao.markCategoriesSynced(it.map { c -> c.id }) }
+        dao.getPendingMembers().takeIf { it.isNotEmpty() }?.let { dao.markMembersSynced(it.map { m -> m.id }) }
+        auditDao.getPendingLedgerEvents().takeIf { it.isNotEmpty() }?.let { auditDao.markLedgerEventsSynced(it.map { l -> l.eventId }) }
+        categoryGroupDao?.getPendingCategoryGroups()?.takeIf { it.isNotEmpty() }?.let { categoryGroupDao.markCategoryGroupsSynced(it.map { g -> g.id }) }
 
         _pendingCount.value = 0
         _syncState.value = SyncState.SYNCED
     }
 
     fun forceSyncNow(scope: CoroutineScope) {
-        scope.launch(Dispatchers.IO) {
-            refreshPendingStatus()
-        }
+        scope.launch(Dispatchers.IO) { refreshPendingStatus() }
     }
 }
 

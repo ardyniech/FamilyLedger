@@ -9,37 +9,29 @@ import kotlinx.coroutines.flow.Flow
 interface HouseholdDao {
     @Query("SELECT * FROM members WHERE isDeleted = 0")
     fun getAllMembers(): Flow<List<Member>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMember(member: Member)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMembers(members: List<Member>)
 
     @Query("SELECT * FROM wallet_accounts WHERE isDeleted = 0")
     fun getAllWallets(): Flow<List<WalletAccount>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWallet(wallet: WalletAccount)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWallets(wallets: List<WalletAccount>)
 
     @Query("SELECT * FROM categories WHERE isDeleted = 0")
     fun getAllCategories(): Flow<List<Category>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategories(categories: List<Category>)
 
     @Query("SELECT * FROM transactions WHERE isDeleted = 0 ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: Transaction)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransactions(transactions: List<Transaction>)
 
@@ -87,19 +79,31 @@ interface HouseholdDao {
     @Query("SELECT * FROM transactions WHERE syncStatus = 0")
     suspend fun getPendingTransactions(): List<Transaction>
     @Query("UPDATE transactions SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markTransactionsSynced(ids: List<String>)
+    suspend fun markTransactionsSyncedChunk(ids: List<String>)
+    @DbTransaction
+    suspend fun markTransactionsSynced(ids: List<String>) { ids.chunked(500).forEach { markTransactionsSyncedChunk(it) } }
+
     @Query("SELECT * FROM categories WHERE syncStatus = 0")
     suspend fun getPendingCategories(): List<Category>
     @Query("UPDATE categories SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markCategoriesSynced(ids: List<String>)
+    suspend fun markCategoriesSyncedChunk(ids: List<String>)
+    @DbTransaction
+    suspend fun markCategoriesSynced(ids: List<String>) { ids.chunked(500).forEach { markCategoriesSyncedChunk(it) } }
+
     @Query("SELECT * FROM wallet_accounts WHERE syncStatus = 0")
     suspend fun getPendingWallets(): List<WalletAccount>
     @Query("UPDATE wallet_accounts SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markWalletsSynced(ids: List<String>)
+    suspend fun markWalletsSyncedChunk(ids: List<String>)
+    @DbTransaction
+    suspend fun markWalletsSynced(ids: List<String>) { ids.chunked(500).forEach { markWalletsSyncedChunk(it) } }
+
     @Query("SELECT * FROM members WHERE syncStatus = 0")
     suspend fun getPendingMembers(): List<Member>
     @Query("UPDATE members SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markMembersSynced(ids: List<String>)
+    suspend fun markMembersSyncedChunk(ids: List<String>)
+    @DbTransaction
+    suspend fun markMembersSynced(ids: List<String>) { ids.chunked(500).forEach { markMembersSyncedChunk(it) } }
+
     @Query("DELETE FROM transactions")
     suspend fun clearTransactions()
     @Query("DELETE FROM wallet_accounts")

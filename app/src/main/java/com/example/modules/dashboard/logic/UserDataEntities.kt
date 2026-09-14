@@ -6,8 +6,8 @@ import com.example.shared.models.Member
 import com.example.shared.models.WalletAccount
 
 object UserDataEntities {
-    fun getMembers(pairCode: String = "FAM-8821"): List<Member> {
-        val hId = pairCode
+    fun getMembers(pairCode: String = ""): List<Member> {
+        val hId = pairCode.ifBlank { "FAM-LOCAL" }
         return listOf(
             Member("m1", hId, "Suami", "Ardy", avatarUrl = ""),
             Member("m2", hId, "Istri", "Deina", avatarUrl = "")

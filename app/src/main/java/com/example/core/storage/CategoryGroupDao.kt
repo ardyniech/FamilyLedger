@@ -28,7 +28,12 @@ interface CategoryGroupDao {
     suspend fun getPendingCategoryGroups(): List<CategoryGroup>
 
     @Query("UPDATE category_groups SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markCategoryGroupsSynced(ids: List<String>)
+    suspend fun markCategoryGroupsSyncedChunk(ids: List<String>)
+
+    @androidx.room.Transaction
+    suspend fun markCategoryGroupsSynced(ids: List<String>) {
+        ids.chunked(500).forEach { markCategoryGroupsSyncedChunk(it) }
+    }
 
     @Query("DELETE FROM category_groups")
     suspend fun clearCategoryGroups()

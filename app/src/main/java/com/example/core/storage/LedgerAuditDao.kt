@@ -30,7 +30,12 @@ interface LedgerAuditDao {
     suspend fun getPendingLedgerEvents(): List<LedgerEventEntity>
 
     @Query("UPDATE ledger_events SET syncStatus = 1 WHERE eventId IN (:ids)")
-    suspend fun markLedgerEventsSynced(ids: List<String>)
+    suspend fun markLedgerEventsSyncedChunk(ids: List<String>)
+
+    @androidx.room.Transaction
+    suspend fun markLedgerEventsSynced(ids: List<String>) {
+        ids.chunked(500).forEach { markLedgerEventsSyncedChunk(it) }
+    }
 
     @Query("SELECT * FROM internal_transfers ORDER BY timestamp DESC")
     fun getAllTransfers(): Flow<List<TransferEventEntity>>

@@ -159,6 +159,7 @@ class FamilyLedgerFeaturesTest {
             override suspend fun insertLedgerEvent(event: LedgerEventEntity) { synchronized(storedEvents) { storedEvents.add(event) } }
             override suspend fun insertLedgerEvents(events: List<LedgerEventEntity>) { synchronized(storedEvents) { storedEvents.addAll(events) } }
             override suspend fun getPendingLedgerEvents(): List<LedgerEventEntity> = emptyList()
+            override suspend fun markLedgerEventsSyncedChunk(ids: List<String>) {}
             override suspend fun markLedgerEventsSynced(ids: List<String>) {}
             override fun getAllTransfers(): kotlinx.coroutines.flow.Flow<List<TransferEventEntity>> = kotlinx.coroutines.flow.flowOf(emptyList())
             override suspend fun insertTransfer(transfer: TransferEventEntity) {}

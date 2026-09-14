@@ -49,5 +49,10 @@ interface HouseholdExpenseDao {
     suspend fun getPendingExpenses(): List<HouseholdExpense>
 
     @Query("UPDATE household_expenses SET syncStatus = 1 WHERE id IN (:ids)")
-    suspend fun markExpensesSynced(ids: List<String>)
+    suspend fun markExpensesSyncedChunk(ids: List<String>)
+
+    @androidx.room.Transaction
+    suspend fun markExpensesSynced(ids: List<String>) {
+        ids.chunked(500).forEach { markExpensesSyncedChunk(it) }
+    }
 }

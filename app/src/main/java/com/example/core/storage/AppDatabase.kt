@@ -19,7 +19,7 @@ import com.example.shared.models.*
         HouseholdExpense::class
     ],
     version = 8,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun householdDao(): HouseholdDao

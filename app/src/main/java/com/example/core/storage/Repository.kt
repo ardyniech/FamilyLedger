@@ -34,16 +34,16 @@ class HouseholdRepository(
     suspend fun deleteCategoryGroup(id: String) { categoryGroupDao.deleteCategoryGroup(id); syncEngine.refreshPendingStatus() }
     suspend fun deleteCategoryGroup(group: CategoryGroup) { categoryGroupDao.deleteCategoryGroup(group.id); syncEngine.refreshPendingStatus() }
     
-    suspend fun addTransaction(transaction: Transaction, householdId: String = "FAM-DEFAULT", actorId: String = "") {
+    suspend fun addTransaction(transaction: Transaction, householdId: String = "", actorId: String = "") {
         auditWriter.addTransaction(transaction, householdId, actorId); syncEngine.refreshPendingStatus()
     }
-    suspend fun deleteTransaction(transaction: Transaction, householdId: String = "FAM-DEFAULT", actorId: String = "", reason: String = "User Voided") {
+    suspend fun deleteTransaction(transaction: Transaction, householdId: String = "", actorId: String = "", reason: String = "User Voided") {
         auditWriter.deleteTransaction(transaction, householdId, actorId, reason); syncEngine.refreshPendingStatus()
     }
-    suspend fun updateTransaction(oldTx: Transaction, newTx: Transaction, householdId: String = "FAM-DEFAULT", actorId: String = "") {
+    suspend fun updateTransaction(oldTx: Transaction, newTx: Transaction, householdId: String = "", actorId: String = "") {
         auditWriter.updateTransaction(oldTx, newTx, householdId, actorId); syncEngine.refreshPendingStatus()
     }
-    suspend fun executeTransfer(debitTx: Transaction, creditTx: Transaction, transferEvent: TransferEventEntity, householdId: String = "FAM-DEFAULT") {
+    suspend fun executeTransfer(debitTx: Transaction, creditTx: Transaction, transferEvent: TransferEventEntity, householdId: String = "") {
         auditWriter.executeTransfer(debitTx, creditTx, transferEvent, householdId); syncEngine.refreshPendingStatus()
     }
 
