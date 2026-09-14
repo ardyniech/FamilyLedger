@@ -27,6 +27,7 @@ object RealDataImporter {
         }
 
         // 4. Batch insert all real records into Room Database
+        repository.insertHousehold(com.example.shared.models.Household(id = effectivePairCode, pairCode = effectivePairCode))
         repository.insertMembers(members)
         repository.insertCategoryGroups(categoryGroups)
         repository.insertCategories(categories)

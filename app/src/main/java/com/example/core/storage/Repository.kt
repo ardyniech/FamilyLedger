@@ -59,6 +59,7 @@ class HouseholdRepository(
         expenseDao?.clearAllExpenses()
     }
     suspend fun resetAllDataForTestingOrImport() = clearAllData()
+    suspend fun insertHousehold(household: Household) = dao.insertHousehold(household)
     suspend fun insertMembers(members: List<Member>) = dao.insertMembers(members)
     suspend fun insertWallets(wallets: List<WalletAccount>) = dao.insertWallets(wallets)
     suspend fun insertCategories(categories: List<Category>) = dao.insertCategories(categories)

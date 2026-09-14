@@ -37,12 +37,19 @@ class P2POfflineSyncManager(
     suspend fun startLocalWifiHost(port: Int = 8888, pairCode: String, senderName: String, senderRole: String, onClientSynced: (P2PImportResult) -> Unit) = withContext(Dispatchers.IO) {
         if (isServerRunning.get()) return@withContext
         try {
-            serverSocket = ServerSocket(port).apply { reuseAddress = true }
+            serverSocket = ServerSocket(port).apply {
+                reuseAddress = true
+                soTimeout = 15000
+            }
             isServerRunning.set(true)
             while (isServerRunning.get()) {
-                val clientSocket = serverSocket?.accept() ?: break
-                clientSocket.soTimeout = 10000
-                Thread { handleIncomingClient(clientSocket, pairCode, senderName, senderRole, onClientSynced) }.start()
+                try {
+                    val clientSocket = serverSocket?.accept() ?: break
+                    clientSocket.soTimeout = 10000
+                    Thread { handleIncomingClient(clientSocket, pairCode, senderName, senderRole, onClientSynced) }.start()
+                } catch (_: java.net.SocketTimeoutException) {
+                    // Timeout allows periodic check of isServerRunning flag
+                }
             }
         } catch (e: Exception) {
             Log.e("P2PSync", "[Module:P2POfflineSync] Host error: ${e.message}")

@@ -24,10 +24,7 @@ class SyncEngine(
 
     fun getAuthenticatedUserId(): String? {
         return try {
-            val authClass = Class.forName("com.google.firebase.auth.FirebaseAuth")
-            val authInstance = authClass.getMethod("getInstance").invoke(null)
-            val currentUser = authClass.getMethod("getCurrentUser").invoke(authInstance)
-            currentUser?.javaClass?.getMethod("getUid")?.invoke(currentUser) as? String
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
         } catch (_: Throwable) { null }
     }
 

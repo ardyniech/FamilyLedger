@@ -1,0 +1,45 @@
+name: 🐛 Bug Report
+description: Laporkan bug, galat, atau anomali pada aplikasi FamilyLedger
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah meluangkan waktu untuk melaporkan bug!
+  - type: input
+    id: version
+    attributes:
+      label: Versi Aplikasi
+      description: Versi aplikasi atau commit SHA yang mengalami masalah.
+      placeholder: e.g. 1.1 (Build 2)
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Perangkat & Versi OS Android
+      description: Model smartphone dan versi Android yang digunakan.
+      placeholder: e.g. Samsung Galaxy S23 (Android 14) / Pixel 8 (Android 15)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Deskripsi Masalah
+      description: Jelaskan secara ringkas apa yang terjadi.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah Reproduksi
+      description: 1. Masuk ke halaman ...\n2. Tekan tombol ...\n3. Terjadi crash/data tidak tersimpan
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logcat / Stack Trace (Opsional)
+      description: Lampirkan cuplikan logcat jika relevan (pastikan tidak memuat data pribadi/PIN).
+      render: shell

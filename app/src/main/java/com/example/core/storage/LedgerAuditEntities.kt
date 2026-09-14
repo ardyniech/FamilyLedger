@@ -1,10 +1,20 @@
 package com.example.core.storage
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.security.MessageDigest
 
-@Entity(tableName = "ledger_events")
+@Entity(
+    tableName = "ledger_events",
+    indices = [
+        Index(value = ["householdId"]),
+        Index(value = ["entityId"]),
+        Index(value = ["actorId"]),
+        Index(value = ["syncStatus"]),
+        Index(value = ["createdAt"])
+    ]
+)
 data class LedgerEvent(
     @PrimaryKey val eventId: String,
     val householdId: String,
@@ -48,7 +58,15 @@ data class LedgerEvent(
 
 typealias LedgerEventEntity = LedgerEvent
 
-@Entity(tableName = "internal_transfers")
+@Entity(
+    tableName = "internal_transfers",
+    indices = [
+        Index(value = ["sourceWalletId"]),
+        Index(value = ["destinationWalletId"]),
+        Index(value = ["syncStatus"]),
+        Index(value = ["timestamp"])
+    ]
+)
 data class TransferEventEntity(
     @PrimaryKey val id: String,
     val sourceWalletId: String,
@@ -61,4 +79,3 @@ data class TransferEventEntity(
     val relationshipAcknowledgment: String = "❤️",
     val syncStatus: Int = 0
 )
-

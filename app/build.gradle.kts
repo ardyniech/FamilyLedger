@@ -21,6 +21,8 @@ android {
     versionName = "1.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    buildConfigField("String", "FIREBASE_PROJECT_ID", "\"familyledger-9c452\"")
+    buildConfigField("String", "FIREBASE_STORAGE_BUCKET", "\"familyledger-9c452.firebasestorage.app\"")
   }
 
   signingConfigs {
@@ -59,7 +61,7 @@ android {
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
   dependenciesInfo {
-    includeInApk = false
+    includeInApk = true
     includeInBundle = true
   }
 }
@@ -106,15 +108,11 @@ dependencies {
   // implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
   // implementation(libs.firebase.ai)
-  // Uncomment to use Firestore:
-  // implementation(libs.firebase.firestore)
-
-  // Uncomment ALL FOUR of the following dependencies together to use Firebase Auth and Google
-  // Sign-In via Credential Manager:
-  // implementation(libs.firebase.auth)
-  // implementation(libs.androidx.credentials)
-  // implementation(libs.androidx.credentials.play.services)
-  // implementation(libs.googleid)
+  implementation(libs.firebase.firestore)
+  implementation(libs.firebase.auth)
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services)
+  implementation(libs.googleid)
   // implementation(libs.firebase.appcheck.recaptcha)
   implementation(libs.androidx.security.crypto) // EncryptedSharedPreferences
   implementation("net.zetetic:android-database-sqlcipher:4.5.4")

@@ -1,0 +1,13 @@
+# Global owners
+* @ardysyafii
+
+# Core architecture & security
+/app/src/main/java/com/example/core/ @ardysyafii
+/app/src/main/java/com/example/shared/ @ardysyafii
+/firestore.rules @ardysyafii
+
+# CI/CD Workflows
+/.github/ @ardysyafii
+/gradle/ @ardysyafii
+/build.gradle.kts @ardysyafii
+/settings.gradle.kts @ardysyafii

@@ -25,10 +25,10 @@ jobs:
       run: chmod +x gradlew || true
 
     - name: Run Code Style & Linter Check
-      run: ./gradlew lint || true
+      run: ./gradlew lint
 
     - name: Run Unit Tests
-      run: ./gradlew testDebugUnitTest --continue
+      run: ./gradlew testDebugUnitTest
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug

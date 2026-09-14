@@ -55,4 +55,26 @@ class AppLockManager(private val context: Context) {
         val pin = prefs.getString("app_pin", "1234") ?: "1234"
         return "•".repeat(pin.length)
     }
+
+    fun getLockTimeoutSeconds(): Int = prefs.getInt("lock_timeout_seconds", 30)
+
+    fun setLockTimeoutSeconds(seconds: Int) {
+        prefs.edit().putInt("lock_timeout_seconds", seconds).apply()
+    }
+
+    fun recordActivity() {
+        prefs.edit().putLong("last_active_timestamp", System.currentTimeMillis()).apply()
+    }
+
+    fun isLockRequired(): Boolean {
+        if (!isLockEnabled()) return false
+        val lastActive = prefs.getLong("last_active_timestamp", 0L)
+        if (lastActive == 0L) return true
+        val timeoutMillis = getLockTimeoutSeconds() * 1000L
+        return (System.currentTimeMillis() - lastActive) > timeoutMillis
+    }
+
+    fun unlockSession() {
+        recordActivity()
+    }
 }

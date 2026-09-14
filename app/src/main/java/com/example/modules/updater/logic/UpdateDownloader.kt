@@ -2,8 +2,8 @@ package com.example.modules.updater.logic
 
 import android.content.Context
 import android.util.Log
+import com.example.core.network.SecureHttpClientProvider
 import com.example.modules.updater.models.UpdateStatus
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
@@ -13,7 +13,7 @@ import java.net.SocketTimeoutException
 
 object UpdateDownloader {
     private const val TAG = "UpdateDownloader"
-    private val client = OkHttpClient()
+    private val client = SecureHttpClientProvider.client
 
     fun downloadApk(
         context: Context,

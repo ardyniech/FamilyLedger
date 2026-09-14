@@ -5,6 +5,7 @@ import com.example.core.storage.HouseholdDao
 import com.example.core.storage.LedgerAuditDao
 import com.example.core.sync.p2p.P2PImportResult
 import com.example.core.sync.p2p.P2PSyncPackage
+import com.example.shared.models.Household
 import kotlinx.coroutines.flow.first
 
 interface SyncTransport {
@@ -49,6 +50,10 @@ class SyncProtocol(
         val existingWallets = dao.getAllWallets().first().associateBy { it.id }
         val existingCats = dao.getAllCategories().first().associateBy { it.id }
         val existingMembers = dao.getAllMembers().first().associateBy { it.id }
+
+        if (incomingPkg.pairCode.isNotBlank()) {
+            dao.insertHousehold(Household(id = incomingPkg.pairCode, pairCode = incomingPkg.pairCode))
+        }
 
         for (m in incomingPkg.members) {
             val local = existingMembers[m.id]

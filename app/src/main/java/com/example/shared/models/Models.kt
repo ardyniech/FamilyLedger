@@ -1,9 +1,14 @@
 package com.example.shared.models
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "households")
+@Entity(
+    tableName = "households",
+    indices = [Index(value = ["pairCode"], unique = true)]
+)
 data class Household(
     @PrimaryKey val id: String,
     val pairCode: String,
@@ -12,7 +17,21 @@ data class Household(
     val isDeleted: Boolean = false
 )
 
-@Entity(tableName = "members")
+@Entity(
+    tableName = "members",
+    foreignKeys = [
+        ForeignKey(
+            entity = Household::class,
+            parentColumns = ["id"],
+            childColumns = ["householdId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["householdId"]),
+        Index(value = ["syncStatus"])
+    ]
+)
 data class Member(
     @PrimaryKey val id: String,
     val householdId: String,
@@ -24,7 +43,13 @@ data class Member(
     val isDeleted: Boolean = false
 )
 
-@Entity(tableName = "wallet_accounts")
+@Entity(
+    tableName = "wallet_accounts",
+    indices = [
+        Index(value = ["memberId"]),
+        Index(value = ["syncStatus"])
+    ]
+)
 data class WalletAccount(
     @PrimaryKey val id: String,
     val memberId: String,
@@ -37,7 +62,12 @@ data class WalletAccount(
     val isDeleted: Boolean = false
 )
 
-@Entity(tableName = "category_groups")
+@Entity(
+    tableName = "category_groups",
+    indices = [
+        Index(value = ["syncStatus"])
+    ]
+)
 data class CategoryGroup(
     @PrimaryKey val id: String,
     val name: String,
@@ -49,7 +79,14 @@ data class CategoryGroup(
     val isDeleted: Boolean = false
 )
 
-@Entity(tableName = "categories")
+@Entity(
+    tableName = "categories",
+    indices = [
+        Index(value = ["groupId"]),
+        Index(value = ["parentId"]),
+        Index(value = ["syncStatus"])
+    ]
+)
 data class Category(
     @PrimaryKey val id: String,
     val name: String,
@@ -64,7 +101,25 @@ data class Category(
     val budgetLimit: Long = 0L
 )
 
-@Entity(tableName = "transactions")
+@Entity(
+    tableName = "transactions",
+    foreignKeys = [
+        ForeignKey(
+            entity = WalletAccount::class,
+            parentColumns = ["id"],
+            childColumns = ["walletId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["walletId"]),
+        Index(value = ["categoryId"]),
+        Index(value = ["memberId"]),
+        Index(value = ["timestamp"]),
+        Index(value = ["syncStatus"]),
+        Index(value = ["goalId"])
+    ]
+)
 data class Transaction(
     @PrimaryKey val id: String,
     val walletId: String,
@@ -78,33 +133,3 @@ data class Transaction(
     val isDeleted: Boolean = false,
     val goalId: String? = null
 )
-
-data class RecurringBill(
-    val id: String,
-    val name: String,
-    val amount: Long,
-    val dueDate: String, // e.g. "Aug 28, 2026"
-    val categoryId: String,
-    val isPaid: Boolean = false,
-    val autoPay: Boolean = false,
-    val targetWalletId: String? = null,
-    val frequency: String = "Monthly", // "One-Time", "Daily", "Weekly", "Monthly", "Yearly"
-    val lastProcessedTime: Long = 0L,
-    val dueDayOfMonth: Int = 0,
-    val autoPopulateInLedger: Boolean = true
-)
-
-data class FinancialGoal(
-    val id: String,
-    val title: String,
-    val targetAmount: Long,
-    val currentAmount: Long = 0L,
-    val category: String = "Tabungan", // "Rumah", "Pendidikan", "Darurat", "Liburan", "Investasi"
-    val iconEmoji: String = "🎯",
-    val deadline: String = "", // e.g. "31 Des 2026"
-    val targetTimestamp: Long = 0L,
-    val colorHex: String = "#3B82F6"
-) {
-    val isCompleted: Boolean
-        get() = currentAmount >= targetAmount
-}

@@ -1,0 +1,28 @@
+name: 💡 Feature Request
+description: Usulkan fitur baru atau peningkatan UX/UI untuk FamilyLedger
+title: "[FEAT]: "
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih atas ide untuk meningkatkan FamilyLedger!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah yang Ingin Diselesaikan
+      description: Jelaskan friksi atau kebutuhan yang mendasari usulan fitur ini.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solusi yang Diusulkan
+      description: Bagaimana fitur ini bekerja dari sudut pandang pengguna keluarga?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang Dipertimbangkan
+      description: Adakah cara lain yang telah Anda coba atau pertimbangkan?

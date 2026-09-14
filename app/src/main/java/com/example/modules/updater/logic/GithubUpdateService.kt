@@ -2,13 +2,13 @@ package com.example.modules.updater.logic
 
 import android.util.Log
 import com.example.modules.updater.models.ReleaseInfo
-import okhttp3.OkHttpClient
+import com.example.core.network.SecureHttpClientProvider
 import okhttp3.Request
 import org.json.JSONObject
 
 object GithubUpdateService {
     private const val TAG = "GithubUpdateService"
-    private val client = OkHttpClient()
+    private val client = SecureHttpClientProvider.client
 
     fun fetchLatestRelease(owner: String, repo: String): ReleaseInfo? {
         val url = "https://api.github.com/repos/$owner/$repo/releases/latest"

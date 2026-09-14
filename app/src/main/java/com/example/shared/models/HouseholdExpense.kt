@@ -1,10 +1,20 @@
 package com.example.shared.models
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.UUID
 
-@Entity(tableName = "household_expenses")
+@Entity(
+    tableName = "household_expenses",
+    indices = [
+        Index(value = ["walletId"]),
+        Index(value = ["categoryId"]),
+        Index(value = ["memberId"]),
+        Index(value = ["expenseDate"]),
+        Index(value = ["syncStatus"])
+    ]
+)
 data class HouseholdExpense(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val title: String,

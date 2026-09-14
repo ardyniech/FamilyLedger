@@ -10,6 +10,8 @@ interface HouseholdDao {
     @Query("SELECT * FROM members WHERE isDeleted = 0")
     fun getAllMembers(): Flow<List<Member>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHousehold(household: Household)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMember(member: Member)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMembers(members: List<Member>)
@@ -112,9 +114,11 @@ interface HouseholdDao {
     suspend fun clearCategories()
     @Query("DELETE FROM members")
     suspend fun clearMembers()
+    @Query("DELETE FROM households")
+    suspend fun clearHouseholds()
 
     @DbTransaction
     suspend fun clearAllData() {
-        clearTransactions(); clearWallets(); clearCategories(); clearMembers()
+        clearTransactions(); clearWallets(); clearCategories(); clearMembers(); clearHouseholds()
     }
 }

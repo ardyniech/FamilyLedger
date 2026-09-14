@@ -44,7 +44,7 @@ object ApkHashVerifier {
     }
 
     private fun fetchRemoteHash(url: String, apkName: String): String? {
-        val client = OkHttpClient()
+        val client = com.example.core.network.SecureHttpClientProvider.client
         val request = Request.Builder().url(url).build()
         return try {
             client.newCall(request).execute().use { response ->

@@ -5,12 +5,20 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid != null;
     }
 
+    function userExists(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
     function isHouseholdMember(pairCode) {
       let household = get(/databases/$(database)/documents/households/$(pairCode));
       return household != null && (
         request.auth.uid == household.data.ownerUid ||
         request.auth.uid in household.data.memberUids
       );
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
     match /households/{pairCode} {
@@ -30,4 +38,3 @@ service cloud.firestore {
     }
   }
 }
-
